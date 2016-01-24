@@ -1,0 +1,101 @@
+{
+  "name": "registry",
+
+  "imports": [
+    { "uri": "http://www.apidoc.me/flow/common/0.0.8/service.json" }
+  ],
+
+  "models": {
+
+    "application": {
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "ports", "type": "[integer]", "description": "All of the ports assigned to this application" }
+      ]
+    },
+
+    "application_form": {
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "number_ports", "type": "integer", "default": 1, "description": "The number of ports to allocate to this application. You can always allocate new ports in the future." }
+      ]
+    },
+
+    "application_put_form": {
+      "fields": [
+        { "name": "number_ports", "type": "integer", "default": 1, "description": "The number of ports to allocate to this application. You can always allocate new ports in the future." }
+      ]
+    }
+
+  },
+
+  "resources": {
+
+    "application": {
+      "operations": [
+        {
+          "method": "GET",
+          "description": "Search applications. Always paginated.",
+          "parameters": [
+            { "name": "id", "type": "[string]", "required": false, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "minimum": 1, "maximum": 100 },
+            { "name": "offset", "type": "long", "default": 0, "minimum": 0 },
+            { "name": "sort", "type": "string", "default": "-created_at" }
+          ],
+          "responses": {
+            "200": { "type": "[application]" },
+            "401": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "GET",
+          "description": "Returns information about a specific application.",
+          "path": "/:id",
+          "responses": {
+            "200": { "type": "application" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "POST",
+          "description": "Create a new application.",
+          "body": { "type": "application_form" },
+          "responses": {
+            "201": { "type": "application" },
+            "401": { "type": "unit" },
+            "422": { "type": "[io.flow.common.v0.models.error]" }
+          }
+        },
+
+        {
+          "method": "PUT",
+          "path": "/:id",
+          "description": "Upsert an application with the specified id.",
+          "body": { "type": "application_put_form" },
+          "responses": {
+            "200": { "type": "application" },
+            "201": { "type": "application" },
+            "401": { "type": "unit" },
+            "422": { "type": "[io.flow.common.v0.models.error]" }
+          }
+        },
+
+        {
+          "method": "DELETE",
+          "description": "Delete the application with this id",
+          "path": "/:id",
+          "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+        }
+      ]          
+    }
+
+  }
+}
+

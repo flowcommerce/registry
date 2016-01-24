@@ -1,0 +1,10 @@
+code:
+  flow:
+    common:
+      version: latest
+      generators:
+        play_2_x_json: generated/app
+    registry:
+      version: latest
+      generators:
+        play_2_4_client: generated/app
