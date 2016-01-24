@@ -11,12 +11,7 @@ package io.flow.registry.v0.models {
   )
 
   case class ApplicationForm(
-    id: String,
-    numberPorts: Int = 1
-  )
-
-  case class ApplicationPutForm(
-    numberPorts: Int = 1
+    id: String
   )
 
 }
@@ -73,16 +68,12 @@ package io.flow.registry.v0.models {
     }
 
     implicit def jsonReadsRegistryApplicationForm: play.api.libs.json.Reads[ApplicationForm] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "number_ports").read[Int]
-      )(ApplicationForm.apply _)
+      (__ \ "id").read[String].map { x => new ApplicationForm(id = x) }
     }
 
     def jsObjectApplicationForm(obj: io.flow.registry.v0.models.ApplicationForm) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.JsString(obj.id),
-        "number_ports" -> play.api.libs.json.JsNumber(obj.numberPorts)
+        "id" -> play.api.libs.json.JsString(obj.id)
       )
     }
 
@@ -90,24 +81,6 @@ package io.flow.registry.v0.models {
       new play.api.libs.json.Writes[io.flow.registry.v0.models.ApplicationForm] {
         def writes(obj: io.flow.registry.v0.models.ApplicationForm) = {
           jsObjectApplicationForm(obj)
-        }
-      }
-    }
-
-    implicit def jsonReadsRegistryApplicationPutForm: play.api.libs.json.Reads[ApplicationPutForm] = {
-      (__ \ "number_ports").read[Int].map { x => new ApplicationPutForm(numberPorts = x) }
-    }
-
-    def jsObjectApplicationPutForm(obj: io.flow.registry.v0.models.ApplicationPutForm) = {
-      play.api.libs.json.Json.obj(
-        "number_ports" -> play.api.libs.json.JsNumber(obj.numberPorts)
-      )
-    }
-
-    implicit def jsonWritesRegistryApplicationPutForm: play.api.libs.json.Writes[ApplicationPutForm] = {
-      new play.api.libs.json.Writes[io.flow.registry.v0.models.ApplicationPutForm] {
-        def writes(obj: io.flow.registry.v0.models.ApplicationPutForm) = {
-          jsObjectApplicationPutForm(obj)
         }
       }
     }
@@ -219,12 +192,9 @@ package io.flow.registry.v0 {
       }
 
       override def putById(
-        id: String,
-        applicationPutForm: io.flow.registry.v0.models.ApplicationPutForm
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Application] = {
-        val payload = play.api.libs.json.Json.toJson(applicationPutForm)
-
-        _executeRequest("PUT", s"/applications/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("PUT", s"/applications/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Application", r, _.validate[io.flow.registry.v0.models.Application])
           case r if r.status == 201 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Application", r, _.validate[io.flow.registry.v0.models.Application])
           case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
@@ -369,8 +339,7 @@ package io.flow.registry.v0 {
      * Upsert an application with the specified id.
      */
     def putById(
-      id: String,
-      applicationPutForm: io.flow.registry.v0.models.ApplicationPutForm
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Application]
 
     /**

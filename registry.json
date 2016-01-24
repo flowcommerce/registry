@@ -16,14 +16,7 @@
 
     "application_form": {
       "fields": [
-        { "name": "id", "type": "string" },
-        { "name": "number_ports", "type": "integer", "default": 1, "description": "The number of ports to allocate to this application. You can always allocate new ports in the future." }
-      ]
-    },
-
-    "application_put_form": {
-      "fields": [
-        { "name": "number_ports", "type": "integer", "default": 1, "description": "The number of ports to allocate to this application. You can always allocate new ports in the future." }
+        { "name": "id", "type": "string" }
       ]
     }
 
@@ -74,7 +67,6 @@
           "method": "PUT",
           "path": "/:id",
           "description": "Upsert an application with the specified id.",
-          "body": { "type": "application_put_form" },
           "responses": {
             "200": { "type": "application" },
             "201": { "type": "application" },

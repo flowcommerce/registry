@@ -25,9 +25,12 @@ lazy val api = project
   .settings(commonSettings: _*)
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
+    routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       ws,
       jdbc,
+      "io.flow" %% "lib-play" % "0.0.29",
+      "io.flow" %% "lib-postgresql" % "0.0.18",
       "com.typesafe.play" %% "anorm" % "2.5.0",
       "org.postgresql" % "postgresql" % "9.4.1207",
       "org.scalatestplus" %% "play" % "1.4.0" % "test"
