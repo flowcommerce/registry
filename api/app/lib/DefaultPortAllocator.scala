@@ -18,6 +18,11 @@ import io.flow.postgresql.Authorization
  *  - create a blacklist of well known ports that we encounter
  *    (e.g. 8080)
  * 
+ * The basic algorithm is to grab the prefix of an application and
+ * then to iterate through existing blocks of ports to find an
+ * available one. If not found, allocate another block of ports
+ * and repeat the process.
+ * 
  * @param name The name of the application (e.g. splashpage, splashpage-postgresql) 
  */
 case class DefaultPortAllocator(
@@ -63,8 +68,9 @@ case class DefaultPortAllocator(
   private[this] var i = 0
   private[this] var last: Long = toBase(PortsDao.maxPortNumber().getOrElse(MinPortNumber - Blocksize))
 
+  @scala.annotation.tailrec
   private[this] def nextBlock(): Long = {
-    applicationBasePorts.lift(i) match {
+    val block = applicationBasePorts.lift(i) match {
       case Some(value) => {
         i += 1
         value
@@ -74,24 +80,36 @@ case class DefaultPortAllocator(
         last
       }
     }
+    isBlockAvailable(block) match {
+      case true => block
+      case false => nextBlock()
+    }
   }
 
   /**
     * The base port number (not taking into account the offset)
     */
-  def number(): Long = {
-    val start = nextBlock()
-    val port: Option[Long] = offset match {
-      case None => firstAvailablePort(start, start + Blocksize - 1)
-      case Some(offset) => firstAvailablePort(start + offset, start + offset)
-    }
-    port.getOrElse {
-      number()
+  @scala.annotation.tailrec
+  final def number(): Long = {
+    firstAvailablePort(nextBlock(), offset) match {
+      case None => number()
+      case Some(v) => v
     }
   }
 
-  def firstAvailablePort(min: Long, max: Long): Option[Long] = {
-    min.until(max + 1).find { isPortAvailable(_) }
+  def firstAvailablePort(min: Long, offset: Option[Int]): Option[Long] = {
+    assert(min == toBase(min), s"Min[$min] must be start of block")
+
+    offset match {
+      case None => {
+        min.until(min + Blocksize + 1).
+          filter { v => !defaults.values.toSeq.contains( (v % Blocksize).toInt ) }.
+          find { isPortAvailable(_) }
+      }
+      case Some(value) => {
+        Seq(min + value).find { isPortAvailable(_) }
+      }
+    }
   }
 
   /**
@@ -105,10 +123,18 @@ case class DefaultPortAllocator(
   def isPortAvailable(number: Long): Boolean = {
     if (Blacklist.contains(number)) {
       false
+    } else {
+      PortsDao.findByNumber(Authorization.All, number).isEmpty
+    }
+  }
+
+  def isBlockAvailable(number: Long): Boolean = {
+    if (Blacklist.contains(number)) {
+      false
     } else if (number % 100 == 0) {
       false
     } else {
-      PortsDao.findByNumber(Authorization.All, number).isEmpty
+      true
     }
   }
 
