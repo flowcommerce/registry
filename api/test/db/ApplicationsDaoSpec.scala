@@ -20,7 +20,6 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val baseNumber = api.ports.map(_.number).headOption.getOrElse {
       sys.error("Failed to allocate port")
     }
-    println(s"baseNumber[$baseNumber]")
     (baseNumber % 10) must be(0)
     postgresql.ports.map(_.number) must be(Seq(baseNumber + 9))
     other.ports.map(_.number) must be(Seq(baseNumber + 1))

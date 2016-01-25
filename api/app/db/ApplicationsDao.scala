@@ -70,7 +70,7 @@ object ApplicationsDao {
           PortsDao.create(
             c, createdBy, PortForm(
               applicationId = id,
-              number = DefaultPortAllocator(form.id, PortsDao.maxPortNumber()).number
+              number = DefaultPortAllocator(form.id).number
             )
           )
         }

@@ -19,12 +19,9 @@ import io.flow.postgresql.Authorization
  *    (e.g. 8080)
  * 
  * @param name The name of the application (e.g. splashpage, splashpage-postgresql) 
- * @param largestPortAllocated The value of the largest port allocated to
- *        date (or None if no ports have been allocated)
  */
 case class DefaultPortAllocator(
-  name: String,
-  largestPortAllocated: Option[Long]
+  name: String
 ) {
 
   private[this] val Blacklist = Seq(8080)
@@ -56,29 +53,45 @@ case class DefaultPortAllocator(
     */
   val offset: Option[Int] = defaults.get(suffix)
 
+  private[this] val applicationBasePorts = ApplicationsDao.findAll(Authorization.All, prefix = Some(prefix)).
+    flatMap(_.ports).
+    map(_.number).
+    map(toBase(_)).
+    sorted.
+    distinct
+
+  private[this] var i = 0
+  private[this] var last: Long = toBase(PortsDao.maxPortNumber().getOrElse(MinPortNumber - Blocksize))
+
+  private[this] def nextBlock(): Long = {
+    applicationBasePorts.lift(i) match {
+      case Some(value) => {
+        i += 1
+        value
+      }
+      case None => {
+        last = last + Blocksize
+        last
+      }
+    }
+  }
+
   /**
     * The base port number (not taking into account the offset)
     */
-  def number: Long = {
-    val existingBasePorts = ApplicationsDao.findAll(Authorization.All, prefix = Some(prefix)).
-      flatMap(_.ports).
-      map(_.number).
-      map(toBase(_)).
-      sorted
-
-    val block = existingBasePorts.headOption.getOrElse {
-      nextAvailableBlock(
-        largestPortAllocated match {
-          case None => MinPortNumber
-          case Some(num) => toBase(num) + Blocksize
-        }
-      )
+  def number(): Long = {
+    val start = nextBlock()
+    val port: Option[Long] = offset match {
+      case None => firstAvailablePort(start, start + Blocksize - 1)
+      case Some(offset) => firstAvailablePort(start + offset, start + offset)
     }
-
-    offset match {
-      case None => nextAvailablePort(block)
-      case Some(offset) => nextAvailablePort(block + offset, Blocksize)
+    port.getOrElse {
+      number()
     }
+  }
+
+  def firstAvailablePort(min: Long, max: Long): Option[Long] = {
+    min.until(max + 1).find { isPortAvailable(_) }
   }
 
   /**
@@ -89,29 +102,14 @@ case class DefaultPortAllocator(
     number - (number % Blocksize)
   }
 
-  @scala.annotation.tailrec
-  private[this] def nextAvailableBlock(block: Long): Long = {
-    assert(block % Blocksize == 0, s"Invalid block[$block]")
-    assert(block >= MinPortNumber, s"Block[$block] must be greater than MinPortNumber[$MinPortNumber]")
-    if (Blacklist.contains(block)) {
-      nextAvailableBlock(block + Blocksize)
-    } else if (block % 100 == 0) {
-      nextAvailableBlock(block + Blocksize)
+  def isPortAvailable(number: Long): Boolean = {
+    if (Blacklist.contains(number)) {
+      false
+    } else if (number % 100 == 0) {
+      false
     } else {
-      block
+      PortsDao.findByNumber(Authorization.All, number).isEmpty
     }
-  }
-
-  @scala.annotation.tailrec
-  private[this] def nextAvailablePort(port: Long, increment: Integer = 1): Long = {
-    isPortAvailable(port) match {
-      case true => port
-      case false => nextAvailablePort(port + increment)
-    }
-  }
-
-  private[this] def isPortAvailable(number: Long): Boolean = {
-    PortsDao.findByNumber(Authorization.All, number).isEmpty
   }
 
 }

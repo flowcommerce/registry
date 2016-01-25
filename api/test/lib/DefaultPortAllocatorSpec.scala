@@ -1,5 +1,6 @@
 package io.flow.registry.api.lib
 
+import db.PortsDao
 import io.flow.postgresql.Authorization
 import org.scalatest._
 import play.api.test._
@@ -9,25 +10,35 @@ import org.scalatestplus.play._
 class DefaultPortAllocatorSpec extends PlaySpec with OneAppPerSuite {
 
   "offset" in {
-    DefaultPortAllocator("", None).offset must be(None)
-    DefaultPortAllocator("foo", None).offset must be(None)
-    DefaultPortAllocator("foo-postgresql", None).offset must be(Some(9))
-    DefaultPortAllocator("foo-bar-postgresql", None).offset must be(Some(9))
-    DefaultPortAllocator("  foo-postgresql  ", None).offset must be(Some(9))
+    DefaultPortAllocator("").offset must be(None)
+    DefaultPortAllocator("foo").offset must be(None)
+    DefaultPortAllocator("foo-postgresql").offset must be(Some(9))
+    DefaultPortAllocator("foo-bar-postgresql").offset must be(Some(9))
+    DefaultPortAllocator("  foo-postgresql  ").offset must be(Some(9))
   }
 
   "number" in {
-    DefaultPortAllocator("", None).number must be(6010)
-    DefaultPortAllocator("", Some(6500)).number must be(6510)
-    DefaultPortAllocator("", Some(6515)).number must be(6520)
-    DefaultPortAllocator("foo", None).number must be(6010)
-    DefaultPortAllocator("foo-postgresql", None).number must be(6019)
-    DefaultPortAllocator("foo-bar-postgresql", None).number must be(6019)
-    DefaultPortAllocator("  foo-postgresql  ", None).number must be(6019)
+    val nextPort: Long = PortsDao.maxPortNumber() match {
+      case None => 6000
+      case Some(max) => max + 10
+    }
+
+    DefaultPortAllocator("").number must be(nextPort)
+    DefaultPortAllocator("").number must be(nextPort)
+    DefaultPortAllocator("").number must be(nextPort)
+    DefaultPortAllocator("foo").number must be(nextPort)
+    DefaultPortAllocator("foo-postgresql").number must be(nextPort + 9)
+    DefaultPortAllocator("foo-bar-postgresql").number must be(nextPort + 9)
+    DefaultPortAllocator("  foo-postgresql  ").number must be(nextPort + 9)
   }
 
   "blacklist" in {
-    DefaultPortAllocator("foo", Some(8070)).number must be(8090)
+    DefaultPortAllocator("foo").isPortAvailable(8080) must be(false)
+    DefaultPortAllocator("foo").isPortAvailable(6000) must be(false)
+    DefaultPortAllocator("foo").isPortAvailable(6100) must be(false)
+    DefaultPortAllocator("foo").isPortAvailable(7000) must be(false)
+    DefaultPortAllocator("foo").isPortAvailable(8000) must be(false)
+    DefaultPortAllocator("foo").isPortAvailable(8900) must be(false)
   }
 
 }
