@@ -21,7 +21,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
   "PUT /applications/:id upserts application" in new WithServer(port=port) {
     val id = createTestId()
-    val updated = await(identifiedClient.applications.putById(id))
+    val updated = await(identifiedClient.applications.putById(id, createApplicationPutForm()))
     await(
       identifiedClient.applications.getById(id)
     ).id must beEqualTo(id)
@@ -60,7 +60,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     )
 
     expectNotAuthorized(
-      anonClient.applications.putById(createTestId())
+      anonClient.applications.putById(createTestId(), createApplicationPutForm())
     )
 
     expectNotAuthorized(

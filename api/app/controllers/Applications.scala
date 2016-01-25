@@ -3,7 +3,7 @@ package controllers
 import db.ApplicationsDao
 import io.flow.common.v0.models.User
 import io.flow.common.v0.models.json._
-import io.flow.registry.v0.models.{Application, ApplicationForm}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
 import io.flow.registry.v0.models.json._
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
@@ -66,9 +66,18 @@ class Applications @javax.inject.Inject() (
   }
 
   def putById(id: String) = Identified { request =>
-    ApplicationsDao.upsert(request.user, id) match {
-      case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-      case Right(org) => Ok(Json.toJson(org))
+    JsValue.sync(request.contentType, request.body) { js =>
+      js.validate[ApplicationPutForm] match {
+        case e: JsError => {
+          UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
+        }
+        case s: JsSuccess[ApplicationPutForm] => {
+          ApplicationsDao.upsert(request.user, id, s.get) match {
+            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+            case Right(org) => Ok(Json.toJson(org))
+          }
+        }
+      }
     }
   }
 

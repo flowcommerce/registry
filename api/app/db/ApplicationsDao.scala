@@ -2,7 +2,7 @@ package db
 
 import io.flow.play.util.UrlKey
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Application, ApplicationForm, Port}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Port}
 import io.flow.postgresql.{Authorization, Query, OrderBy}
 import io.flow.common.v0.models.User
 import anorm._
@@ -85,10 +85,10 @@ object ApplicationsDao {
     }
   }
 
-  def upsert(createdBy: User, id: String): Either[Seq[String], Application] = {
+  def upsert(createdBy: User, id: String, form: ApplicationPutForm): Either[Seq[String], Application] = {
     findById(Authorization.All, id) match {
       case Some(app) => Right(app)
-      case None => create(createdBy, ApplicationForm(id = id))
+      case None => create(createdBy, ApplicationForm(id = id, applicationType = form.applicationType))
     }
   }
 

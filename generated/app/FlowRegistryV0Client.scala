@@ -11,7 +11,12 @@ package io.flow.registry.v0.models {
   )
 
   case class ApplicationForm(
-    id: String
+    id: String,
+    applicationType: io.flow.registry.v0.models.ApplicationType
+  )
+
+  case class ApplicationPutForm(
+    applicationType: io.flow.registry.v0.models.ApplicationType
   )
 
   case class Port(
@@ -19,6 +24,47 @@ package io.flow.registry.v0.models {
     applicationId: String,
     number: Long
   )
+
+  sealed trait ApplicationType
+
+  object ApplicationType {
+
+    case object Api extends ApplicationType { override def toString = "api" }
+    /**
+     * Any type of storage interface
+     */
+    case object Database extends ApplicationType { override def toString = "database" }
+    /**
+     * Any user interface
+     */
+    case object Ui extends ApplicationType { override def toString = "ui" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends ApplicationType
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Api, Database, Ui)
+
+    private[this]
+    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): ApplicationType = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[ApplicationType] = byName.get(value.toLowerCase)
+
+  }
 
 }
 
@@ -51,6 +97,36 @@ package io.flow.registry.v0.models {
       }
     }
 
+    implicit val jsonReadsRegistryApplicationType = new play.api.libs.json.Reads[io.flow.registry.v0.models.ApplicationType] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.registry.v0.models.ApplicationType] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.ApplicationType(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.ApplicationType(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsonWritesRegistryApplicationType(obj: io.flow.registry.v0.models.ApplicationType) = {
+      play.api.libs.json.JsString(obj.toString)
+    }
+
+    def jsObjectApplicationType(obj: io.flow.registry.v0.models.ApplicationType) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesRegistryApplicationType: play.api.libs.json.Writes[ApplicationType] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.ApplicationType] {
+        def writes(obj: io.flow.registry.v0.models.ApplicationType) = {
+          jsonWritesRegistryApplicationType(obj)
+        }
+      }
+    }
+
     implicit def jsonReadsRegistryApplication: play.api.libs.json.Reads[Application] = {
       (
         (__ \ "id").read[String] and
@@ -74,12 +150,16 @@ package io.flow.registry.v0.models {
     }
 
     implicit def jsonReadsRegistryApplicationForm: play.api.libs.json.Reads[ApplicationForm] = {
-      (__ \ "id").read[String].map { x => new ApplicationForm(id = x) }
+      (
+        (__ \ "id").read[String] and
+        (__ \ "application_type").read[io.flow.registry.v0.models.ApplicationType]
+      )(ApplicationForm.apply _)
     }
 
     def jsObjectApplicationForm(obj: io.flow.registry.v0.models.ApplicationForm) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.JsString(obj.id)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "application_type" -> play.api.libs.json.JsString(obj.applicationType.toString)
       )
     }
 
@@ -87,6 +167,24 @@ package io.flow.registry.v0.models {
       new play.api.libs.json.Writes[io.flow.registry.v0.models.ApplicationForm] {
         def writes(obj: io.flow.registry.v0.models.ApplicationForm) = {
           jsObjectApplicationForm(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsRegistryApplicationPutForm: play.api.libs.json.Reads[ApplicationPutForm] = {
+      (__ \ "application_type").read[io.flow.registry.v0.models.ApplicationType].map { x => new ApplicationPutForm(applicationType = x) }
+    }
+
+    def jsObjectApplicationPutForm(obj: io.flow.registry.v0.models.ApplicationPutForm) = {
+      play.api.libs.json.Json.obj(
+        "application_type" -> play.api.libs.json.JsString(obj.applicationType.toString)
+      )
+    }
+
+    implicit def jsonWritesRegistryApplicationPutForm: play.api.libs.json.Writes[ApplicationPutForm] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.ApplicationPutForm] {
+        def writes(obj: io.flow.registry.v0.models.ApplicationPutForm) = {
+          jsObjectApplicationPutForm(obj)
         }
       }
     }
@@ -144,7 +242,16 @@ package io.flow.registry.v0 {
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
+    // Enum: ApplicationType
+    private[this] val enumApplicationTypeNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${io.flow.registry.v0.models.ApplicationType.all.mkString(", ")}"
 
+    implicit val pathBindableEnumApplicationType = new PathBindable.Parsing[io.flow.registry.v0.models.ApplicationType] (
+      ApplicationType.fromString(_).get, _.toString, enumApplicationTypeNotFound
+    )
+
+    implicit val queryStringBindableEnumApplicationType = new QueryStringBindable.Parsing[io.flow.registry.v0.models.ApplicationType](
+      ApplicationType.fromString(_).get, _.toString, enumApplicationTypeNotFound
+    )
 
   }
 
@@ -224,9 +331,12 @@ package io.flow.registry.v0 {
       }
 
       override def putById(
-        id: String
+        id: String,
+        applicationPutForm: io.flow.registry.v0.models.ApplicationPutForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Application] = {
-        _executeRequest("PUT", s"/applications/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
+        val payload = play.api.libs.json.Json.toJson(applicationPutForm)
+
+        _executeRequest("PUT", s"/applications/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Application", r, _.validate[io.flow.registry.v0.models.Application])
           case r if r.status == 201 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Application", r, _.validate[io.flow.registry.v0.models.Application])
           case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
@@ -381,7 +491,8 @@ package io.flow.registry.v0 {
      * Upsert an application with the specified id.
      */
     def putById(
-      id: String
+      id: String,
+      applicationPutForm: io.flow.registry.v0.models.ApplicationPutForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Application]
 
     /**

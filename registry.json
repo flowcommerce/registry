@@ -26,7 +26,14 @@
 
     "application_form": {
       "fields": [
-        { "name": "id", "type": "string" }
+        { "name": "id", "type": "string" },
+        { "name": "application_type", "type": "application_type" }
+      ]
+    },
+
+    "application_put_form": {
+      "fields": [
+        { "name": "application_type", "type": "application_type" }
       ]
     },
 
@@ -97,6 +104,7 @@
           "method": "PUT",
           "path": "/:id",
           "description": "Upsert an application with the specified id.",
+          "body": { "type": "application_put_form" },
           "responses": {
             "200": { "type": "application" },
             "201": { "type": "application" },
