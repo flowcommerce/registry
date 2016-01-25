@@ -28,15 +28,14 @@ object PortsDao {
     insert into ports
     (id, application_id, number, updated_by_user_id)
     values
-    ({id}, {application_id}, {number}, updated_by_user_id})
+    ({id}, {application_id}, {number}, {updated_by_user_id})
   """
 
   private[this] val dbHelpers = DbHelpers("ports")
   private[this] val idGenerator = IdGenerator("prt")
 
   private[db] def validate(
-    form: PortForm,
-    existing: Option[Port] = None
+    form: PortForm
   ): Seq[String] = {
     val portErrors = if (form.number <= 1024) {
       Seq("Port must be > 1024")
@@ -45,8 +44,8 @@ object PortsDao {
         case None => {
           Nil
         }
-        case Some(existing) => {
-          Seq("Port ${form.number} is already assigned to the application ${existing.id}")
+        case Some(port) => {
+          Seq(s"Port ${form.number} is already assigned to the application ${port.applicationId}")
         }
       }
     }
