@@ -104,6 +104,7 @@ object ApplicationsDao {
   def findAll(
     auth: Authorization,
     ids: Option[Seq[String]] = None,
+    prefix: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0,
@@ -114,6 +115,11 @@ object ApplicationsDao {
       BaseQuery.
         optionalIn("applications.id", ids).
         nullBoolean("applications.deleted_at", isDeleted).
+        and(
+          prefix.map { p =>
+            s"(applications.id = {prefix} or applications.id like {prefix} || '-%')"
+          }
+        ).bind("prefix", prefix).
         limit(limit).
         offset(offset).
         orderBy(orderBy.sql).

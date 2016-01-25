@@ -1,5 +1,8 @@
 package io.flow.registry.api.lib
 
+import db.{ApplicationsDao, PortsDao}
+import io.flow.postgresql.Authorization
+
 /**
  * Parses the name of the application and allocates the default port
  * to that application. Basic approach is to recognize a few suffixes
@@ -34,12 +37,56 @@ case class DefaultPortAllocator(
     "postgresql" -> 9
   )
 
-  val number: Long = {
-    val nextBlock = largestPortAllocated match {
-      case None => MinPortNumber
-      case Some(num) => num - (num % Blocksize) + Blocksize
+  private[this] val suffix = name.trim.split("-").last
+  private[this] val prefix = {
+    val idx = name.trim.lastIndexOf("-")
+    if (idx < 0) {
+      name.trim
+    } else {
+      name.trim.substring(0, idx)
     }
-    nextAvailableBlock(nextBlock) + offset()
+  }
+
+  /**
+    * The port offset for this type of application (based on its
+    * name). Will be a number >= 0 and <= 9. If specified, we will try
+    * to make sure a port is allocated that ends with this
+    * number. Otherwise we just generated the next sequential port
+    * number.
+    */
+  val offset: Option[Int] = defaults.get(suffix)
+
+  /**
+    * The base port number (not taking into account the offset)
+    */
+  def number: Long = {
+    val existingBasePorts = ApplicationsDao.findAll(Authorization.All, prefix = Some(prefix)).
+      flatMap(_.ports).
+      map(_.number).
+      map(toBase(_)).
+      sorted
+
+    val block = existingBasePorts.headOption.getOrElse {
+      nextAvailableBlock(
+        largestPortAllocated match {
+          case None => MinPortNumber
+          case Some(num) => toBase(num) + Blocksize
+        }
+      )
+    }
+
+    offset match {
+      case None => nextAvailablePort(block)
+      case Some(offset) => nextAvailablePort(block + offset, Blocksize)
+    }
+  }
+
+  /**
+    * Given a port number (e.g. 8201) returns the base port number
+    * (e.g. 8200)
+    */
+  def toBase(number: Long): Long = {
+    number - (number % Blocksize)
   }
 
   @scala.annotation.tailrec
@@ -55,12 +102,16 @@ case class DefaultPortAllocator(
     }
   }
 
-  /**
-    * Returns the port offset - a number between 0 and 9
-    */
-  def offset(): Int = {
-    val suffix = name.trim.split("-").last
-    defaults.get(suffix).getOrElse(0)
+  @scala.annotation.tailrec
+  private[this] def nextAvailablePort(port: Long, increment: Integer = 1): Long = {
+    isPortAvailable(port) match {
+      case true => port
+      case false => nextAvailablePort(port + increment)
+    }
+  }
+
+  private[this] def isPortAvailable(number: Long): Boolean = {
+    PortsDao.findByNumber(Authorization.All, number).isEmpty
   }
 
 }
