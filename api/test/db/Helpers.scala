@@ -61,15 +61,11 @@ trait Helpers {
   def createPortForm(
     application: Application = createApplication()
   ): PortForm = {
-    // Find a unique port number...
-    val number = PortsDao.findAll(Authorization.All, orderBy = OrderBy("-ports.number"), limit = 1).headOption match {
-      case None => 2000
-      case Some(p) => p.number + 1
-    }
+    val number: Long  = PortsDao.maxPortNumber.getOrElse(6000)
 
     PortForm(
       applicationId = application.id,
-      number = number
+      number = number + 1
     )
   }
 

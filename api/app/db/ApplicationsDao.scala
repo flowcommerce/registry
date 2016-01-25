@@ -1,6 +1,7 @@
 package db
 
 import io.flow.play.util.UrlKey
+import io.flow.registry.api.lib.DefaultPortAllocator
 import io.flow.registry.v0.models.{Application, ApplicationForm, Port}
 import io.flow.postgresql.{Authorization, Query, OrderBy}
 import io.flow.common.v0.models.User
@@ -58,12 +59,18 @@ object ApplicationsDao {
     validate(form) match {
       case Nil => {
         DB.withTransaction { implicit c =>
+          val id = form.id.trim
           SQL(InsertQuery).on(
-            'id -> form.id.trim,
+            'id -> id,
             'updated_by_user_id -> createdBy.id
           ).execute()
 
-          // TODO: Allocate ports
+          PortsDao.create(
+            c, createdBy, PortForm(
+              applicationId = id,
+              number = DefaultPortAllocator(form.id, PortsDao.maxPortNumber()).number
+            )
+          )
         }
 
         Right(

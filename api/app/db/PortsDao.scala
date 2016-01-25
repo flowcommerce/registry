@@ -92,6 +92,10 @@ object PortsDao {
     dbHelpers.delete(deletedBy, port.id)
   }
 
+  def maxPortNumber(): Option[Long] = {
+    PortsDao.findAll(Authorization.All, orderBy = OrderBy("-ports.number"), limit = 1).map(_.number).headOption
+  }
+
   def findByNumber(auth: Authorization, number: Long): Option[Port] = {
     findAll(auth, numbers = Some(Seq(number)), limit = 1).headOption
   }

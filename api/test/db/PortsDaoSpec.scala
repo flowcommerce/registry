@@ -35,6 +35,20 @@ class PortsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     port.number must be(form.number)
   }
 
+  "maxPortNumber" in {
+    val port1 = createPort()
+    val maxPortNumber = PortsDao.maxPortNumber().getOrElse {
+      sys.error("Failed to find max port number")
+    }
+
+    val port2 = createPort()
+    val newMaxPortNumber = PortsDao.maxPortNumber().getOrElse {
+      sys.error("Failed to find max port number")
+    }
+
+    newMaxPortNumber > maxPortNumber must be(true)
+  }
+
   "findById" in {
     val port = createPort()
     PortsDao.findById(Authorization.All, port.id).map(_.id) must be(

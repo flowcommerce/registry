@@ -23,7 +23,6 @@ case class DefaultPortAllocator(
   name: String,
   largestPortAllocated: Option[Long]
 ) {
-  // PortsDao.findAll(Authorization.All, orderBy = OrderBy("-ports.number"), limit = 1).map(_.number).headOption
 
   private[this] val Blacklist = Seq(8080)
 
