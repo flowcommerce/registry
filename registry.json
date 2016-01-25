@@ -23,6 +23,18 @@
   },
 
   "resources": {
+    "io.flow.common.v0.models.healthcheck": {
+      "path": "/_internal_",
+      "operations": [
+        {
+          "method": "GET",
+          "path": "/healthcheck",
+          "responses": {
+            "200": { "type": "io.flow.common.v0.models.healthcheck" }
+          }
+        }
+      ]
+    },
 
     "application": {
       "operations": [

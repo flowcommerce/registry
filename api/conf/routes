@@ -2,8 +2,9 @@
 # Service version: 0.0.1
 # apidoc:0.11.6 http://www.apidoc.me/flow/registry/0.0.1/play_2_x_routes
 
-GET        /applications         controllers.Applications.get(id: _root_.scala.Option[List[String]], limit: Long ?= 25, offset: Long ?= 0, sort: String ?= "-created_at")
-GET        /applications/:id     controllers.Applications.getById(id: String)
-POST       /applications         controllers.Applications.post()
-PUT        /applications/:id     controllers.Applications.putById(id: String)
-DELETE     /applications/:id     controllers.Applications.deleteById(id: String)
+GET        /applications               controllers.Applications.get(id: _root_.scala.Option[List[String]], limit: Long ?= 25, offset: Long ?= 0, sort: String ?= "-created_at")
+GET        /applications/:id           controllers.Applications.getById(id: String)
+POST       /applications               controllers.Applications.post()
+PUT        /applications/:id           controllers.Applications.putById(id: String)
+DELETE     /applications/:id           controllers.Applications.deleteById(id: String)
+GET        /_internal_/healthcheck     controllers.Healthchecks.getHealthcheck()

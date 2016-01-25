@@ -7,11 +7,11 @@ import play.api._
 import play.api.mvc._
 import play.api.libs.json._
 
-object Healthchecks extends Controller {
+class Healthchecks() extends Controller {
 
   private val HealthyJson = Json.toJson(Healthcheck(status = "healthy"))
 
-  def getInternalAndHealthcheck() = Action { request =>
+  def getHealthcheck() = Action { request =>
     Ok(HealthyJson)
   }
 
