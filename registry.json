@@ -5,6 +5,16 @@
     { "uri": "http://www.apidoc.me/flow/common/0.0.8/service.json" }
   ],
 
+  "enums": {
+    "application_type": {
+      "values": [
+        { "name": "api" },
+        { "name": "database", "description": "Any type of storage interface" },
+        { "name": "ui", "description": "Any user interface" }
+      ]
+    }
+  },
+  
   "models": {
 
     "application": {
