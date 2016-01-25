@@ -16,7 +16,7 @@ object ApplicationsDao {
 
   private[this] val BaseQuery = Query(s"""
     select applications.id,
-           (select port from ports where application_id = applications.id and deleted_at is null) as ports
+           (select number from ports where application_id = applications.id and deleted_at is null order by number) as ports
       from applications
   """)
 
@@ -50,10 +50,6 @@ object ApplicationsDao {
     }
   }
 
-  /**
-    * Creates an application and allocates the requested number of
-    * ports
-    */
   def create(createdBy: User, form: ApplicationForm): Either[Seq[String], Application] = {
     validate(form) match {
       case Nil => {
@@ -107,6 +103,7 @@ object ApplicationsDao {
         limit(limit).
         offset(offset).
         orderBy(orderBy.sql).
+        withDebugging().
         as(
           io.flow.registry.v0.anorm.parsers.Application.parser().*
         )
