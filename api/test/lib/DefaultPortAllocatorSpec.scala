@@ -23,4 +23,8 @@ class DefaultPortAllocatorSpec extends Specification {
     DefaultPortAllocator("  foo-postgresql  ", None).number must beEqualTo(6019)
   }
 
+  "blacklist" in {
+    DefaultPortAllocator("foo", Some(8070)).number must beEqualTo(8090)
+  }
+
 }
