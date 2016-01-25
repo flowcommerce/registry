@@ -20,7 +20,9 @@ object ApplicationsDao {
   private[this] val BaseQuery = Query(s"""
     select applications.id,
            to_json(
-             (select row_to_json(ports.*) from ports where application_id = applications.id and deleted_at is null order by number)
+             array(
+               (select row_to_json(ports.*) from ports where application_id = applications.id and deleted_at is null order by number)
+             )
            ) as ports
       from applications
   """)
