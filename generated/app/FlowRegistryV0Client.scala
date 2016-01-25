@@ -7,6 +7,7 @@ package io.flow.registry.v0.models {
 
   case class Application(
     id: String,
+    `type`: io.flow.registry.v0.models.ApplicationType,
     ports: Seq[io.flow.registry.v0.models.Port]
   )
 
@@ -130,6 +131,7 @@ package io.flow.registry.v0.models {
     implicit def jsonReadsRegistryApplication: play.api.libs.json.Reads[Application] = {
       (
         (__ \ "id").read[String] and
+        (__ \ "type").read[io.flow.registry.v0.models.ApplicationType] and
         (__ \ "ports").read[Seq[io.flow.registry.v0.models.Port]]
       )(Application.apply _)
     }
@@ -137,6 +139,7 @@ package io.flow.registry.v0.models {
     def jsObjectApplication(obj: io.flow.registry.v0.models.Application) = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
+        "type" -> play.api.libs.json.JsString(obj.`type`.toString),
         "ports" -> play.api.libs.json.Json.toJson(obj.ports)
       )
     }

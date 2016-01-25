@@ -20,6 +20,7 @@
     "application": {
       "fields": [
         { "name": "id", "type": "string" },
+        { "name": "type", "type": "application_type" },
         { "name": "ports", "type": "[port]", "description": "All of the ports assigned to this application" }
       ]
     },

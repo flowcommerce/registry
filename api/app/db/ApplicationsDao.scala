@@ -2,7 +2,7 @@ package db
 
 import io.flow.play.util.UrlKey
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Port}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, ApplicationType, Port}
 import io.flow.postgresql.{Authorization, Query, OrderBy}
 import io.flow.common.v0.models.User
 import anorm._
@@ -19,6 +19,7 @@ object ApplicationsDao {
 
   private[this] val BaseQuery = Query(s"""
     select applications.id,
+           type,
            to_json(
              array(
                (select row_to_json(ports.*) from ports where application_id = applications.id and deleted_at is null order by number)
@@ -29,9 +30,9 @@ object ApplicationsDao {
 
   private[this] val InsertQuery = """
     insert into applications
-    (id, updated_by_user_id)
+    (id, type, updated_by_user_id)
     values
-    ({id}, {updated_by_user_id})
+    ({id}, {type}, {updated_by_user_id})
   """
 
   private[this] val dbHelpers = DbHelpers("applications")
@@ -64,13 +65,14 @@ object ApplicationsDao {
           val id = form.id.trim
           SQL(InsertQuery).on(
             'id -> id,
+            'type -> form.applicationType.toString,
             'updated_by_user_id -> createdBy.id
           ).execute()
 
           PortsDao.create(
             c, createdBy, PortForm(
               applicationId = id,
-              number = DefaultPortAllocator(form.id).number
+              number = DefaultPortAllocator(form.id, form.applicationType).number
             )
           )
         }
@@ -137,13 +139,16 @@ object ApplicationsDao {
     */
   private[this] def parser(
     id: String = "id",
+    typ: String = "type",
     ports: String = "ports"
   ): RowParser[io.flow.registry.v0.models.Application] = {
     SqlParser.str(id) ~
+    SqlParser.str(typ) ~
     SqlParser.get[Seq[Port]](ports).? map {
-      case id ~ ports => {
+      case id ~ typ ~ ports => {
         io.flow.registry.v0.models.Application(
           id = id,
+          `type` = ApplicationType(typ),
           ports = ports.getOrElse(Nil)
         )
       }

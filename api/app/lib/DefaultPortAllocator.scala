@@ -2,6 +2,7 @@ package io.flow.registry.api.lib
 
 import db.{ApplicationsDao, PortsDao}
 import io.flow.postgresql.Authorization
+import io.flow.registry.v0.models.ApplicationType
 
 /**
  * Parses the name of the application and allocates the default port
@@ -26,7 +27,8 @@ import io.flow.postgresql.Authorization
  * @param name The name of the application (e.g. splashpage, splashpage-postgresql) 
  */
 case class DefaultPortAllocator(
-  name: String
+  name: String,
+  applicationType: ApplicationType
 ) {
 
   private[this] val Blacklist = Seq(8080)
@@ -35,11 +37,12 @@ case class DefaultPortAllocator(
 
   private[this] val Blocksize = 10
 
-  private[this] val defaults = Map(
-    "postgresql" -> 9
+  private[this] val defaults = Map[ApplicationType, Int](
+    ApplicationType.Api -> 1,
+    ApplicationType.Ui -> 0,
+    ApplicationType.Database -> 9
   )
 
-  private[this] val suffix = name.trim.split("-").last
   private[this] val prefix = {
     val idx = name.trim.lastIndexOf("-")
     if (idx < 0) {
@@ -56,7 +59,7 @@ case class DefaultPortAllocator(
     * number. Otherwise we just generated the next sequential port
     * number.
     */
-  val offset: Option[Int] = defaults.get(suffix)
+  val offset: Option[Int] = defaults.get(applicationType)
 
   private[this] val applicationBasePorts = ApplicationsDao.findAll(Authorization.All, prefix = Some(prefix)).
     flatMap(_.ports).

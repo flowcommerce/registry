@@ -25,18 +25,22 @@ package io.flow.registry.v0.anorm.parsers {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
       id = s"$prefix${sep}id",
+      `type` = s"$prefix${sep}type",
       ports = s"$prefix${sep}ports"
     )
 
     def parser(
       id: String = "id",
+      `type`: String = "type",
       ports: String = "ports"
     ): RowParser[io.flow.registry.v0.models.Application] = {
       SqlParser.str(id) ~
+      io.flow.registry.v0.anorm.parsers.ApplicationType.parser(`type`) ~
       SqlParser.get[Seq[io.flow.registry.v0.models.Port]](ports) map {
-        case id ~ ports => {
+        case id ~ typeInstance ~ ports => {
           io.flow.registry.v0.models.Application(
             id = id,
+            `type` = typeInstance,
             ports = ports
           )
         }
