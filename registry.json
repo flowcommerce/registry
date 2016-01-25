@@ -10,7 +10,7 @@
     "application": {
       "fields": [
         { "name": "id", "type": "string" },
-        { "name": "ports", "type": "[integer]", "description": "All of the ports assigned to this application" }
+        { "name": "ports", "type": "[port]", "description": "All of the ports assigned to this application" }
       ]
     },
 
@@ -18,8 +18,16 @@
       "fields": [
         { "name": "id", "type": "string" }
       ]
-    }
+    },
 
+    "port": {
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "application_id", "type": "string" },
+        { "name": "number", "type": "long" }
+      ]
+    }
+    
   },
 
   "resources": {

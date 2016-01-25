@@ -75,6 +75,8 @@ package io.flow.registry.v0.anorm.conversions {
     implicit val columnToMapRegistryApplication: Column[Map[String, _root_.io.flow.registry.v0.models.Application]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.Application]] }
     implicit val columnToSeqRegistryApplicationForm: Column[Seq[_root_.io.flow.registry.v0.models.ApplicationForm]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.ApplicationForm]] }
     implicit val columnToMapRegistryApplicationForm: Column[Map[String, _root_.io.flow.registry.v0.models.ApplicationForm]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.ApplicationForm]] }
+    implicit val columnToSeqRegistryPort: Column[Seq[_root_.io.flow.registry.v0.models.Port]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.Port]] }
+    implicit val columnToMapRegistryPort: Column[Map[String, _root_.io.flow.registry.v0.models.Port]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.Port]] }
 
   }
 

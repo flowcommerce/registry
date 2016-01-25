@@ -1,7 +1,7 @@
 package db
 
 import io.flow.play.util.UrlKey
-import io.flow.registry.v0.models.{Application, ApplicationForm}
+import io.flow.registry.v0.models.{Application, ApplicationForm, Port}
 import io.flow.postgresql.{Authorization, Query, OrderBy}
 import io.flow.common.v0.models.User
 import anorm._
@@ -10,13 +10,17 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
+import io.flow.registry.v0.anorm.conversions.Json._
+
 object ApplicationsDao {
 
   private[this] val urlKey = UrlKey(minKeyLength = 4)
 
   private[this] val BaseQuery = Query(s"""
     select applications.id,
-           (select number from ports where application_id = applications.id and deleted_at is null order by number) as ports
+           to_json(
+             (select row_to_json(ports.*) from ports where application_id = applications.id and deleted_at is null order by number)
+           ) as ports
       from applications
   """)
 
@@ -87,6 +91,7 @@ object ApplicationsDao {
     findAll(auth, ids = Some(Seq(id)), limit = 1).headOption
   }
 
+  // TODO: Should we add a filter by port number?
   def findAll(
     auth: Authorization,
     ids: Option[Seq[String]] = None,
@@ -103,10 +108,30 @@ object ApplicationsDao {
         limit(limit).
         offset(offset).
         orderBy(orderBy.sql).
-        withDebugging().
         as(
-          io.flow.registry.v0.anorm.parsers.Application.parser().*
+          // io.flow.registry.v0.anorm.parsers.Application.parser().*
+          parser().*
         )
+    }
+  }
+
+  /**
+    * Write custom parser as it is possible for an application to not
+    * have any ports in which case anorm will NOT find the column
+    * named ports.
+    */
+  private[this] def parser(
+    id: String = "id",
+    ports: String = "ports"
+  ): RowParser[io.flow.registry.v0.models.Application] = {
+    SqlParser.str(id) ~
+    SqlParser.get[Seq[Port]](ports).? map {
+      case id ~ ports => {
+        io.flow.registry.v0.models.Application(
+          id = id,
+          ports = ports.getOrElse(Nil)
+        )
+      }
     }
   }
 

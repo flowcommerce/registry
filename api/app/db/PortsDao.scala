@@ -1,19 +1,14 @@
 package db
 
+import io.flow.common.v0.models.User
 import io.flow.play.util.IdGenerator
 import io.flow.postgresql.{Authorization, Query, OrderBy}
-import io.flow.common.v0.models.User
+import io.flow.registry.v0.models.Port
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
-
-case class Port(
-  id: String,
-  applicationId: String,
-  number: Long
-)
 
 case class PortForm(
   applicationId: String,

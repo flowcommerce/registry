@@ -110,4 +110,5 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     ).map(_.id) must beEqualTo(ids.reverse)
 
   }
+
 }

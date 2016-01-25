@@ -21,8 +21,9 @@ package io.flow.registry.v0.anorm.parsers {
       ports: String = "ports"
     ): RowParser[io.flow.registry.v0.models.Application] = {
       SqlParser.str(id) ~
-      SqlParser.get[Seq[Int]](ports) map {
+      SqlParser.get[Seq[io.flow.registry.v0.models.Port]](ports) map {
         case id ~ ports => {
+          println("Parsing application")
           io.flow.registry.v0.models.Application(
             id = id,
             ports = ports
@@ -46,6 +47,35 @@ package io.flow.registry.v0.anorm.parsers {
         case id => {
           io.flow.registry.v0.models.ApplicationForm(
             id = id
+          )
+        }
+      }
+    }
+
+  }
+
+  object Port {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      id = s"$prefix${sep}id",
+      applicationId = s"$prefix${sep}application_id",
+      number = s"$prefix${sep}number"
+    )
+
+    def parser(
+      id: String = "id",
+      applicationId: String = "application_id",
+      number: String = "number"
+    ): RowParser[io.flow.registry.v0.models.Port] = {
+      SqlParser.str(id) ~
+      SqlParser.str(applicationId) ~
+      SqlParser.long(number) map {
+        case id ~ applicationId ~ number => {
+          println("Parsing port")
+          io.flow.registry.v0.models.Port(
+            id = id,
+            applicationId = applicationId,
+            number = number
           )
         }
       }
