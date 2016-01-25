@@ -53,19 +53,19 @@ package io.flow.registry.v0.anorm.parsers {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
       id = s"$prefix${sep}id",
-      applicationType = s"$prefix${sep}application_type"
+      `type` = s"$prefix${sep}type"
     )
 
     def parser(
       id: String = "id",
-      applicationType: String = "application_type"
+      `type`: String = "type"
     ): RowParser[io.flow.registry.v0.models.ApplicationForm] = {
       SqlParser.str(id) ~
-      io.flow.registry.v0.anorm.parsers.ApplicationType.parser(applicationType) map {
-        case id ~ applicationType => {
+      io.flow.registry.v0.anorm.parsers.ApplicationType.parser(`type`) map {
+        case id ~ typeInstance => {
           io.flow.registry.v0.models.ApplicationForm(
             id = id,
-            applicationType = applicationType
+            `type` = typeInstance
           )
         }
       }
@@ -76,16 +76,16 @@ package io.flow.registry.v0.anorm.parsers {
   object ApplicationPutForm {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
-      applicationType = s"$prefix${sep}application_type"
+      `type` = s"$prefix${sep}type"
     )
 
     def parser(
-      applicationType: String = "application_type"
+      `type`: String = "type"
     ): RowParser[io.flow.registry.v0.models.ApplicationPutForm] = {
-      io.flow.registry.v0.anorm.parsers.ApplicationType.parser(applicationType) map {
-        case applicationType => {
+      io.flow.registry.v0.anorm.parsers.ApplicationType.parser(`type`) map {
+        case typeInstance => {
           io.flow.registry.v0.models.ApplicationPutForm(
-            applicationType = applicationType
+            `type` = typeInstance
           )
         }
       }

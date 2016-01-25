@@ -13,11 +13,11 @@ package io.flow.registry.v0.models {
 
   case class ApplicationForm(
     id: String,
-    applicationType: io.flow.registry.v0.models.ApplicationType
+    `type`: io.flow.registry.v0.models.ApplicationType
   )
 
   case class ApplicationPutForm(
-    applicationType: io.flow.registry.v0.models.ApplicationType
+    `type`: io.flow.registry.v0.models.ApplicationType
   )
 
   case class Port(
@@ -155,14 +155,14 @@ package io.flow.registry.v0.models {
     implicit def jsonReadsRegistryApplicationForm: play.api.libs.json.Reads[ApplicationForm] = {
       (
         (__ \ "id").read[String] and
-        (__ \ "application_type").read[io.flow.registry.v0.models.ApplicationType]
+        (__ \ "type").read[io.flow.registry.v0.models.ApplicationType]
       )(ApplicationForm.apply _)
     }
 
     def jsObjectApplicationForm(obj: io.flow.registry.v0.models.ApplicationForm) = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
-        "application_type" -> play.api.libs.json.JsString(obj.applicationType.toString)
+        "type" -> play.api.libs.json.JsString(obj.`type`.toString)
       )
     }
 
@@ -175,12 +175,12 @@ package io.flow.registry.v0.models {
     }
 
     implicit def jsonReadsRegistryApplicationPutForm: play.api.libs.json.Reads[ApplicationPutForm] = {
-      (__ \ "application_type").read[io.flow.registry.v0.models.ApplicationType].map { x => new ApplicationPutForm(applicationType = x) }
+      (__ \ "type").read[io.flow.registry.v0.models.ApplicationType].map { x => new ApplicationPutForm(`type` = x) }
     }
 
     def jsObjectApplicationPutForm(obj: io.flow.registry.v0.models.ApplicationPutForm) = {
       play.api.libs.json.Json.obj(
-        "application_type" -> play.api.libs.json.JsString(obj.applicationType.toString)
+        "type" -> play.api.libs.json.JsString(obj.`type`.toString)
       )
     }
 

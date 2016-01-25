@@ -28,13 +28,13 @@
     "application_form": {
       "fields": [
         { "name": "id", "type": "string" },
-        { "name": "application_type", "type": "application_type" }
+        { "name": "type", "type": "application_type" }
       ]
     },
 
     "application_put_form": {
       "fields": [
-        { "name": "application_type", "type": "application_type" }
+        { "name": "type", "type": "application_type" }
       ]
     },
 

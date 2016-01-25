@@ -30,7 +30,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       createApplication(
         createApplicationForm().copy(
           id = base + "-ui",
-          applicationType = ApplicationType.Ui
+          `type` = ApplicationType.Ui
         )
       )
     )
@@ -40,7 +40,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       createApplication(
         createApplicationForm().copy(
           id = base + "-api",
-          applicationType = ApplicationType.Api
+          `type` = ApplicationType.Api
         )
       )
     )
@@ -50,7 +50,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       createApplication(
         createApplicationForm().copy(
           id = base + "-db",
-          applicationType = ApplicationType.Database
+          `type` = ApplicationType.Database
         )
       )
     )
@@ -60,12 +60,12 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "allocates ports based on type" in {
     val base = UUID.randomUUID.toString.replaceAll("\\-", "")
-    val form = createApplicationForm().copy(applicationType = ApplicationType.UNDEFINED("other"))
+    val form = createApplicationForm().copy(`type` = ApplicationType.UNDEFINED("other"))
 
-    val ui = createApplication(createApplicationForm().copy(id = base + "-ui", applicationType = ApplicationType.Ui))
-    val api = createApplication(createApplicationForm().copy(id = base + "-api", applicationType = ApplicationType.Api))
-    val postgresql = createApplication(createApplicationForm().copy(id = base + "-db", applicationType = ApplicationType.Database))
-    val other = createApplication(createApplicationForm().copy(id = base + "-other", applicationType = ApplicationType.UNDEFINED("other")))
+    val ui = createApplication(createApplicationForm().copy(id = base + "-ui", `type` = ApplicationType.Ui))
+    val api = createApplication(createApplicationForm().copy(id = base + "-api", `type` = ApplicationType.Api))
+    val postgresql = createApplication(createApplicationForm().copy(id = base + "-db", `type` = ApplicationType.Database))
+    val other = createApplication(createApplicationForm().copy(id = base + "-other", `type` = ApplicationType.UNDEFINED("other")))
 
     val uiPort = ui.ports.map(_.number).headOption.getOrElse {
       sys.error("Failed to allocate port")

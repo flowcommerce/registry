@@ -5,22 +5,26 @@ that the implementation leaves room adjacent to the allocated port so
 that if you need another port in the future it is likely to be
 sequential
 
-    curl -d id=splashpage-api http://registry.api.flow.io/applications
+    curl -d id=splashpage -d type=api http://registry.api.flow.io/applications
+
+    curl -d id=www -d type=ui http://registry.api.flow.io/applications
+
+    curl -d id=splashpage-postgresql -d type=database http://registry.api.flow.io/applications
 
 or you can use PUT which will upsert the application:
 
-    curl -X PUT http://registry.api.flow.io/applications/splashpage-api
+    curl -X -d type=api PUT http://registry.api.flow.io/applications/splashpage
 
 Allocate another port for this application
 
-    curl -X POST http://registry.api.flow.io/applications/splashpage-api/ports
+    curl -X POST http://registry.api.flow.io/applications/splashpage/ports
 
 # Notes:
 
-by default, assign applications whose names end with:
-  - www: 0
+The type of the application is used to provide consistent port allocations:
+  - ui: 0
   - api: 1
-  - postgresql: 9
+  - database: 9
 
 # Example allocations:
 

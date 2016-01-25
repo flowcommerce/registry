@@ -47,13 +47,13 @@ trait Helpers {
   def createApplicationForm(): ApplicationForm = {
     ApplicationForm(
       id = createTestId(),
-      applicationType = ApplicationType.Api
+      `type` = ApplicationType.Api
     )
   }
 
   def createApplicationPutForm(): ApplicationPutForm = {
     ApplicationPutForm(
-      applicationType = ApplicationType.Api
+      `type` = ApplicationType.Api
     )
   }
 

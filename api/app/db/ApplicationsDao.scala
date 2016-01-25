@@ -65,14 +65,14 @@ object ApplicationsDao {
           val id = form.id.trim
           SQL(InsertQuery).on(
             'id -> id,
-            'type -> form.applicationType.toString,
+            'type -> form.`type`.toString,
             'updated_by_user_id -> createdBy.id
           ).execute()
 
           PortsDao.create(
             c, createdBy, PortForm(
               applicationId = id,
-              number = DefaultPortAllocator(form.id, form.applicationType).number
+              number = DefaultPortAllocator(form.id, form.`type`).number
             )
           )
         }
@@ -90,7 +90,7 @@ object ApplicationsDao {
   def upsert(createdBy: User, id: String, form: ApplicationPutForm): Either[Seq[String], Application] = {
     findById(Authorization.All, id) match {
       case Some(app) => Right(app)
-      case None => create(createdBy, ApplicationForm(id = id, applicationType = form.applicationType))
+      case None => create(createdBy, ApplicationForm(id = id, `type` = form.`type`))
     }
   }
 
