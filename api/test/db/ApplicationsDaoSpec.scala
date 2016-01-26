@@ -60,12 +60,10 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "allocates ports based on type" in {
     val base = UUID.randomUUID.toString.replaceAll("\\-", "")
-    val form = createApplicationForm().copy(`type` = ApplicationType.UNDEFINED("other"))
 
     val ui = createApplication(createApplicationForm().copy(id = base + "-ui", `type` = ApplicationType.Ui))
     val api = createApplication(createApplicationForm().copy(id = base + "-api", `type` = ApplicationType.Api))
     val postgresql = createApplication(createApplicationForm().copy(id = base + "-db", `type` = ApplicationType.Database))
-    val other = createApplication(createApplicationForm().copy(id = base + "-other", `type` = ApplicationType.UNDEFINED("other")))
 
     val uiPort = ui.ports.map(_.number).headOption.getOrElse {
       sys.error("Failed to allocate port")
@@ -74,7 +72,6 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     (uiPort % 10) must be(0)
     api.ports.map(_.number) must be(Seq(uiPort + 1))
     postgresql.ports.map(_.number) must be(Seq(uiPort + 9))
-    other.ports.map(_.number) must be(Seq(uiPort + 2))
   }
 
   "allocates block ranges in sets of 10" in {

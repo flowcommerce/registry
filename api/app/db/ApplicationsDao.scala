@@ -45,7 +45,7 @@ object ApplicationsDao {
     form: ApplicationForm,
     existing: Option[Application] = None
   ): Seq[String] = {
-    if (form.id.trim.isEmpty) {
+    val idErrors = if (form.id.trim.isEmpty) {
       Seq("Id cannot be empty")
     } else {
       ApplicationsDao.findById(Authorization.All, form.id) match {
@@ -60,6 +60,17 @@ object ApplicationsDao {
         }
       }
     }
+
+    val typeErrors = form.`type` match {
+      case ApplicationType.UNDEFINED(_) => {
+        Seq("Invalid application type. Must be one of: " + ApplicationType.all.map(_.toString).sorted.mkString(", "))
+      }
+      case _ => {
+        Nil
+      }
+    }
+
+    idErrors ++ typeErrors
   }
 
   def create(createdBy: User, form: ApplicationForm): Either[Seq[String], Application] = {

@@ -1,6 +1,6 @@
 package controllers
 
-import io.flow.registry.v0.models.{Application, ApplicationForm}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationType}
 
 import play.api.libs.ws._
 import play.api.test._
@@ -32,6 +32,37 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     val application = await(identifiedClient.applications.post(form))
     application.id must beEqualTo(form.id)
+  }
+
+  "POST /applications w/ existing id" in new WithServer(port=port) {
+    val application = createApplication()
+    val form = createApplicationForm().copy(id = application.id)
+
+    expectErrors(
+      identifiedClient.applications.post(form)
+    ).errors.map(_.message) must beEqualTo(
+      Seq("Application with this id already exists")
+    )
+  }
+
+  "POST /applications w/ invalid id" in new WithServer(port=port) {
+    val form = createApplicationForm().copy(id = " a bad id ")
+
+    expectErrors(
+      identifiedClient.applications.post(form)
+    ).errors.map(_.message) must beEqualTo(
+      Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-id")
+    )
+  }
+
+  "POST /applications w/ invalid type" in new WithServer(port=port) {
+    val form = createApplicationForm().copy(`type` = ApplicationType.UNDEFINED("foo"))
+
+    expectErrors(
+      identifiedClient.applications.post(form)
+    ).errors.map(_.message) must beEqualTo(
+      Seq("Invalid application type. Must be one of: api, database, ui")
+    )
   }
 
   "GET /applications/:id" in new WithServer(port=port) {
