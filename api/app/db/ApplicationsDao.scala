@@ -100,14 +100,8 @@ object ApplicationsDao {
 
   def softDelete(deletedBy: User, application: Application) {
     // TODO: Should we remove ports?
-    DB.withTransaction { implicit c =>
-      SQL(DeleteIdQuery).on(
-        'id -> application.id,
-        'deleted_id -> IdGenerator("del").randomId()
-      ).execute()
-
-      dbHelpers.delete(c, deletedBy, application.id)
-    }
+    // TODO: How should we allow for resuse of the application id?
+    dbHelpers.delete(deletedBy, application.id)
   }
 
   def findById(auth: Authorization, id: String): Option[Application] = {
