@@ -13,9 +13,8 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def validatePort(modulus: Int, app: Application) {
-    val numbers = app.ports.map(_.number)
-    numbers.size must be(1)
-    numbers.foreach { n =>
+    app.ports.size must be(1)
+    app.ports.foreach { n =>
       if (n % 10 != modulus) {
         fail(s"Application of type[${app.`type`}] port[$n] must end in ${modulus}")
       }
@@ -65,13 +64,13 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val api = createApplication(createApplicationForm().copy(id = base + "-api", `type` = ApplicationType.Api))
     val postgresql = createApplication(createApplicationForm().copy(id = base + "-db", `type` = ApplicationType.Database))
 
-    val uiPort = ui.ports.map(_.number).headOption.getOrElse {
+    val uiPort = ui.ports.headOption.getOrElse {
       sys.error("Failed to allocate port")
     }
 
     (uiPort % 10) must be(0)
-    api.ports.map(_.number) must be(Seq(uiPort + 1))
-    postgresql.ports.map(_.number) must be(Seq(uiPort + 9))
+    api.ports must be(Seq(uiPort + 1))
+    postgresql.ports must be(Seq(uiPort + 9))
   }
 
   "allocates block ranges in sets of 10" in {
@@ -84,15 +83,15 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     val api2 = createApplication(createApplicationForm().copy(id = base + "-api2"))
 
-    val apiPort = api.ports.map(_.number).headOption.getOrElse {
+    val apiPort = api.ports.headOption.getOrElse {
       sys.error("Failed to allocate port")
     }
 
-    val otherPort = other.ports.map(_.number).headOption.getOrElse {
+    val otherPort = other.ports.headOption.getOrElse {
       sys.error("Failed to allocate port for other app")
     }
 
-    val api2Port = api2.ports.map(_.number).headOption.getOrElse {
+    val api2Port = api2.ports.headOption.getOrElse {
       sys.error("Failed to allocate port")
     }
 

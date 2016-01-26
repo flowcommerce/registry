@@ -61,7 +61,7 @@ trait Helpers {
     form: PortForm = createPortForm()
   ) (
     implicit user: User = testUser
-  ): Port = {
+  ): InternalPort = {
     rightOrErrors(PortsDao.create(user, form))
   }
 

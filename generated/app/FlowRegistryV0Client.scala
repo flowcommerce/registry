@@ -8,7 +8,7 @@ package io.flow.registry.v0.models {
   case class Application(
     id: String,
     `type`: io.flow.registry.v0.models.ApplicationType,
-    ports: Seq[io.flow.registry.v0.models.Port]
+    ports: Seq[Long]
   )
 
   case class ApplicationForm(
@@ -20,13 +20,7 @@ package io.flow.registry.v0.models {
     `type`: io.flow.registry.v0.models.ApplicationType
   )
 
-  case class ApplicationReference(
-    id: String
-  )
-
   case class Port(
-    id: String,
-    application: io.flow.registry.v0.models.ApplicationReference,
     number: Long
   )
 
@@ -141,7 +135,7 @@ package io.flow.registry.v0.models {
       (
         (__ \ "id").read[String] and
         (__ \ "type").read[io.flow.registry.v0.models.ApplicationType] and
-        (__ \ "ports").read[Seq[io.flow.registry.v0.models.Port]]
+        (__ \ "ports").read[Seq[Long]]
       )(Application.apply _)
     }
 
@@ -201,36 +195,12 @@ package io.flow.registry.v0.models {
       }
     }
 
-    implicit def jsonReadsRegistryApplicationReference: play.api.libs.json.Reads[ApplicationReference] = {
-      (__ \ "id").read[String].map { x => new ApplicationReference(id = x) }
-    }
-
-    def jsObjectApplicationReference(obj: io.flow.registry.v0.models.ApplicationReference) = {
-      play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.JsString(obj.id)
-      )
-    }
-
-    implicit def jsonWritesRegistryApplicationReference: play.api.libs.json.Writes[ApplicationReference] = {
-      new play.api.libs.json.Writes[io.flow.registry.v0.models.ApplicationReference] {
-        def writes(obj: io.flow.registry.v0.models.ApplicationReference) = {
-          jsObjectApplicationReference(obj)
-        }
-      }
-    }
-
     implicit def jsonReadsRegistryPort: play.api.libs.json.Reads[Port] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "application").read[io.flow.registry.v0.models.ApplicationReference] and
-        (__ \ "number").read[Long]
-      )(Port.apply _)
+      (__ \ "number").read[Long].map { x => new Port(number = x) }
     }
 
     def jsObjectPort(obj: io.flow.registry.v0.models.Port) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.JsString(obj.id),
-        "application" -> jsObjectApplicationReference(obj.application),
         "number" -> play.api.libs.json.JsNumber(obj.number)
       )
     }
@@ -337,8 +307,6 @@ package io.flow.registry.v0 {
 
     def healthchecks: Healthchecks = Healthchecks
 
-    def ports: Ports = Ports
-
     object Applications extends Applications {
       override def get(
         id: _root_.scala.Option[Seq[String]] = None,
@@ -418,67 +386,6 @@ package io.flow.registry.v0 {
         _executeRequest("GET", s"/_internal_/healthcheck").map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.common.v0.models.Healthcheck", r, _.validate[io.flow.common.v0.models.Healthcheck])
           case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
-        }
-      }
-    }
-
-    object Ports extends Ports {
-      override def get(
-        id: _root_.scala.Option[Seq[String]] = None,
-        number: _root_.scala.Option[Seq[Long]] = None,
-        application: _root_.scala.Option[Seq[String]] = None,
-        limit: Long = 25,
-        offset: Long = 0,
-        sort: String = "application_id,number"
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.Port]] = {
-        val queryParameters = Seq(
-          Some("limit" -> limit.toString),
-          Some("offset" -> offset.toString),
-          Some("sort" -> sort)
-        ).flatten ++
-          id.getOrElse(Nil).map("id" -> _) ++
-          number.getOrElse(Nil).map("number" -> _.toString) ++
-          application.getOrElse(Nil).map("application" -> _)
-
-        _executeRequest("GET", s"/ports", queryParameters = queryParameters).map {
-          case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("Seq[io.flow.registry.v0.models.Port]", r, _.validate[Seq[io.flow.registry.v0.models.Port]])
-          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
-          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
-        }
-      }
-
-      override def getByNumber(
-        number: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Port] = {
-        _executeRequest("GET", s"/ports/${number}").map {
-          case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Port", r, _.validate[io.flow.registry.v0.models.Port])
-          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
-          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
-        }
-      }
-
-      override def post(
-        portForm: io.flow.registry.v0.models.PortForm
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Port] = {
-        val payload = play.api.libs.json.Json.toJson(portForm)
-
-        _executeRequest("POST", s"/ports", body = Some(payload)).map {
-          case r if r.status == 201 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Port", r, _.validate[io.flow.registry.v0.models.Port])
-          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
-          case r if r.status == 422 => throw new io.flow.registry.v0.errors.ErrorsResponse(r)
-          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
-        }
-      }
-
-      override def deleteByNumber(
-        number: Long
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/ports/${number}").map {
-          case r if r.status == 204 => ()
-          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
-          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -575,7 +482,6 @@ package io.flow.registry.v0 {
     trait Client {
       def applications: io.flow.registry.v0.Applications
       def healthchecks: io.flow.registry.v0.Healthchecks
-      def ports: io.flow.registry.v0.Ports
     }
 
   }
@@ -624,41 +530,6 @@ package io.flow.registry.v0 {
 
   trait Healthchecks {
     def getHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.Healthcheck]
-  }
-
-  trait Ports {
-    /**
-     * Search ports. Always paginated.
-     */
-    def get(
-      id: _root_.scala.Option[Seq[String]] = None,
-      number: _root_.scala.Option[Seq[Long]] = None,
-      application: _root_.scala.Option[Seq[String]] = None,
-      limit: Long = 25,
-      offset: Long = 0,
-      sort: String = "application_id,number"
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.Port]]
-
-    /**
-     * Returns information about a specific port.
-     */
-    def getByNumber(
-      number: Long
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Port]
-
-    /**
-     * Create a new port.
-     */
-    def post(
-      portForm: io.flow.registry.v0.models.PortForm
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Port]
-
-    /**
-     * Delete this port
-     */
-    def deleteByNumber(
-      number: Long
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
   package errors {

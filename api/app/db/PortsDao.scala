@@ -3,12 +3,18 @@ package db
 import io.flow.common.v0.models.User
 import io.flow.play.util.IdGenerator
 import io.flow.postgresql.{Authorization, Query, OrderBy}
-import io.flow.registry.v0.models.{ApplicationReference, Port, PortForm}
+import io.flow.registry.v0.models.{Port, PortForm}
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+
+private[db] case class InternalPort(
+  id: String,
+  applicationId: String,
+  number: Long
+)
 
 object PortsDao {
 
@@ -35,12 +41,12 @@ object PortsDao {
     val portErrors = if (form.number <= 1024) {
       Seq("Port must be > 1024")
     } else {
-      PortsDao.findByNumber(Authorization.All, form.number) match {
+      ApplicationsDao.findByPortNumber(Authorization.All, form.number) match {
         case None => {
           Nil
         }
-        case Some(port) => {
-          Seq(s"Port ${form.number} is already assigned to the application ${port.application.id}")
+        case Some(app) => {
+          Seq(s"Port ${form.number} is already assigned to the application ${app.id}")
         }
       }
     }
@@ -53,7 +59,7 @@ object PortsDao {
     portErrors ++ applicationErrors
   }
 
-  def create(createdBy: User, form: PortForm): Either[Seq[String], Port] = {
+  def create(createdBy: User, form: PortForm): Either[Seq[String], InternalPort] = {
     validate(form) match {
       case Nil => {
         val id = DB.withConnection { implicit c =>
@@ -84,22 +90,24 @@ object PortsDao {
   }
 
   def softDelete(deletedBy: User, port: Port) {
-    dbHelpers.delete(deletedBy, port.id)
+    findByNumber(Authorization.User(deletedBy.id), port.number).map { internal =>
+      dbHelpers.delete(deletedBy, internal.id)
+    }
   }
 
   def maxPortNumber(): Option[Long] = {
     PortsDao.findAll(Authorization.All, orderBy = OrderBy("-ports.number"), limit = 1).map(_.number).headOption
   }
 
-  def findByNumber(auth: Authorization, number: Long): Option[Port] = {
+  def findByNumber(auth: Authorization, number: Long): Option[InternalPort] = {
     findAll(auth, numbers = Some(Seq(number)), limit = 1).headOption
   }
 
-  def findById(auth: Authorization, id: String): Option[Port] = {
+  def findById(auth: Authorization, id: String): Option[InternalPort] = {
     findAll(auth, ids = Some(Seq(id)), limit = 1).headOption
   }
 
-  def findAll(
+  private[db] def findAll(
     auth: Authorization,
     ids: Option[Seq[String]] = None,
     applications: Option[Seq[String]] = None,
@@ -108,7 +116,7 @@ object PortsDao {
     limit: Long = 25,
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("ports.application_id, ports.number")
-  ): Seq[Port] = {
+  ): Seq[InternalPort] = {
     // TODO: Auth
     DB.withConnection { implicit c =>
       BaseQuery.
@@ -130,9 +138,9 @@ object PortsDao {
     SqlParser.str("application_id") ~
     SqlParser.long("number") map {
       case id ~ applicationId ~ number => {
-        Port(
+        InternalPort(
           id = id,
-          application = ApplicationReference(applicationId),
+          applicationId = applicationId,
           number = number
         )
       }

@@ -36,7 +36,7 @@ package io.flow.registry.v0.anorm.parsers {
     ): RowParser[io.flow.registry.v0.models.Application] = {
       SqlParser.str(id) ~
       io.flow.registry.v0.anorm.parsers.ApplicationType.parser(`type`) ~
-      SqlParser.get[Seq[io.flow.registry.v0.models.Port]](ports) map {
+      SqlParser.get[Seq[Long]](ports) map {
         case id ~ typeInstance ~ ports => {
           io.flow.registry.v0.models.Application(
             id = id,
@@ -93,46 +93,18 @@ package io.flow.registry.v0.anorm.parsers {
 
   }
 
-  object ApplicationReference {
-
-    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
-      id = s"$prefix${sep}id"
-    )
-
-    def parser(
-      id: String = "id"
-    ): RowParser[io.flow.registry.v0.models.ApplicationReference] = {
-      SqlParser.str(id) map {
-        case id => {
-          io.flow.registry.v0.models.ApplicationReference(
-            id = id
-          )
-        }
-      }
-    }
-
-  }
-
   object Port {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
-      id = s"$prefix${sep}id",
-      applicationPrefix = s"$prefix${sep}application",
       number = s"$prefix${sep}number"
     )
 
     def parser(
-      id: String = "id",
-      applicationPrefix: String = "application",
       number: String = "number"
     ): RowParser[io.flow.registry.v0.models.Port] = {
-      SqlParser.str(id) ~
-      io.flow.registry.v0.anorm.parsers.ApplicationReference.parserWithPrefix(applicationPrefix) ~
       SqlParser.long(number) map {
-        case id ~ application ~ number => {
+        case number => {
           io.flow.registry.v0.models.Port(
-            id = id,
-            application = application,
             number = number
           )
         }

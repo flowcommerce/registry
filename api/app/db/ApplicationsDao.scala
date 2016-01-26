@@ -2,7 +2,7 @@ package db
 
 import io.flow.play.util.{IdGenerator, UrlKey}
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Application, ApplicationReference, ApplicationForm, ApplicationPutForm, ApplicationType, Port, PortForm}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, ApplicationType, Port, PortForm}
 import io.flow.postgresql.{Authorization, Query, OrderBy}
 import io.flow.common.v0.models.User
 import anorm._
@@ -115,6 +115,10 @@ object ApplicationsDao {
     dbHelpers.delete(deletedBy, application.id)
   }
 
+  def findByPortNumber(auth: Authorization, number: Long): Option[Application] = {
+    findAll(auth, portNumbers = Some(Seq(number)), limit = 1).headOption
+  }
+
   def findById(auth: Authorization, id: String): Option[Application] = {
     findAll(auth, ids = Some(Seq(id)), limit = 1).headOption
   }
@@ -173,11 +177,7 @@ object ApplicationsDao {
           id = id,
           `type` = ApplicationType(typ),
           ports = ports.getOrElse(Nil).map { js =>
-            Port(
-              id = (js \ "id").as[String],
-              application = ApplicationReference( (js \ "application_id").as[String] ),
-              number = (js \ "number").as[Long]
-            )
+            (js \ "number").as[Long]
           }
         )
       }

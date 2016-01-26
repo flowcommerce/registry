@@ -21,13 +21,7 @@
       "fields": [
         { "name": "id", "type": "string" },
         { "name": "type", "type": "application_type" },
-        { "name": "ports", "type": "[port]", "description": "All of the ports assigned to this application" }
-      ]
-    },
-
-    "application_reference": {
-      "fields": [
-        { "name": "id", "type": "string" }
+        { "name": "ports", "type": "[long]", "description": "All of the ports assigned to this application" }
       ]
     },
 
@@ -46,8 +40,6 @@
 
     "port": {
       "fields": [
-        { "name": "id", "type": "string" },
-        { "name": "application", "type": "application_reference" },
         { "name": "number", "type": "long" }
       ]
     },
@@ -132,60 +124,6 @@
           "method": "DELETE",
           "description": "Delete the application with this id",
           "path": "/:id",
-          "responses": {
-            "204": { "type": "unit" },
-            "401": { "type": "unit" },
-            "404": { "type": "unit" }
-          }
-        }
-      ]          
-    },
-
-    "port": {
-      "operations": [
-        {
-          "method": "GET",
-          "description": "Search ports. Always paginated.",
-          "parameters": [
-            { "name": "id", "type": "[string]", "required": false, "maximum": 100 },
-            { "name": "number", "type": "[long]", "required": false, "maximum": 100 },
-            { "name": "application", "type": "[string]", "required": false, "maximum": 100 },
-            { "name": "limit", "type": "long", "default": 25, "minimum": 1, "maximum": 100 },
-            { "name": "offset", "type": "long", "default": 0, "minimum": 0 },
-            { "name": "sort", "type": "string", "default": "application_id,number" }
-          ],
-          "responses": {
-            "200": { "type": "[port]" },
-            "401": { "type": "unit" }
-          }
-        },
-
-        {
-          "method": "GET",
-          "description": "Returns information about a specific port.",
-          "path": "/:number",
-          "responses": {
-            "200": { "type": "port" },
-            "401": { "type": "unit" },
-            "404": { "type": "unit" }
-          }
-        },
-
-        {
-          "method": "POST",
-          "description": "Create a new port.",
-          "body": { "type": "port_form" },
-          "responses": {
-            "201": { "type": "port" },
-            "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
-          }
-        },
-
-        {
-          "method": "DELETE",
-          "description": "Delete this port",
-          "path": "/:number",
           "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },

@@ -22,13 +22,10 @@ sequential.
 
     curl -d id=splashpage-postgresql -d type=database http://registry.api.flow.io/applications
 
-or you can use PUT which will upsert the application:
+or you can use PUT which will upsert the application, as well as
+allocate a part for this application type if not already allocated.
 
     curl -X -d type=api PUT http://registry.api.flow.io/applications/splashpage
-
-Allocate another port for this application
-
-    curl -X POST http://registry.api.flow.io/applications/splashpage/ports
 
 # Notes:
 
