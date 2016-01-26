@@ -1,9 +1,20 @@
 # Registry
 
-Creates the application and allocates a single port for it. Note
+This is the central registry of applications we build. The main use cases:
+
+  - assign unique ports to each application
+
+  - manage port numbers so there is some logic to their assignment to
+    minimize human friction long term
+
+  - support docker for development environments
+
+# API
+
+Create the application and allocates a single port for it. Note
 that the implementation leaves room adjacent to the allocated port so
 that if you need another port in the future it is likely to be
-sequential
+sequential.
 
     curl -d id=splashpage -d type=api http://registry.api.flow.io/applications
 
