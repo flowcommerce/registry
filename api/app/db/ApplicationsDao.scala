@@ -16,6 +16,7 @@ import io.flow.registry.v0.anorm.conversions.Json._
 object ApplicationsDao {
 
   private[this] val urlKey = UrlKey(minKeyLength = 4)
+  private[this] val SortByPort = "(select min(num) from ports where deleted_at is null and application_id = applications.id)"
 
   private[this] val BaseQuery = Query(s"""
     select applications.id,
@@ -161,6 +162,15 @@ object ApplicationsDao {
     orderBy: OrderBy = OrderBy("-created_at", Some("applications"))
   ): Seq[Application] = {
     // TODO: Auth
+
+    val sortSql = if (orderBy.sql == Some("port")) {
+      Some(SortByPort)
+    } else if (orderBy.sql == Some("port desc")) {
+      Some(s"$SortByPort desc")
+    } else {
+      orderBy.sql
+    }
+
     DB.withConnection { implicit c =>
       BaseQuery.
         optionalIn("applications.id", ids).
@@ -184,7 +194,7 @@ object ApplicationsDao {
         ).bind("prefix", prefix).
         limit(limit).
         offset(offset).
-        orderBy(orderBy.sql).
+        orderBy(sortSql).
         as(
           parser().*
         )

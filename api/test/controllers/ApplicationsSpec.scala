@@ -170,7 +170,20 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     await(
       identifiedClient.applications.get(id = Some(ids), sort = "-created_at")
     ).map(_.id) must beEqualTo(ids.reverse)
+  }
 
+  "GET /applications sorts by port" in new WithServer(port=port) {
+    val application1 = createApplication()
+    val application2 = createApplication()
+    val ids = Seq(application1.id, application2.id)
+
+    await(
+      identifiedClient.applications.get(id = Some(ids), sort = "port")
+    ).map(_.id) must beEqualTo(ids)
+
+    await(
+      identifiedClient.applications.get(id = Some(ids), sort = "-port")
+    ).map(_.id) must beEqualTo(ids.reverse)
   }
 
 }
