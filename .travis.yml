@@ -1,0 +1,12 @@
+language: scala
+scala:
+  - 2.11.7
+jdk:
+  - oraclejdk8
+services:
+  - docker
+before_script:
+  - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - docker run -d -p 127.0.0.1:5400:5432 flowcommerce/registry-postgresql:latest
+script: 
+  - sbt ++$TRAVIS_SCALA_VERSION clean compile test
