@@ -3,7 +3,7 @@ package db
 import io.flow.common.v0.models.User
 import io.flow.play.util.IdGenerator
 import io.flow.postgresql.{Authorization, Query, OrderBy}
-import io.flow.registry.v0.models.{ApplicationType, Port}
+import io.flow.registry.v0.models.{PortType, Port}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -12,14 +12,14 @@ import java.util.UUID
 
 case class PortForm(
   applicationId: String,
-  typ: ApplicationType,
+  typ: PortType,
   number: Long
 )
 
 private[db] case class InternalPort(
   id: String,
   applicationId: String,
-  typ: ApplicationType,
+  typ: PortType,
   number: Long
 )
 
@@ -151,7 +151,7 @@ object PortsDao {
         InternalPort(
           id = id,
           applicationId = applicationId,
-          typ = ApplicationType(typ),
+          typ = PortType(typ),
           number = number
         )
       }

@@ -1,6 +1,6 @@
 package controllers
 
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationType}
+import io.flow.registry.v0.models.{Application, ApplicationForm, PortType}
 
 import play.api.libs.ws._
 import play.api.test._
@@ -56,7 +56,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
   }
 
   "POST /applications w/ invalid type" in new WithServer(port=port) {
-    val form = createApplicationForm().copy(`type` = Seq(ApplicationType.UNDEFINED("foo")))
+    val form = createApplicationForm().copy(`type` = Seq(PortType.UNDEFINED("foo")))
 
     expectErrors(
       identifiedClient.applications.post(form)

@@ -1,6 +1,6 @@
 package db
 
-import io.flow.registry.v0.models.{Application, ApplicationType}
+import io.flow.registry.v0.models.{Application, PortType}
 import io.flow.postgresql.Authorization
 import java.util.UUID
 import play.api.test._
@@ -29,7 +29,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       createApplication(
         createApplicationForm().copy(
           id = base + "-ui",
-          `type` = Seq(ApplicationType.Ui)
+          `type` = Seq(PortType.Ui)
         )
       )
     )
@@ -39,7 +39,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       createApplication(
         createApplicationForm().copy(
           id = base + "-api",
-          `type` = Seq(ApplicationType.Api)
+          `type` = Seq(PortType.Api)
         )
       )
     )
@@ -49,7 +49,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       createApplication(
         createApplicationForm().copy(
           id = base + "-db",
-          `type` = Seq(ApplicationType.Database)
+          `type` = Seq(PortType.Database)
         )
       )
     )
@@ -60,9 +60,9 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "allocates ports based on type" in {
     val base = UUID.randomUUID.toString.replaceAll("\\-", "")
 
-    val ui = createApplication(createApplicationForm().copy(id = base + "-ui", `type` = Seq(ApplicationType.Ui)))
-    val api = createApplication(createApplicationForm().copy(id = base + "-api", `type` = Seq(ApplicationType.Api)))
-    val postgresql = createApplication(createApplicationForm().copy(id = base + "-db", `type` = Seq(ApplicationType.Database)))
+    val ui = createApplication(createApplicationForm().copy(id = base + "-ui", `type` = Seq(PortType.Ui)))
+    val api = createApplication(createApplicationForm().copy(id = base + "-api", `type` = Seq(PortType.Api)))
+    val postgresql = createApplication(createApplicationForm().copy(id = base + "-db", `type` = Seq(PortType.Database)))
 
     val uiPort = ui.ports.map(_.number).headOption.getOrElse {
       sys.error("Failed to allocate port")

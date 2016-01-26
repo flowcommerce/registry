@@ -6,7 +6,7 @@
   ],
 
   "enums": {
-    "application_type": {
+    "port_type": {
       "values": [
         { "name": "api" },
         { "name": "database", "description": "Any type of storage interface" },
@@ -27,19 +27,19 @@
     "application_form": {
       "fields": [
         { "name": "id", "type": "string" },
-        { "name": "type", "type": "[application_type]" }
+        { "name": "type", "type": "[port_type]" }
       ]
     },
 
     "application_put_form": {
       "fields": [
-        { "name": "type", "type": "[application_type]" }
+        { "name": "type", "type": "[port_type]" }
       ]
     },
 
     "port": {
       "fields": [
-        { "name": "type", "type": "application_type" },
+        { "name": "type", "type": "port_type" },
         { "name": "number", "type": "long" }
       ]
     }

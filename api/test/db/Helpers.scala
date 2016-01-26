@@ -47,13 +47,13 @@ trait Helpers {
   def createApplicationForm(): ApplicationForm = {
     ApplicationForm(
       id = createTestId(),
-      `type` = Seq(ApplicationType.Api)
+      `type` = Seq(PortType.Api)
     )
   }
 
   def createApplicationPutForm(): ApplicationPutForm = {
     ApplicationPutForm(
-      `type` = Seq(ApplicationType.Api)
+      `type` = Seq(PortType.Api)
     )
   }
 
@@ -72,7 +72,7 @@ trait Helpers {
 
     PortForm(
       applicationId = application.id,
-      typ = ApplicationType.Api,
+      typ = PortType.Api,
       number = number + 1
     )
   }

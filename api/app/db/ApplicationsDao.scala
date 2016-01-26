@@ -2,7 +2,7 @@ package db
 
 import io.flow.play.util.{IdGenerator, UrlKey}
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, ApplicationType, Port}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, PortType, Port}
 import io.flow.postgresql.{Authorization, Query, OrderBy}
 import io.flow.common.v0.models.User
 import anorm._
@@ -61,8 +61,8 @@ object ApplicationsDao {
     }
 
     val typeErrors = form.`type`.flatMap {
-      case ApplicationType.UNDEFINED(_) => {
-        Some("Invalid application type. Must be one of: " + ApplicationType.all.map(_.toString).sorted.mkString(", "))
+      case PortType.UNDEFINED(_) => {
+        Some("Invalid application type. Must be one of: " + PortType.all.map(_.toString).sorted.mkString(", "))
       }
       case _ => {
         None
@@ -177,7 +177,7 @@ object ApplicationsDao {
           id = id,
           ports = ports.getOrElse(Nil).map { js =>
             Port(
-              `type` = ApplicationType( (js \ "type").as[String] ),
+              `type` = PortType( (js \ "type").as[String] ),
               number = (js \ "number").as[Long]
             )
           }

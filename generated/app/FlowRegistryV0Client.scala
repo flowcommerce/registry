@@ -12,31 +12,31 @@ package io.flow.registry.v0.models {
 
   case class ApplicationForm(
     id: String,
-    `type`: Seq[io.flow.registry.v0.models.ApplicationType]
+    `type`: Seq[io.flow.registry.v0.models.PortType]
   )
 
   case class ApplicationPutForm(
-    `type`: Seq[io.flow.registry.v0.models.ApplicationType]
+    `type`: Seq[io.flow.registry.v0.models.PortType]
   )
 
   case class Port(
-    `type`: io.flow.registry.v0.models.ApplicationType,
+    `type`: io.flow.registry.v0.models.PortType,
     number: Long
   )
 
-  sealed trait ApplicationType
+  sealed trait PortType
 
-  object ApplicationType {
+  object PortType {
 
-    case object Api extends ApplicationType { override def toString = "api" }
+    case object Api extends PortType { override def toString = "api" }
     /**
      * Any type of storage interface
      */
-    case object Database extends ApplicationType { override def toString = "database" }
+    case object Database extends PortType { override def toString = "database" }
     /**
      * Any user interface
      */
-    case object Ui extends ApplicationType { override def toString = "ui" }
+    case object Ui extends PortType { override def toString = "ui" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -47,7 +47,7 @@ package io.flow.registry.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends ApplicationType
+    case class UNDEFINED(override val toString: String) extends PortType
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -59,9 +59,9 @@ package io.flow.registry.v0.models {
     private[this]
     val byName = all.map(x => x.toString.toLowerCase -> x).toMap
 
-    def apply(value: String): ApplicationType = fromString(value).getOrElse(UNDEFINED(value))
+    def apply(value: String): PortType = fromString(value).getOrElse(UNDEFINED(value))
 
-    def fromString(value: String): _root_.scala.Option[ApplicationType] = byName.get(value.toLowerCase)
+    def fromString(value: String): _root_.scala.Option[PortType] = byName.get(value.toLowerCase)
 
   }
 
@@ -96,13 +96,13 @@ package io.flow.registry.v0.models {
       }
     }
 
-    implicit val jsonReadsRegistryApplicationType = new play.api.libs.json.Reads[io.flow.registry.v0.models.ApplicationType] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.registry.v0.models.ApplicationType] = {
+    implicit val jsonReadsRegistryPortType = new play.api.libs.json.Reads[io.flow.registry.v0.models.PortType] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.registry.v0.models.PortType] = {
         js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.ApplicationType(v.value))
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.PortType(v.value))
           case _ => {
             (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.ApplicationType(v))
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.PortType(v))
               case err: play.api.libs.json.JsError => err
             }
           }
@@ -110,18 +110,18 @@ package io.flow.registry.v0.models {
       }
     }
 
-    def jsonWritesRegistryApplicationType(obj: io.flow.registry.v0.models.ApplicationType) = {
+    def jsonWritesRegistryPortType(obj: io.flow.registry.v0.models.PortType) = {
       play.api.libs.json.JsString(obj.toString)
     }
 
-    def jsObjectApplicationType(obj: io.flow.registry.v0.models.ApplicationType) = {
+    def jsObjectPortType(obj: io.flow.registry.v0.models.PortType) = {
       play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
-    implicit def jsonWritesRegistryApplicationType: play.api.libs.json.Writes[ApplicationType] = {
-      new play.api.libs.json.Writes[io.flow.registry.v0.models.ApplicationType] {
-        def writes(obj: io.flow.registry.v0.models.ApplicationType) = {
-          jsonWritesRegistryApplicationType(obj)
+    implicit def jsonWritesRegistryPortType: play.api.libs.json.Writes[PortType] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.PortType] {
+        def writes(obj: io.flow.registry.v0.models.PortType) = {
+          jsonWritesRegistryPortType(obj)
         }
       }
     }
@@ -151,7 +151,7 @@ package io.flow.registry.v0.models {
     implicit def jsonReadsRegistryApplicationForm: play.api.libs.json.Reads[ApplicationForm] = {
       (
         (__ \ "id").read[String] and
-        (__ \ "type").read[Seq[io.flow.registry.v0.models.ApplicationType]]
+        (__ \ "type").read[Seq[io.flow.registry.v0.models.PortType]]
       )(ApplicationForm.apply _)
     }
 
@@ -171,7 +171,7 @@ package io.flow.registry.v0.models {
     }
 
     implicit def jsonReadsRegistryApplicationPutForm: play.api.libs.json.Reads[ApplicationPutForm] = {
-      (__ \ "type").read[Seq[io.flow.registry.v0.models.ApplicationType]].map { x => new ApplicationPutForm(`type` = x) }
+      (__ \ "type").read[Seq[io.flow.registry.v0.models.PortType]].map { x => new ApplicationPutForm(`type` = x) }
     }
 
     def jsObjectApplicationPutForm(obj: io.flow.registry.v0.models.ApplicationPutForm) = {
@@ -190,7 +190,7 @@ package io.flow.registry.v0.models {
 
     implicit def jsonReadsRegistryPort: play.api.libs.json.Reads[Port] = {
       (
-        (__ \ "type").read[io.flow.registry.v0.models.ApplicationType] and
+        (__ \ "type").read[io.flow.registry.v0.models.PortType] and
         (__ \ "number").read[Long]
       )(Port.apply _)
     }
@@ -239,15 +239,15 @@ package io.flow.registry.v0 {
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
-    // Enum: ApplicationType
-    private[this] val enumApplicationTypeNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${io.flow.registry.v0.models.ApplicationType.all.mkString(", ")}"
+    // Enum: PortType
+    private[this] val enumPortTypeNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${io.flow.registry.v0.models.PortType.all.mkString(", ")}"
 
-    implicit val pathBindableEnumApplicationType = new PathBindable.Parsing[io.flow.registry.v0.models.ApplicationType] (
-      ApplicationType.fromString(_).get, _.toString, enumApplicationTypeNotFound
+    implicit val pathBindableEnumPortType = new PathBindable.Parsing[io.flow.registry.v0.models.PortType] (
+      PortType.fromString(_).get, _.toString, enumPortTypeNotFound
     )
 
-    implicit val queryStringBindableEnumApplicationType = new QueryStringBindable.Parsing[io.flow.registry.v0.models.ApplicationType](
-      ApplicationType.fromString(_).get, _.toString, enumApplicationTypeNotFound
+    implicit val queryStringBindableEnumPortType = new QueryStringBindable.Parsing[io.flow.registry.v0.models.PortType](
+      PortType.fromString(_).get, _.toString, enumPortTypeNotFound
     )
 
   }
