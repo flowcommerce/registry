@@ -9,6 +9,11 @@ This is the central registry of applications we build. The main use cases:
 
   - support docker for development environments
 
+# CLI
+
+See https://github.com/flowcommerce/tools/blob/master/bin/registry
+
+
 # API
 
 Create the application and allocates a single port for it. Note
