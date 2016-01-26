@@ -3,17 +3,12 @@ package db
 import io.flow.common.v0.models.User
 import io.flow.play.util.IdGenerator
 import io.flow.postgresql.{Authorization, Query, OrderBy}
-import io.flow.registry.v0.models.Port
+import io.flow.registry.v0.models.{ApplicationReference, Port, PortForm}
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
-
-case class PortForm(
-  applicationId: String,
-  number: Long
-)
 
 object PortsDao {
 
@@ -45,7 +40,7 @@ object PortsDao {
           Nil
         }
         case Some(port) => {
-          Seq(s"Port ${form.number} is already assigned to the application ${port.applicationId}")
+          Seq(s"Port ${form.number} is already assigned to the application ${port.application.id}")
         }
       }
     }
@@ -107,16 +102,18 @@ object PortsDao {
   def findAll(
     auth: Authorization,
     ids: Option[Seq[String]] = None,
+    applications: Option[Seq[String]] = None,
     numbers: Option[Seq[Long]] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0,
-    orderBy: OrderBy = OrderBy("-created_at", Some("ports"))
+    orderBy: OrderBy = OrderBy("ports.application_id, ports.number")
   ): Seq[Port] = {
     // TODO: Auth
     DB.withConnection { implicit c =>
       BaseQuery.
         optionalIn("ports.id", ids).
+        optionalIn("ports.application_id", applications).
         optionalIn("ports.number", numbers).
         nullBoolean("ports.deleted_at", isDeleted).
         limit(limit).
@@ -135,7 +132,7 @@ object PortsDao {
       case id ~ applicationId ~ number => {
         Port(
           id = id,
-          applicationId = applicationId,
+          application = ApplicationReference(applicationId),
           number = number
         )
       }

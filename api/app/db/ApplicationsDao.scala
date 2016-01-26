@@ -2,7 +2,7 @@ package db
 
 import io.flow.play.util.UrlKey
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, ApplicationType, Port}
+import io.flow.registry.v0.models.{Application, ApplicationReference, ApplicationForm, ApplicationPutForm, ApplicationType, Port, PortForm}
 import io.flow.postgresql.{Authorization, Query, OrderBy}
 import io.flow.common.v0.models.User
 import anorm._
@@ -125,8 +125,8 @@ object ApplicationsDao {
         limit(limit).
         offset(offset).
         orderBy(orderBy.sql).
+//        withDebugging().
         as(
-          // io.flow.registry.v0.anorm.parsers.Application.parser().*
           parser().*
         )
     }
@@ -144,12 +144,18 @@ object ApplicationsDao {
   ): RowParser[io.flow.registry.v0.models.Application] = {
     SqlParser.str(id) ~
     SqlParser.str(typ) ~
-    SqlParser.get[Seq[Port]](ports).? map {
+    SqlParser.get[Seq[JsObject]](ports).? map {
       case id ~ typ ~ ports => {
         io.flow.registry.v0.models.Application(
           id = id,
           `type` = ApplicationType(typ),
-          ports = ports.getOrElse(Nil)
+          ports = ports.getOrElse(Nil).map { js =>
+            Port(
+              id = (js \ "id").as[String],
+              application = ApplicationReference( (js \ "application_id").as[String] ),
+              number = (js \ "number").as[Long]
+            )
+          }
         )
       }
     }

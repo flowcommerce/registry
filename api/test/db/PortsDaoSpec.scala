@@ -23,7 +23,7 @@ class PortsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     "port is unique" in {
       val port = createPort()
       PortsDao.validate(createPortForm().copy(number = port.number)) must be(
-        Seq(s"Port ${port.number} is already assigned to the application ${port.applicationId}")
+        Seq(s"Port ${port.number} is already assigned to the application ${port.application.id}")
       )
     }
 
