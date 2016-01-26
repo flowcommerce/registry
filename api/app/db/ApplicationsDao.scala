@@ -1,6 +1,6 @@
 package db
 
-import io.flow.play.util.UrlKey
+import io.flow.play.util.{IdGenerator, UrlKey}
 import io.flow.registry.api.lib.DefaultPortAllocator
 import io.flow.registry.v0.models.{Application, ApplicationReference, ApplicationForm, ApplicationPutForm, ApplicationType, Port, PortForm}
 import io.flow.postgresql.{Authorization, Query, OrderBy}
@@ -33,6 +33,10 @@ object ApplicationsDao {
     (id, type, updated_by_user_id)
     values
     ({id}, {type}, {updated_by_user_id})
+  """
+
+  private[this] val DeleteIdQuery = """
+    update applications set id = {deleted_id} where id = {id}
   """
 
   private[this] val dbHelpers = DbHelpers("applications")
@@ -95,7 +99,15 @@ object ApplicationsDao {
   }
 
   def softDelete(deletedBy: User, application: Application) {
-    dbHelpers.delete(deletedBy, application.id)
+    // TODO: Should we remove ports?
+    DB.withTransaction { implicit c =>
+      SQL(DeleteIdQuery).on(
+        'id -> application.id,
+        'deleted_id -> IdGenerator("del").randomId()
+      ).execute()
+
+      dbHelpers.delete(c, deletedBy, application.id)
+    }
   }
 
   def findById(auth: Authorization, id: String): Option[Application] = {
@@ -132,7 +144,6 @@ object ApplicationsDao {
         limit(limit).
         offset(offset).
         orderBy(orderBy.sql).
-        withDebugging().
         as(
           parser().*
         )
