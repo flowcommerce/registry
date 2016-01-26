@@ -1,6 +1,6 @@
 package db
 
-import io.flow.registry.v0.models.{Application, PortType}
+import io.flow.registry.v0.models.{Application, ApplicationPutForm, PortType}
 import io.flow.postgresql.Authorization
 import java.util.UUID
 import play.api.test._
@@ -97,7 +97,8 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     val offset = otherPort - apiPort + 10
     (offset % 10) must be(0)
-    api2Port must be(apiPort + offset)
+
+    Seq(apiPort + offset, apiPort + offset + 10).contains(api2Port) must be(true)
   }
 
   "deleting an application also deletes its ports" in {
@@ -112,6 +113,42 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ApplicationsDao.softDelete(testUser, app)
     ApplicationsDao.findById(Authorization.All, app.id) must be(None)
     PortsDao.findByNumber(Authorization.All, portNumber) must be(None)
+  }
+
+  "upsert creates new application" in {
+    val id = createApplicationForm().id
+    val app = rightOrErrors(
+      ApplicationsDao.upsert(testUser, id, ApplicationPutForm(`type` = Seq(PortType.Api)))
+    )
+
+    app.id must be(id)
+  }
+
+  "upsert allocates new ports" in {
+    val app = createApplication(createApplicationForm().copy(`type` = Seq(PortType.Ui)))
+    val portNumber = app.ports.map(_.num).headOption.getOrElse {
+      sys.error("No port for application")
+    }
+    app.ports.map(_.num) must be(Seq(portNumber))
+
+    val updated = rightOrErrors(
+      ApplicationsDao.upsert(
+        testUser,
+        app.id,
+        ApplicationPutForm(`type` = Seq(PortType.Api))
+      )
+    )
+    updated.ports.map(_.num) must be(Seq(portNumber, portNumber + 1))
+
+    // Now test idempotence
+    val updatedAgain = rightOrErrors(
+      ApplicationsDao.upsert(
+        testUser,
+        app.id,
+        ApplicationPutForm(`type` = Seq(PortType.Api))
+      )
+    )
+    updatedAgain.ports.map(_.num) must be(Seq(portNumber, portNumber + 1))
   }
 
     /*

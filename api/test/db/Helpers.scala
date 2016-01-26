@@ -4,7 +4,7 @@ import io.flow.common.v0.models.User
 import io.flow.postgresql.Authorization
 import io.flow.registry.v0.models._
 import io.flow.play.clients.MockUserTokensClient
-import io.flow.play.util.IdGenerator
+import io.flow.play.util.{IdGenerator, UrlKey}
 import io.flow.postgresql.OrderBy
 import java.util.UUID
 
@@ -45,8 +45,11 @@ trait Helpers {
   }
 
   def createApplicationForm(): ApplicationForm = {
+    // Note that id cannot have dashes as we assume dashes as
+    // separators when trying to find a common base name of the
+    // application during port allocation
     ApplicationForm(
-      id = createTestId(),
+      id = UUID.randomUUID.toString.replaceAll("\\-", ""),
       `type` = Seq(PortType.Api)
     )
   }

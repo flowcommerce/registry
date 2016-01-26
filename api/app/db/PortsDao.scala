@@ -85,7 +85,8 @@ object PortsDao {
 
   private[db] def create(
     implicit c: java.sql.Connection,
-    createdBy: User, form: PortForm
+    createdBy: User,
+    form: PortForm
   ): String = {
     val id = idGenerator.randomId()
     SQL(InsertQuery).on(

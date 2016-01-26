@@ -83,13 +83,7 @@ object ApplicationsDao {
           ).execute()
 
           form.`type`.map { t =>
-            PortsDao.create(
-              c, createdBy, PortForm(
-                applicationId = id,
-                typ = t,
-                num = DefaultPortAllocator(form.id, t).num
-              )
-            )
+            createPort(c, createdBy, id, t)
           }
         }
 
@@ -104,11 +98,36 @@ object ApplicationsDao {
   }
 
   def upsert(createdBy: User, id: String, form: ApplicationPutForm): Either[Seq[String], Application] = {
-    // TODO: Allocate any new ports
     findById(Authorization.All, id) match {
-      case Some(app) => Right(app)
+      case Some(app) => {
+        val newTypes = form.`type`.filter { t =>
+          !app.ports.map(_.`type`).contains(t)
+        }
+        DB.withTransaction { implicit c =>
+          newTypes.foreach { t =>
+            createPort(c, createdBy, app.id, t)
+          }
+        }
+        Right(
+          findById(Authorization.All, app.id).getOrElse {
+            sys.error("Failed to update application")
+          }
+        )
+      }
       case None => create(createdBy, ApplicationForm(id = id, `type` = form.`type`))
     }
+  }
+
+  private[this] def createPort(implicit c: java.sql.Connection, createdBy: User, id: String, typ: PortType) {
+    PortsDao.create(
+      c,
+      createdBy,
+      PortForm(
+        applicationId = id,
+        typ = typ,
+        num = DefaultPortAllocator(id, typ).num
+      )
+    )
   }
 
   def softDelete(deletedBy: User, application: Application) {
