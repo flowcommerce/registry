@@ -10,3 +10,4 @@ before_script:
   - docker run -d -p 127.0.0.1:5400:5432 flowcommerce/registry-postgresql:latest
 script: 
   - sbt ++$TRAVIS_SCALA_VERSION clean compile test
+  - curl https://s3.amazonaws.com/io.flow.aws-s3-public/util/api-lint/api-lint.jar > /tmp/api-lint.jar && java -jar /tmp/api-lint.jar flow/registry
