@@ -91,7 +91,7 @@ class Applications @javax.inject.Inject() (
 
   def deleteById(id: String) = Identified { request =>
     withApplication(request.user, id) { org =>
-      ApplicationsDao.softDelete(request.user, org)
+      ApplicationsDao.delete(request.user, org)
       NoContent
     }
   }

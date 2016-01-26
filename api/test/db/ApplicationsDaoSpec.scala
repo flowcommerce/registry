@@ -110,7 +110,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       sys.error("Could not find port")
     }
 
-    ApplicationsDao.softDelete(testUser, app)
+    ApplicationsDao.delete(testUser, app)
     ApplicationsDao.findById(Authorization.All, app.id) must be(None)
     PortsDao.findByNumber(Authorization.All, portNumber) must be(None)
   }
@@ -151,12 +151,10 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     updatedAgain.ports.map(_.num) must be(Seq(portNumber, portNumber + 1))
   }
 
-    /*
-// TODO Support this use case
   "can reuse ID once deleted" in {
     val app = createApplication()
-    ApplicationsDao.softDelete(testUser, app)
+    ApplicationsDao.delete(testUser, app)
     val app2 = createApplication(createApplicationForm().copy(id = app.id))
   }
-   */
+
 }

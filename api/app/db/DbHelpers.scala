@@ -8,7 +8,7 @@ import play.api.Play.current
 case class DbHelpers(tableName: String) {
 
   private[this] val SoftDeleteQuery = s"""
-    update $tableName set deleted_at=now(), updated_by_user_id = {updated_by_user_id} where id = {id}
+    select util.delete_by_id({updated_by_user_id}, '$tableName', {id})
   """
 
   def delete(deletedBy: ExpandableUser, id: String) {
@@ -23,8 +23,8 @@ case class DbHelpers(tableName: String) {
     id: String
   ) {
     SQL(SoftDeleteQuery).on(
-      'id -> id,
-      'updated_by_user_id -> userId(deletedBy)
+      'updated_by_user_id -> userId(deletedBy),
+      'id -> id
     ).execute()
   }
 
