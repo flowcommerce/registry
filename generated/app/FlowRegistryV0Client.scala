@@ -7,25 +7,20 @@ package io.flow.registry.v0.models {
 
   case class Application(
     id: String,
-    `type`: io.flow.registry.v0.models.ApplicationType,
-    ports: Seq[Long]
+    ports: Seq[io.flow.registry.v0.models.Port]
   )
 
   case class ApplicationForm(
     id: String,
-    `type`: io.flow.registry.v0.models.ApplicationType
+    `type`: Seq[io.flow.registry.v0.models.ApplicationType]
   )
 
   case class ApplicationPutForm(
-    `type`: io.flow.registry.v0.models.ApplicationType
+    `type`: Seq[io.flow.registry.v0.models.ApplicationType]
   )
 
   case class Port(
-    number: Long
-  )
-
-  case class PortForm(
-    applicationId: String,
+    `type`: io.flow.registry.v0.models.ApplicationType,
     number: Long
   )
 
@@ -134,15 +129,13 @@ package io.flow.registry.v0.models {
     implicit def jsonReadsRegistryApplication: play.api.libs.json.Reads[Application] = {
       (
         (__ \ "id").read[String] and
-        (__ \ "type").read[io.flow.registry.v0.models.ApplicationType] and
-        (__ \ "ports").read[Seq[Long]]
+        (__ \ "ports").read[Seq[io.flow.registry.v0.models.Port]]
       )(Application.apply _)
     }
 
     def jsObjectApplication(obj: io.flow.registry.v0.models.Application) = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
-        "type" -> play.api.libs.json.JsString(obj.`type`.toString),
         "ports" -> play.api.libs.json.Json.toJson(obj.ports)
       )
     }
@@ -158,14 +151,14 @@ package io.flow.registry.v0.models {
     implicit def jsonReadsRegistryApplicationForm: play.api.libs.json.Reads[ApplicationForm] = {
       (
         (__ \ "id").read[String] and
-        (__ \ "type").read[io.flow.registry.v0.models.ApplicationType]
+        (__ \ "type").read[Seq[io.flow.registry.v0.models.ApplicationType]]
       )(ApplicationForm.apply _)
     }
 
     def jsObjectApplicationForm(obj: io.flow.registry.v0.models.ApplicationForm) = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
-        "type" -> play.api.libs.json.JsString(obj.`type`.toString)
+        "type" -> play.api.libs.json.Json.toJson(obj.`type`)
       )
     }
 
@@ -178,12 +171,12 @@ package io.flow.registry.v0.models {
     }
 
     implicit def jsonReadsRegistryApplicationPutForm: play.api.libs.json.Reads[ApplicationPutForm] = {
-      (__ \ "type").read[io.flow.registry.v0.models.ApplicationType].map { x => new ApplicationPutForm(`type` = x) }
+      (__ \ "type").read[Seq[io.flow.registry.v0.models.ApplicationType]].map { x => new ApplicationPutForm(`type` = x) }
     }
 
     def jsObjectApplicationPutForm(obj: io.flow.registry.v0.models.ApplicationPutForm) = {
       play.api.libs.json.Json.obj(
-        "type" -> play.api.libs.json.JsString(obj.`type`.toString)
+        "type" -> play.api.libs.json.Json.toJson(obj.`type`)
       )
     }
 
@@ -196,11 +189,15 @@ package io.flow.registry.v0.models {
     }
 
     implicit def jsonReadsRegistryPort: play.api.libs.json.Reads[Port] = {
-      (__ \ "number").read[Long].map { x => new Port(number = x) }
+      (
+        (__ \ "type").read[io.flow.registry.v0.models.ApplicationType] and
+        (__ \ "number").read[Long]
+      )(Port.apply _)
     }
 
     def jsObjectPort(obj: io.flow.registry.v0.models.Port) = {
       play.api.libs.json.Json.obj(
+        "type" -> play.api.libs.json.JsString(obj.`type`.toString),
         "number" -> play.api.libs.json.JsNumber(obj.number)
       )
     }
@@ -209,28 +206,6 @@ package io.flow.registry.v0.models {
       new play.api.libs.json.Writes[io.flow.registry.v0.models.Port] {
         def writes(obj: io.flow.registry.v0.models.Port) = {
           jsObjectPort(obj)
-        }
-      }
-    }
-
-    implicit def jsonReadsRegistryPortForm: play.api.libs.json.Reads[PortForm] = {
-      (
-        (__ \ "application_id").read[String] and
-        (__ \ "number").read[Long]
-      )(PortForm.apply _)
-    }
-
-    def jsObjectPortForm(obj: io.flow.registry.v0.models.PortForm) = {
-      play.api.libs.json.Json.obj(
-        "application_id" -> play.api.libs.json.JsString(obj.applicationId),
-        "number" -> play.api.libs.json.JsNumber(obj.number)
-      )
-    }
-
-    implicit def jsonWritesRegistryPortForm: play.api.libs.json.Writes[PortForm] = {
-      new play.api.libs.json.Writes[io.flow.registry.v0.models.PortForm] {
-        def writes(obj: io.flow.registry.v0.models.PortForm) = {
-          jsObjectPortForm(obj)
         }
       }
     }

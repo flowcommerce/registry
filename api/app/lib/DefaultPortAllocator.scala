@@ -63,6 +63,7 @@ case class DefaultPortAllocator(
 
   private[this] val applicationBasePorts = ApplicationsDao.findAll(Authorization.All, prefix = Some(prefix)).
     flatMap(_.ports).
+    map(_.number).
     map(toBase(_)).
     sorted.
     distinct

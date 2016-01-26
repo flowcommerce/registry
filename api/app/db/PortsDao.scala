@@ -3,16 +3,23 @@ package db
 import io.flow.common.v0.models.User
 import io.flow.play.util.IdGenerator
 import io.flow.postgresql.{Authorization, Query, OrderBy}
-import io.flow.registry.v0.models.{Port, PortForm}
+import io.flow.registry.v0.models.{ApplicationType, Port}
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
+case class PortForm(
+  applicationId: String,
+  typ: ApplicationType,
+  number: Long
+)
+
 private[db] case class InternalPort(
   id: String,
   applicationId: String,
+  typ: ApplicationType,
   number: Long
 )
 
@@ -21,15 +28,16 @@ object PortsDao {
   private[this] val BaseQuery = Query(s"""
     select ports.id,
            ports.application_id,
+           ports.type,
            ports.number
       from ports
   """)
 
   private[this] val InsertQuery = """
     insert into ports
-    (id, application_id, number, updated_by_user_id)
+    (id, application_id, type, number, updated_by_user_id)
     values
-    ({id}, {application_id}, {number}, {updated_by_user_id})
+    ({id}, {application_id}, {type}, {number}, {updated_by_user_id})
   """
 
   private[this] val dbHelpers = DbHelpers("ports")
@@ -83,6 +91,7 @@ object PortsDao {
     SQL(InsertQuery).on(
       'id -> id,
       'application_id -> form.applicationId,
+      'type -> form.typ.toString,
       'number -> form.number,
       'updated_by_user_id -> createdBy.id
     ).execute()
@@ -136,11 +145,13 @@ object PortsDao {
   def parser() = {
     SqlParser.str("id") ~
     SqlParser.str("application_id") ~
+    SqlParser.str("type") ~
     SqlParser.long("number") map {
-      case id ~ applicationId ~ number => {
+      case id ~ applicationId ~ typ ~ number => {
         InternalPort(
           id = id,
           applicationId = applicationId,
+          typ = ApplicationType(typ),
           number = number
         )
       }

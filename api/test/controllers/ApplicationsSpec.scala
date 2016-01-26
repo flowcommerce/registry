@@ -56,7 +56,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
   }
 
   "POST /applications w/ invalid type" in new WithServer(port=port) {
-    val form = createApplicationForm().copy(`type` = ApplicationType.UNDEFINED("foo"))
+    val form = createApplicationForm().copy(`type` = Seq(ApplicationType.UNDEFINED("foo")))
 
     expectErrors(
       identifiedClient.applications.post(form)
@@ -117,7 +117,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val application2 = createApplication()
 
     await(
-      identifiedClient.applications.get(port = Some(Seq(application1.ports.head, application2.ports.head)))
+      identifiedClient.applications.get(port = Some(Seq(application1.ports.map(_.number).head, application2.ports.map(_.number).head)))
     ).map(_.id).sorted must beEqualTo(Seq(application1.id, application2.id).sorted)
 
     await(

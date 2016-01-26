@@ -25,22 +25,18 @@ package io.flow.registry.v0.anorm.parsers {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
       id = s"$prefix${sep}id",
-      `type` = s"$prefix${sep}type",
       ports = s"$prefix${sep}ports"
     )
 
     def parser(
       id: String = "id",
-      `type`: String = "type",
       ports: String = "ports"
     ): RowParser[io.flow.registry.v0.models.Application] = {
       SqlParser.str(id) ~
-      io.flow.registry.v0.anorm.parsers.ApplicationType.parser(`type`) ~
-      SqlParser.get[Seq[Long]](ports) map {
-        case id ~ typeInstance ~ ports => {
+      SqlParser.get[Seq[io.flow.registry.v0.models.Port]](ports) map {
+        case id ~ ports => {
           io.flow.registry.v0.models.Application(
             id = id,
-            `type` = typeInstance,
             ports = ports
           )
         }
@@ -61,7 +57,7 @@ package io.flow.registry.v0.anorm.parsers {
       `type`: String = "type"
     ): RowParser[io.flow.registry.v0.models.ApplicationForm] = {
       SqlParser.str(id) ~
-      io.flow.registry.v0.anorm.parsers.ApplicationType.parser(`type`) map {
+      SqlParser.get[Seq[io.flow.registry.v0.models.ApplicationType]](`type`) map {
         case id ~ typeInstance => {
           io.flow.registry.v0.models.ApplicationForm(
             id = id,
@@ -82,7 +78,7 @@ package io.flow.registry.v0.anorm.parsers {
     def parser(
       `type`: String = "type"
     ): RowParser[io.flow.registry.v0.models.ApplicationPutForm] = {
-      io.flow.registry.v0.anorm.parsers.ApplicationType.parser(`type`) map {
+      SqlParser.get[Seq[io.flow.registry.v0.models.ApplicationType]](`type`) map {
         case typeInstance => {
           io.flow.registry.v0.models.ApplicationPutForm(
             `type` = typeInstance
@@ -96,39 +92,19 @@ package io.flow.registry.v0.anorm.parsers {
   object Port {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      `type` = s"$prefix${sep}type",
       number = s"$prefix${sep}number"
     )
 
     def parser(
+      `type`: String = "type",
       number: String = "number"
     ): RowParser[io.flow.registry.v0.models.Port] = {
+      io.flow.registry.v0.anorm.parsers.ApplicationType.parser(`type`) ~
       SqlParser.long(number) map {
-        case number => {
+        case typeInstance ~ number => {
           io.flow.registry.v0.models.Port(
-            number = number
-          )
-        }
-      }
-    }
-
-  }
-
-  object PortForm {
-
-    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
-      applicationId = s"$prefix${sep}application_id",
-      number = s"$prefix${sep}number"
-    )
-
-    def parser(
-      applicationId: String = "application_id",
-      number: String = "number"
-    ): RowParser[io.flow.registry.v0.models.PortForm] = {
-      SqlParser.str(applicationId) ~
-      SqlParser.long(number) map {
-        case applicationId ~ number => {
-          io.flow.registry.v0.models.PortForm(
-            applicationId = applicationId,
+            `type` = typeInstance,
             number = number
           )
         }
