@@ -156,6 +156,7 @@ object ApplicationsDao {
     portNumbers: Option[Seq[Long]] = None,
     portTypes: Option[Seq[PortType]] = None,
     prefix: Option[String] = None,
+    q: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0,
@@ -192,6 +193,11 @@ object ApplicationsDao {
             s"(applications.id = {prefix} or applications.id like {prefix} || '-%')"
           }
         ).bind("prefix", prefix).
+        and(
+          q.map { q =>
+            s"applications.id like '%' || lower(trim({q})) || '%'"
+          }
+        ).bind("q", q).
         limit(limit).
         offset(offset).
         orderBy(sortSql).

@@ -1,7 +1,7 @@
 package controllers
 
 import io.flow.registry.v0.models.{Application, ApplicationForm, PortType}
-
+import java.util.UUID
 import play.api.libs.ws._
 import play.api.test._
 
@@ -110,6 +110,43 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     await(
       identifiedClient.applications.get(id = Some(Seq(createTestId())))
     ) must be(Nil)
+  }
+
+  "GET /applications by prefix" in new WithServer(port=port) {
+    val prefix = UUID.randomUUID.toString.replaceAll("\\-", "")
+    val application1 = createApplication(createApplicationForm().copy(id = prefix + "-1"))
+    val application2 = createApplication(createApplicationForm().copy(id = prefix + "-2"))
+
+    await(
+      identifiedClient.applications.get(prefix = Some(prefix))
+    ).map(_.id) must beEqualTo(Seq(application2.id, application1.id))
+
+    await(
+      identifiedClient.applications.get(prefix = Some(createTestId()))
+    ) must be(Nil)
+  }
+
+  "GET /applications by query" in new WithServer(port=port) {
+    val prefix = UUID.randomUUID.toString.replaceAll("\\-", "")
+    val application1 = createApplication(createApplicationForm().copy(id = prefix + "-foo-1"))
+    val application2 = createApplication(createApplicationForm().copy(id = prefix + "-foo-2"))
+    val ids = Seq(application1.id, application2.id)
+
+    await(
+      identifiedClient.applications.get(id = Some(ids), q = Some("foo"))
+    ).map(_.id) must beEqualTo(ids.reverse)
+
+    await(
+      identifiedClient.applications.get(id = Some(ids), q = Some("foo-1"))
+    ).map(_.id) must beEqualTo(Seq(application1.id))
+
+    await(
+      identifiedClient.applications.get(id = Some(ids), q = Some("foo-2"))
+    ).map(_.id) must beEqualTo(Seq(application2.id))
+
+    await(
+      identifiedClient.applications.get(q = Some(UUID.randomUUID.toString))
+    ) must beEqualTo(Nil)
   }
 
   "GET /applications by port nums" in new WithServer(port=port) {

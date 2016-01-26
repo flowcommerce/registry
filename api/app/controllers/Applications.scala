@@ -21,6 +21,8 @@ class Applications @javax.inject.Inject() (
     id: Option[Seq[String]],
     port: Option[Seq[Long]],
     `type`: Option[Seq[PortType]],
+    prefix: Option[String],
+    q: Option[String],
     limit: Long = 25,
     offset: Long = 0,
     sort: String
@@ -37,6 +39,8 @@ class Applications @javax.inject.Inject() (
               ids = optionals(id),
               portNumbers = optionals(port),
               portTypes = optionals(`type`),
+              prefix = prefix,
+              q = q,
               limit = limit,
               offset = offset,
               orderBy = orderBy

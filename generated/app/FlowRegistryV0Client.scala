@@ -287,11 +287,15 @@ package io.flow.registry.v0 {
         id: _root_.scala.Option[Seq[String]] = None,
         port: _root_.scala.Option[Seq[Long]] = None,
         `type`: _root_.scala.Option[Seq[io.flow.registry.v0.models.PortType]] = None,
+        prefix: _root_.scala.Option[String] = None,
+        q: _root_.scala.Option[String] = None,
         limit: Long = 25,
         offset: Long = 0,
         sort: String = "-created_at"
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.Application]] = {
         val queryParameters = Seq(
+          prefix.map("prefix" -> _),
+          q.map("q" -> _),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString),
           Some("sort" -> sort)
@@ -471,6 +475,8 @@ package io.flow.registry.v0 {
       id: _root_.scala.Option[Seq[String]] = None,
       port: _root_.scala.Option[Seq[Long]] = None,
       `type`: _root_.scala.Option[Seq[io.flow.registry.v0.models.PortType]] = None,
+      prefix: _root_.scala.Option[String] = None,
+      q: _root_.scala.Option[String] = None,
       limit: Long = 25,
       offset: Long = 0,
       sort: String = "-created_at"
