@@ -1,0 +1,22 @@
+#!/bin/sh
+
+/web/tools/bin/registry applications post --id registry --type api
+/web/tools/bin/registry applications post --id registry-postgresql --type database
+
+/web/tools/bin/registry applications post --id splashpage --type api
+/web/tools/bin/registry applications post --id splashpage-www --type ui
+/web/tools/bin/registry applications post --id splashpage-postgresql --type database
+
+/web/tools/bin/registry applications post --id user --type api
+/web/tools/bin/registry applications post --id user-postgresql --type database
+
+/web/tools/bin/registry applications post --id authorization --type api
+/web/tools/bin/registry applications post --id authorization-postgresql --type database
+
+/web/tools/bin/registry applications post --id fulfillment --type api
+/web/tools/bin/registry applications post --id fulfillment-postgresql --type database
+
+/web/tools/bin/registry applications post --id catalog --type api
+/web/tools/bin/registry applications post --id catalog-postgresql --type database
+
+/web/tools/bin/registry applications get --limit 20
