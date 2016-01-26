@@ -82,6 +82,7 @@
           "description": "Search applications. Always paginated.",
           "parameters": [
             { "name": "id", "type": "[string]", "required": false, "maximum": 100 },
+            { "name": "port", "type": "[long]", "required": false, "maximum": 100 },
             { "name": "limit", "type": "long", "default": 25, "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "minimum": 0 },
             { "name": "sort", "type": "string", "default": "-created_at" }

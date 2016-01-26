@@ -19,6 +19,7 @@ class Applications @javax.inject.Inject() (
 
   def get(
     id: Option[Seq[String]],
+    port: Option[Seq[Long]],
     limit: Long = 25,
     offset: Long = 0,
     sort: String
@@ -33,6 +34,7 @@ class Applications @javax.inject.Inject() (
             ApplicationsDao.findAll(
               Authorization.User(request.user.id),
               ids = optionals(id),
+              portNumbers = optionals(port),
               limit = limit,
               offset = offset,
               orderBy = orderBy

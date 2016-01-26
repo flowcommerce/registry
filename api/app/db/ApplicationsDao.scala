@@ -106,6 +106,7 @@ object ApplicationsDao {
   def findAll(
     auth: Authorization,
     ids: Option[Seq[String]] = None,
+    portNumbers: Option[Seq[Long]] = None,
     prefix: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
@@ -116,6 +117,12 @@ object ApplicationsDao {
     DB.withConnection { implicit c =>
       BaseQuery.
         optionalIn("applications.id", ids).
+        and(
+          portNumbers.map { numbers =>
+            // TODO: bind variables
+            s"applications.id in (select application_id from ports where deleted_at is null and number in (%s))".format(numbers.mkString(", "))
+          }
+        ).
         nullBoolean("applications.deleted_at", isDeleted).
         and(
           prefix.map { p =>
@@ -125,6 +132,7 @@ object ApplicationsDao {
         limit(limit).
         offset(offset).
         orderBy(orderBy.sql).
+        withDebugging().
         as(
           parser().*
         )
