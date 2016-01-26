@@ -3,7 +3,7 @@ package controllers
 import db.ApplicationsDao
 import io.flow.common.v0.models.User
 import io.flow.common.v0.models.json._
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, PortType}
 import io.flow.registry.v0.models.json._
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
@@ -20,6 +20,7 @@ class Applications @javax.inject.Inject() (
   def get(
     id: Option[Seq[String]],
     port: Option[Seq[Long]],
+    `type`: Option[Seq[PortType]],
     limit: Long = 25,
     offset: Long = 0,
     sort: String
@@ -35,6 +36,7 @@ class Applications @javax.inject.Inject() (
               Authorization.User(request.user.id),
               ids = optionals(id),
               portNumbers = optionals(port),
+              portTypes = optionals(`type`),
               limit = limit,
               offset = offset,
               orderBy = orderBy

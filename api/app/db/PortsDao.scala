@@ -98,10 +98,8 @@ object PortsDao {
     id
   }
 
-  def softDelete(deletedBy: User, port: Port) {
-    findByNumber(Authorization.User(deletedBy.id), port.num).map { internal =>
-      dbHelpers.delete(deletedBy, internal.id)
-    }
+  def softDelete(implicit c: java.sql.Connection, deletedBy: User, port: InternalPort) {
+    dbHelpers.delete(c, deletedBy, port.id)
   }
 
   def maxPortNumber(): Option[Long] = {

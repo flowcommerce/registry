@@ -125,6 +125,24 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     ) must be(Nil)
   }
 
+  "GET /applications by port types" in new WithServer(port=port) {
+    val application1 = createApplication(createApplicationForm().copy(`type` = Seq(PortType.Ui)))
+    val application2 = createApplication(createApplicationForm().copy(`type` = Seq(PortType.Api)))
+    val ids = Seq(application1.id, application2.id)
+
+    await(
+      identifiedClient.applications.get(id =  Some(ids), `type` = Some(Seq(PortType.Ui, PortType.Api)))
+    ).map(_.id).sorted must beEqualTo(Seq(application1.id, application2.id).sorted)
+
+    await(
+      identifiedClient.applications.get(id =  Some(ids), `type` = Some(Seq(PortType.Ui)))
+    ).map(_.id) must beEqualTo(Seq(application1.id))
+
+    await(
+      identifiedClient.applications.get(id =  Some(ids), `type` = Some(Seq(PortType.Database)))
+    ) must be(Nil)
+  }
+
   "GET /applications paginates" in new WithServer(port=port) {
     val application1 = createApplication()
     val application2 = createApplication()

@@ -100,7 +100,21 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     api2Port must be(apiPort + offset)
   }
 
-  /*
+  "deleting an application also deletes its ports" in {
+    val app = createApplication()
+    val portNumber = app.ports.map(_.num).headOption.getOrElse {
+      sys.error("No port for application")
+    }
+    PortsDao.findByNumber(Authorization.All, portNumber).getOrElse {
+      sys.error("Could not find port")
+    }
+
+    ApplicationsDao.softDelete(testUser, app)
+    ApplicationsDao.findById(Authorization.All, app.id) must be(None)
+    PortsDao.findByNumber(Authorization.All, portNumber) must be(None)
+  }
+
+    /*
 // TODO Support this use case
   "can reuse ID once deleted" in {
     val app = createApplication()

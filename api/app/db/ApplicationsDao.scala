@@ -112,9 +112,13 @@ object ApplicationsDao {
   }
 
   def softDelete(deletedBy: User, application: Application) {
-    // TODO: Should we remove ports?
     // TODO: How should we allow for resuse of the application id?
-    dbHelpers.delete(deletedBy, application.id)
+    DB.withTransaction { implicit c =>
+      PortsDao.findAll(Authorization.User(deletedBy.id), applications = Some(Seq(application.id))).map { port =>
+        PortsDao.softDelete(c, deletedBy, port)
+      }
+      dbHelpers.delete(c, deletedBy, application.id)
+    }
   }
 
   def findByPortNumber(auth: Authorization, num: Long): Option[Application] = {
@@ -130,6 +134,7 @@ object ApplicationsDao {
     auth: Authorization,
     ids: Option[Seq[String]] = None,
     portNumbers: Option[Seq[Long]] = None,
+    portTypes: Option[Seq[PortType]] = None,
     prefix: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
@@ -144,6 +149,12 @@ object ApplicationsDao {
           portNumbers.map { nums =>
             // TODO: bind variables
             s"applications.id in (select application_id from ports where deleted_at is null and num in (%s))".format(nums.mkString(", "))
+          }
+        ).
+        and(
+          portTypes.map { types =>
+            // TODO: bind variables
+            s"applications.id in (select application_id from ports where deleted_at is null and type in (%s))".format(types.mkString("'", "', '", "'"))
           }
         ).
         nullBoolean("applications.deleted_at", isDeleted).

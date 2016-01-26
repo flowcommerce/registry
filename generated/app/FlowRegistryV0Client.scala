@@ -286,6 +286,7 @@ package io.flow.registry.v0 {
       override def get(
         id: _root_.scala.Option[Seq[String]] = None,
         port: _root_.scala.Option[Seq[Long]] = None,
+        `type`: _root_.scala.Option[Seq[io.flow.registry.v0.models.PortType]] = None,
         limit: Long = 25,
         offset: Long = 0,
         sort: String = "-created_at"
@@ -296,7 +297,8 @@ package io.flow.registry.v0 {
           Some("sort" -> sort)
         ).flatten ++
           id.getOrElse(Nil).map("id" -> _) ++
-          port.getOrElse(Nil).map("port" -> _.toString)
+          port.getOrElse(Nil).map("port" -> _.toString) ++
+          `type`.getOrElse(Nil).map("type" -> _.toString)
 
         _executeRequest("GET", s"/applications", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("Seq[io.flow.registry.v0.models.Application]", r, _.validate[Seq[io.flow.registry.v0.models.Application]])
@@ -468,6 +470,7 @@ package io.flow.registry.v0 {
     def get(
       id: _root_.scala.Option[Seq[String]] = None,
       port: _root_.scala.Option[Seq[Long]] = None,
+      `type`: _root_.scala.Option[Seq[io.flow.registry.v0.models.PortType]] = None,
       limit: Long = 25,
       offset: Long = 0,
       sort: String = "-created_at"

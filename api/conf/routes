@@ -2,7 +2,7 @@
 # Service version: 0.0.1
 # apidoc:0.11.6 http://www.apidoc.me/flow/registry/0.0.1/play_2_x_routes
 
-GET        /applications               controllers.Applications.get(id: _root_.scala.Option[List[String]], port: _root_.scala.Option[List[Long]], limit: Long ?= 25, offset: Long ?= 0, sort: String ?= "-created_at")
+GET        /applications               controllers.Applications.get(id: _root_.scala.Option[List[String]], port: _root_.scala.Option[List[Long]], type: _root_.scala.Option[List[io.flow.registry.v0.models.PortType]], limit: Long ?= 25, offset: Long ?= 0, sort: String ?= "-created_at")
 GET        /applications/:id           controllers.Applications.getById(id: String)
 POST       /applications               controllers.Applications.post()
 PUT        /applications/:id           controllers.Applications.putById(id: String)
