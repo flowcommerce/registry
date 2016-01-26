@@ -14,7 +14,7 @@ import io.flow.registry.v0.models.PortType
  * collissions with external software
  * 
  *  - start at 6000 ( > postgresql port )
- *  - blacklist any number ending in 00 (things people randomly are
+ *  - blacklist any num ending in 00 (things people randomly are
  *    more likely to use like 7000, 8000, 9000)
  *  - create a blacklist of well known ports that we encounter
  *    (e.g. 8080)
@@ -54,16 +54,16 @@ case class DefaultPortAllocator(
 
   /**
     * The port offset for this type of application (based on its
-    * name). Will be a number >= 0 and <= 9. If specified, we will try
+    * name). Will be a num >= 0 and <= 9. If specified, we will try
     * to make sure a port is allocated that ends with this
-    * number. Otherwise we just generated the next sequential port
-    * number.
+    * num. Otherwise we just generated the next sequential port
+    * num.
     */
   val offset: Option[Int] = defaults.get(applicationType)
 
   private[this] val applicationBasePorts = ApplicationsDao.findAll(Authorization.All, prefix = Some(prefix)).
     flatMap(_.ports).
-    map(_.number).
+    map(_.num).
     map(toBase(_)).
     sorted.
     distinct
@@ -90,12 +90,12 @@ case class DefaultPortAllocator(
   }
 
   /**
-    * The base port number (not taking into account the offset)
+    * The base port num (not taking into account the offset)
     */
   @scala.annotation.tailrec
-  final def number(): Long = {
+  final def num(): Long = {
     firstAvailablePort(nextBlock(), offset) match {
-      case None => number()
+      case None => num()
       case Some(v) => v
     }
   }
@@ -116,25 +116,25 @@ case class DefaultPortAllocator(
   }
 
   /**
-    * Given a port number (e.g. 8201) returns the base port number
+    * Given a port num (e.g. 8201) returns the base port num
     * (e.g. 8200)
     */
-  def toBase(number: Long): Long = {
-    number - (number % Blocksize)
+  def toBase(num: Long): Long = {
+    num - (num % Blocksize)
   }
 
-  def isPortAvailable(number: Long): Boolean = {
-    if (Blacklist.contains(number)) {
+  def isPortAvailable(num: Long): Boolean = {
+    if (Blacklist.contains(num)) {
       false
     } else {
-      PortsDao.findByNumber(Authorization.All, number).isEmpty
+      PortsDao.findByNumber(Authorization.All, num).isEmpty
     }
   }
 
-  def isBlockAvailable(number: Long): Boolean = {
-    if (Blacklist.contains(number)) {
+  def isBlockAvailable(num: Long): Boolean = {
+    if (Blacklist.contains(num)) {
       false
-    } else if (number % 100 == 0) {
+    } else if (num % 100 == 0) {
       false
     } else {
       true

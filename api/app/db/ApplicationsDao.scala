@@ -21,7 +21,7 @@ object ApplicationsDao {
     select applications.id,
            to_json(
              array(
-               (select row_to_json(ports.*) from ports where application_id = applications.id and deleted_at is null order by number)
+               (select row_to_json(ports.*) from ports where application_id = applications.id and deleted_at is null order by num)
              )
            ) as ports
       from applications
@@ -87,7 +87,7 @@ object ApplicationsDao {
               c, createdBy, PortForm(
                 applicationId = id,
                 typ = t,
-                number = DefaultPortAllocator(form.id, t).number
+                num = DefaultPortAllocator(form.id, t).num
               )
             )
           }
@@ -117,15 +117,15 @@ object ApplicationsDao {
     dbHelpers.delete(deletedBy, application.id)
   }
 
-  def findByPortNumber(auth: Authorization, number: Long): Option[Application] = {
-    findAll(auth, portNumbers = Some(Seq(number)), limit = 1).headOption
+  def findByPortNumber(auth: Authorization, num: Long): Option[Application] = {
+    findAll(auth, portNumbers = Some(Seq(num)), limit = 1).headOption
   }
 
   def findById(auth: Authorization, id: String): Option[Application] = {
     findAll(auth, ids = Some(Seq(id)), limit = 1).headOption
   }
 
-  // TODO: Should we add a filter by port number?
+  // TODO: Should we add a filter by port num?
   def findAll(
     auth: Authorization,
     ids: Option[Seq[String]] = None,
@@ -141,9 +141,9 @@ object ApplicationsDao {
       BaseQuery.
         optionalIn("applications.id", ids).
         and(
-          portNumbers.map { numbers =>
+          portNumbers.map { nums =>
             // TODO: bind variables
-            s"applications.id in (select application_id from ports where deleted_at is null and number in (%s))".format(numbers.mkString(", "))
+            s"applications.id in (select application_id from ports where deleted_at is null and num in (%s))".format(nums.mkString(", "))
           }
         ).
         nullBoolean("applications.deleted_at", isDeleted).
@@ -178,7 +178,7 @@ object ApplicationsDao {
           ports = ports.getOrElse(Nil).map { js =>
             Port(
               `type` = PortType( (js \ "type").as[String] ),
-              number = (js \ "number").as[Long]
+              num = (js \ "num").as[Long]
             )
           }
         )

@@ -15,8 +15,8 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   def validatePort(modulus: Int, app: Application) {
     app.ports.size must be(1)
     app.ports.foreach { p =>
-      if (p.number % 10 != modulus) {
-        fail(s"Application port of type[${p.`type`}] port[${p.number}] must end in ${modulus}")
+      if (p.num % 10 != modulus) {
+        fail(s"Application port of type[${p.`type`}] port[${p.num}] must end in ${modulus}")
       }
     }
   }
@@ -64,13 +64,13 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val api = createApplication(createApplicationForm().copy(id = base + "-api", `type` = Seq(PortType.Api)))
     val postgresql = createApplication(createApplicationForm().copy(id = base + "-db", `type` = Seq(PortType.Database)))
 
-    val uiPort = ui.ports.map(_.number).headOption.getOrElse {
+    val uiPort = ui.ports.map(_.num).headOption.getOrElse {
       sys.error("Failed to allocate port")
     }
 
     (uiPort % 10) must be(0)
-    api.ports.map(_.number) must be(Seq(uiPort + 1))
-    postgresql.ports.map(_.number) must be(Seq(uiPort + 9))
+    api.ports.map(_.num) must be(Seq(uiPort + 1))
+    postgresql.ports.map(_.num) must be(Seq(uiPort + 9))
   }
 
   "allocates block ranges in sets of 10" in {
@@ -83,15 +83,15 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     val api2 = createApplication(createApplicationForm().copy(id = base + "-api2"))
 
-    val apiPort = api.ports.map(_.number).headOption.getOrElse {
+    val apiPort = api.ports.map(_.num).headOption.getOrElse {
       sys.error("Failed to allocate port")
     }
 
-    val otherPort = other.ports.map(_.number).headOption.getOrElse {
+    val otherPort = other.ports.map(_.num).headOption.getOrElse {
       sys.error("Failed to allocate port for other app")
     }
 
-    val api2Port = api2.ports.map(_.number).headOption.getOrElse {
+    val api2Port = api2.ports.map(_.num).headOption.getOrElse {
       sys.error("Failed to allocate port")
     }
 

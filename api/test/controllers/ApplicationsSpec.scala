@@ -112,12 +112,12 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     ) must be(Nil)
   }
 
-  "GET /applications by port numbers" in new WithServer(port=port) {
+  "GET /applications by port nums" in new WithServer(port=port) {
     val application1 = createApplication()
     val application2 = createApplication()
 
     await(
-      identifiedClient.applications.get(port = Some(Seq(application1.ports.map(_.number).head, application2.ports.map(_.number).head)))
+      identifiedClient.applications.get(port = Some(Seq(application1.ports.map(_.num).head, application2.ports.map(_.num).head)))
     ).map(_.id).sorted must beEqualTo(Seq(application1.id, application2.id).sorted)
 
     await(

@@ -21,7 +21,7 @@ package io.flow.registry.v0.models {
 
   case class Port(
     `type`: io.flow.registry.v0.models.PortType,
-    number: Long
+    num: Long
   )
 
   sealed trait PortType
@@ -191,14 +191,14 @@ package io.flow.registry.v0.models {
     implicit def jsonReadsRegistryPort: play.api.libs.json.Reads[Port] = {
       (
         (__ \ "type").read[io.flow.registry.v0.models.PortType] and
-        (__ \ "number").read[Long]
+        (__ \ "num").read[Long]
       )(Port.apply _)
     }
 
     def jsObjectPort(obj: io.flow.registry.v0.models.Port) = {
       play.api.libs.json.Json.obj(
         "type" -> play.api.libs.json.JsString(obj.`type`.toString),
-        "number" -> play.api.libs.json.JsNumber(obj.number)
+        "num" -> play.api.libs.json.JsNumber(obj.num)
       )
     }
 

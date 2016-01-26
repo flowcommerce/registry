@@ -93,19 +93,19 @@ package io.flow.registry.v0.anorm.parsers {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
       `type` = s"$prefix${sep}type",
-      number = s"$prefix${sep}number"
+      num = s"$prefix${sep}num"
     )
 
     def parser(
       `type`: String = "type",
-      number: String = "number"
+      num: String = "num"
     ): RowParser[io.flow.registry.v0.models.Port] = {
       io.flow.registry.v0.anorm.parsers.PortType.parser(`type`) ~
-      SqlParser.long(number) map {
-        case typeInstance ~ number => {
+      SqlParser.long(num) map {
+        case typeInstance ~ num => {
           io.flow.registry.v0.models.Port(
             `type` = typeInstance,
-            number = number
+            num = num
           )
         }
       }

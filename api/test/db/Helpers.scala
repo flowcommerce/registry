@@ -68,12 +68,12 @@ trait Helpers {
   def createPortForm(
     application: Application = createApplication()
   ): PortForm = {
-    val number: Long  = PortsDao.maxPortNumber.getOrElse(6000)
+    val num: Long  = PortsDao.maxPortNumber.getOrElse(6000)
 
     PortForm(
       applicationId = application.id,
       typ = PortType.Api,
-      number = number + 1
+      num = num + 1
     )
   }
 
