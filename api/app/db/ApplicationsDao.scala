@@ -16,13 +16,13 @@ import io.flow.registry.v0.anorm.conversions.Json._
 object ApplicationsDao {
 
   private[this] val urlKey = UrlKey(minKeyLength = 4)
-  private[this] val SortByPort = "(select min(num) from ports where deleted_at is null and application_id = applications.id)"
+  private[this] val SortByPort = "(select min(num) from ports where application_id = applications.id)"
 
   private[this] val BaseQuery = Query(s"""
     select applications.id,
            to_json(
              array(
-               (select row_to_json(ports.*) from ports where application_id = applications.id and deleted_at is null order by num)
+               (select row_to_json(ports.*) from ports where application_id = applications.id order by num)
              )
            ) as ports
       from applications
@@ -33,10 +33,6 @@ object ApplicationsDao {
     (id, updated_by_user_id)
     values
     ({id}, {updated_by_user_id})
-  """
-
-  private[this] val DeleteIdQuery = """
-    update applications set id = {deleted_id} where id = {id}
   """
 
   private[this] val dbHelpers = DbHelpers("applications")
@@ -131,11 +127,10 @@ object ApplicationsDao {
     )
   }
 
-  def softDelete(deletedBy: User, application: Application) {
-    // TODO: How should we allow for resuse of the application id?
+  def delete(deletedBy: User, application: Application) {
     DB.withTransaction { implicit c =>
       PortsDao.findAll(Authorization.User(deletedBy.id), applications = Some(Seq(application.id))).map { port =>
-        PortsDao.softDelete(c, deletedBy, port)
+        PortsDao.delete(c, deletedBy, port)
       }
       dbHelpers.delete(c, deletedBy, application.id)
     }
@@ -149,7 +144,6 @@ object ApplicationsDao {
     findAll(auth, ids = Some(Seq(id)), limit = 1).headOption
   }
 
-  // TODO: Should we add a filter by port num?
   def findAll(
     auth: Authorization,
     ids: Option[Seq[String]] = None,
@@ -157,7 +151,6 @@ object ApplicationsDao {
     portTypes: Option[Seq[PortType]] = None,
     prefix: Option[String] = None,
     q: Option[String] = None,
-    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("-created_at", Some("applications"))
@@ -178,16 +171,15 @@ object ApplicationsDao {
         and(
           portNumbers.map { nums =>
             // TODO: bind variables
-            s"applications.id in (select application_id from ports where deleted_at is null and num in (%s))".format(nums.mkString(", "))
+            s"applications.id in (select application_id from ports where num in (%s))".format(nums.mkString(", "))
           }
         ).
         and(
           portTypes.map { types =>
             // TODO: bind variables
-            s"applications.id in (select application_id from ports where deleted_at is null and type in (%s))".format(types.mkString("'", "', '", "'"))
+            s"applications.id in (select application_id from ports where type in (%s))".format(types.mkString("'", "', '", "'"))
           }
         ).
-        nullBoolean("applications.deleted_at", isDeleted).
         and(
           prefix.map { p =>
             s"(applications.id = {prefix} or applications.id like {prefix} || '-%')"

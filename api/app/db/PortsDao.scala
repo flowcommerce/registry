@@ -99,7 +99,7 @@ object PortsDao {
     id
   }
 
-  def softDelete(implicit c: java.sql.Connection, deletedBy: User, port: InternalPort) {
+  def delete(implicit c: java.sql.Connection, deletedBy: User, port: InternalPort) {
     dbHelpers.delete(c, deletedBy, port.id)
   }
 
@@ -120,7 +120,6 @@ object PortsDao {
     ids: Option[Seq[String]] = None,
     applications: Option[Seq[String]] = None,
     nums: Option[Seq[Long]] = None,
-    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("ports.application_id, ports.num")
@@ -131,7 +130,6 @@ object PortsDao {
         optionalIn("ports.id", ids).
         optionalIn("ports.application_id", applications).
         optionalIn("ports.num", nums).
-        nullBoolean("ports.deleted_at", isDeleted).
         limit(limit).
         offset(offset).
         orderBy(orderBy.sql).
