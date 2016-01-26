@@ -18,6 +18,7 @@ class Ports @javax.inject.Inject() (
 {
 
   def get(
+    id: Option[Seq[String]],
     number: Option[Seq[Long]],
     application: Option[Seq[String]],
     limit: Long = 25,
@@ -33,6 +34,7 @@ class Ports @javax.inject.Inject() (
           Json.toJson(
             PortsDao.findAll(
               Authorization.User(request.user.id),
+              ids = optionals(id),
               numbers = optionals(number),
               applications = optionals(application),
               limit = limit,

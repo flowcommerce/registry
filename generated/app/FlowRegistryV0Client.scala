@@ -422,17 +422,19 @@ package io.flow.registry.v0 {
 
     object Ports extends Ports {
       override def get(
+        id: _root_.scala.Option[Seq[String]] = None,
         number: _root_.scala.Option[Seq[Long]] = None,
         application: _root_.scala.Option[Seq[String]] = None,
         limit: Long = 25,
         offset: Long = 0,
-        sort: String = "applications.name,number"
+        sort: String = "application_id,number"
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.Port]] = {
         val queryParameters = Seq(
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString),
           Some("sort" -> sort)
         ).flatten ++
+          id.getOrElse(Nil).map("id" -> _) ++
           number.getOrElse(Nil).map("number" -> _.toString) ++
           application.getOrElse(Nil).map("application" -> _)
 
@@ -626,11 +628,12 @@ package io.flow.registry.v0 {
      * Search ports. Always paginated.
      */
     def get(
+      id: _root_.scala.Option[Seq[String]] = None,
       number: _root_.scala.Option[Seq[Long]] = None,
       application: _root_.scala.Option[Seq[String]] = None,
       limit: Long = 25,
       offset: Long = 0,
-      sort: String = "applications.name,number"
+      sort: String = "application_id,number"
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.Port]]
 
     /**

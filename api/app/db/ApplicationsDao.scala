@@ -125,7 +125,6 @@ object ApplicationsDao {
         limit(limit).
         offset(offset).
         orderBy(orderBy.sql).
-//        withDebugging().
         as(
           parser().*
         )
