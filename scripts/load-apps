@@ -19,4 +19,10 @@
 /web/tools/bin/registry applications post --id catalog --type api
 /web/tools/bin/registry applications post --id catalog-postgresql --type database
 
+/web/tools/bin/registry applications post --id organization --type api
+/web/tools/bin/registry applications post --id organization-postgresql --type database
+
+/web/tools/bin/registry applications post --id article --type api
+/web/tools/bin/registry applications post --id article-postgresql --type database
+
 /web/tools/bin/registry applications get --limit 20 --sort port
