@@ -12,7 +12,9 @@ import play.api.libs.json._
 object ApplicationVersionsDao {
 
   private[this] val BaseQuery = Query("""
-    select * from journal.applications
+    select applications.*,
+           applications.ports
+      from journal.applications
   """.stripMargin)
 
   def findAll(
