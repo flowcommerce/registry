@@ -13,7 +13,7 @@ object ApplicationVersionsDao {
 
   private[this] val BaseQuery = Query("""
     select * from journal.applications
-  """.strip)
+  """.stripMargin)
 
   def findAll(
     auth: Authorization,
