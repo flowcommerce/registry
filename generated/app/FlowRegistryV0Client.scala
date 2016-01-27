@@ -19,6 +19,13 @@ package io.flow.registry.v0.models {
     `type`: Seq[io.flow.registry.v0.models.PortType]
   )
 
+  case class ApplicationVersion(
+    id: String,
+    timestamp: _root_.org.joda.time.DateTime,
+    `type`: io.flow.common.v0.models.ChangeType,
+    application: io.flow.registry.v0.models.Application
+  )
+
   case class Port(
     `type`: io.flow.registry.v0.models.PortType,
     num: Long
@@ -188,6 +195,32 @@ package io.flow.registry.v0.models {
       }
     }
 
+    implicit def jsonReadsRegistryApplicationVersion: play.api.libs.json.Reads[ApplicationVersion] = {
+      (
+        (__ \ "id").read[String] and
+        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
+        (__ \ "type").read[io.flow.common.v0.models.ChangeType] and
+        (__ \ "application").read[io.flow.registry.v0.models.Application]
+      )(ApplicationVersion.apply _)
+    }
+
+    def jsObjectApplicationVersion(obj: io.flow.registry.v0.models.ApplicationVersion) = {
+      play.api.libs.json.Json.obj(
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "timestamp" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.timestamp)),
+        "type" -> play.api.libs.json.JsString(obj.`type`.toString),
+        "application" -> jsObjectApplication(obj.application)
+      )
+    }
+
+    implicit def jsonWritesRegistryApplicationVersion: play.api.libs.json.Writes[ApplicationVersion] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.ApplicationVersion] {
+        def writes(obj: io.flow.registry.v0.models.ApplicationVersion) = {
+          jsObjectApplicationVersion(obj)
+        }
+      }
+    }
+
     implicit def jsonReadsRegistryPort: play.api.libs.json.Reads[Port] = {
       (
         (__ \ "type").read[io.flow.registry.v0.models.PortType] and
@@ -306,6 +339,28 @@ package io.flow.registry.v0 {
 
         _executeRequest("GET", s"/applications", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("Seq[io.flow.registry.v0.models.Application]", r, _.validate[Seq[io.flow.registry.v0.models.Application]])
+          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+
+      override def getVersions(
+        id: _root_.scala.Option[Seq[String]] = None,
+        application: _root_.scala.Option[Seq[String]] = None,
+        limit: Long = 25,
+        offset: Long = 0,
+        sort: String = "journal_timestamp"
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.ApplicationVersion]] = {
+        val queryParameters = Seq(
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString),
+          Some("sort" -> sort)
+        ).flatten ++
+          id.getOrElse(Nil).map("id" -> _) ++
+          application.getOrElse(Nil).map("application" -> _)
+
+        _executeRequest("GET", s"/applications/versions", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("Seq[io.flow.registry.v0.models.ApplicationVersion]", r, _.validate[Seq[io.flow.registry.v0.models.ApplicationVersion]])
           case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
           case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
@@ -481,6 +536,17 @@ package io.flow.registry.v0 {
       offset: Long = 0,
       sort: String = "-created_at"
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.Application]]
+
+    /**
+     * Provides visibility into recent changes of each application, including deletion
+     */
+    def getVersions(
+      id: _root_.scala.Option[Seq[String]] = None,
+      application: _root_.scala.Option[Seq[String]] = None,
+      limit: Long = 25,
+      offset: Long = 0,
+      sort: String = "journal_timestamp"
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.ApplicationVersion]]
 
     /**
      * Returns information about a specific application.

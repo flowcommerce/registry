@@ -1,6 +1,6 @@
 package controllers
 
-import db.ApplicationsDao
+import db.{ApplicationsDao, ApplicationVersionsDao}
 import io.flow.common.v0.models.User
 import io.flow.common.v0.models.json._
 import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, PortType}
@@ -51,6 +51,34 @@ class Applications @javax.inject.Inject() (
     }
   }
 
+  def getVersions(
+    id: Option[Seq[String]],
+    application: Option[Seq[String]],
+    limit: Long = 25,
+    offset: Long = 0,
+    sort: String
+  ) = Identified { request =>
+    OrderBy.parse(sort) match {
+      case Left(errors) => {
+        UnprocessableEntity(Json.toJson(Validation.invalidSort(errors)))
+      }
+      case Right(orderBy) => {
+        Ok(
+          Json.toJson(
+            ApplicationVersionsDao.findAll(
+              Authorization.User(request.user.id),
+              ids = optionals(id),
+              applications = optionals(application),
+              limit = limit,
+              offset = offset,
+              orderBy = orderBy
+            )
+          )
+        )
+      }
+    }
+  }
+  
   def getById(id: String) = Identified { request =>
     withApplication(request.user, id) { org =>
       Ok(Json.toJson(org))
