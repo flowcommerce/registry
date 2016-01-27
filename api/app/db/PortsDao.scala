@@ -21,7 +21,11 @@ private[db] case class InternalPort(
   applicationId: String,
   typ: PortType,
   num: Long
-)
+) {
+
+  val port = Port(`type` = typ, num = num)
+
+}
 
 object PortsDao {
 
@@ -124,19 +128,32 @@ object PortsDao {
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("ports.application_id, ports.num")
   ): Seq[InternalPort] = {
-    // TODO: Auth
     DB.withConnection { implicit c =>
-      BaseQuery.
-        optionalIn("ports.id", ids).
-        optionalIn("ports.application_id", applications).
-        optionalIn("ports.num", nums).
-        limit(limit).
-        offset(offset).
-        orderBy(orderBy.sql).
-        as(
-          parser().*
-        )
+      findAllWithConnection(c, auth, ids, applications, nums, limit, offset, orderBy)
     }
+  }
+
+  private[db] def findAllWithConnection(
+    implicit c: java.sql.Connection,
+    auth: Authorization,
+    ids: Option[Seq[String]] = None,
+    applications: Option[Seq[String]] = None,
+    nums: Option[Seq[Long]] = None,
+    limit: Long = 25,
+    offset: Long = 0,
+    orderBy: OrderBy = OrderBy("ports.application_id, ports.num")
+  ): Seq[InternalPort] = {
+    // TODO: Auth
+    BaseQuery.
+      optionalIn("ports.id", ids).
+      optionalIn("ports.application_id", applications).
+      optionalIn("ports.num", nums).
+      limit(limit).
+      offset(offset).
+      orderBy(orderBy.sql).
+      as(
+        parser().*
+      )
   }
 
   def parser() = {

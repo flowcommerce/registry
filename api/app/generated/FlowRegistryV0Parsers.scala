@@ -89,6 +89,38 @@ package io.flow.registry.v0.anorm.parsers {
 
   }
 
+  object ApplicationVersion {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      id = s"$prefix${sep}id",
+      timestamp = s"$prefix${sep}timestamp",
+      `type` = s"$prefix${sep}type",
+      applicationPrefix = s"$prefix${sep}application"
+    )
+
+    def parser(
+      id: String = "id",
+      timestamp: String = "timestamp",
+      `type`: String = "type",
+      applicationPrefix: String = "application"
+    ): RowParser[io.flow.registry.v0.models.ApplicationVersion] = {
+      SqlParser.str(id) ~
+      SqlParser.get[_root_.org.joda.time.DateTime](timestamp) ~
+      io.flow.common.v0.anorm.parsers.ChangeType.parser(`type`) ~
+      io.flow.registry.v0.anorm.parsers.Application.parserWithPrefix(applicationPrefix) map {
+        case id ~ timestamp ~ typeInstance ~ application => {
+          io.flow.registry.v0.models.ApplicationVersion(
+            id = id,
+            timestamp = timestamp,
+            `type` = typeInstance,
+            application = application
+          )
+        }
+      }
+    }
+
+  }
+
   object Port {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(

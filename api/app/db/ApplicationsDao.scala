@@ -3,7 +3,8 @@ package db
 import io.flow.play.util.{IdGenerator, UrlKey}
 import io.flow.registry.api.lib.DefaultPortAllocator
 import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, PortType, Port}
-import io.flow.postgresql.{Authorization, Query, OrderBy}
+import io.flow.registry.v0.models.json._
+import io.flow.postgresql.{Authorization, Query, OrderBy, Pager}
 import io.flow.common.v0.models.User
 import anorm._
 import play.api.db._
@@ -20,19 +21,22 @@ object ApplicationsDao {
 
   private[this] val BaseQuery = Query(s"""
     select applications.id,
-           to_json(
-             array(
-               (select row_to_json(ports.*) from ports where application_id = applications.id order by num)
-             )
-           ) as ports
+           applications.ports
       from applications
   """)
 
   private[this] val InsertQuery = """
     insert into applications
-    (id, updated_by_user_id)
+    (id, ports, updated_by_user_id)
     values
-    ({id}, {updated_by_user_id})
+    ({id}, {ports}::json, {updated_by_user_id})
+  """
+
+  private[this] val UpdateQuery = """
+    update applications
+       set ports = {ports}::json,
+           updated_by_user_id = {updated_by_user_id}
+     where id = {id}
   """
 
   private[this] val dbHelpers = DbHelpers("applications")
@@ -74,14 +78,15 @@ object ApplicationsDao {
       case Nil => {
         DB.withTransaction { implicit c =>
           val id = form.id.trim
-          SQL(InsertQuery).on(
-            'id -> id,
-            'updated_by_user_id -> createdBy.id
-          ).execute()
-
           form.`type`.map { t =>
             createPort(c, createdBy, id, t)
           }
+
+          SQL(InsertQuery).on(
+            'id -> id,
+            'ports -> portsAsJson(c, id),
+            'updated_by_user_id -> createdBy.id
+          ).execute()
         }
 
         Right(
@@ -101,9 +106,18 @@ object ApplicationsDao {
           !app.ports.map(_.`type`).contains(t)
         }
         DB.withTransaction { implicit c =>
-          newTypes.foreach { t =>
+          newTypes.map { t =>
             createPort(c, createdBy, app.id, t)
           }
+
+          // Update the applications table to trigger the journal
+          // write.
+          SQL(UpdateQuery).on(
+            'id -> id,
+            'ports -> portsAsJson(c, app.id),
+            'updated_by_user_id -> createdBy.id
+          ).execute()
+
         }
         Right(
           findById(Authorization.All, app.id).getOrElse {
@@ -113,6 +127,23 @@ object ApplicationsDao {
       }
       case None => create(createdBy, ApplicationForm(id = id, `type` = form.`type`))
     }
+  }
+
+  /**
+    * Fetches all ports from the ports table and returns as a JSON
+    * string for denormalization in the applications table.
+    */
+  private[this] def portsAsJson(implicit c: java.sql.Connection, applicationId: String): String = {
+    Json.toJson(
+      Pager.create { offset =>
+        PortsDao.findAllWithConnection(
+          c,
+          Authorization.All,
+          applications = Some(Seq(applicationId)),
+          offset = offset
+        )
+      }.toSeq.map(_.port)
+    ).toString
   }
 
   private[this] def createPort(implicit c: java.sql.Connection, createdBy: User, id: String, typ: PortType) {
@@ -129,8 +160,10 @@ object ApplicationsDao {
 
   def delete(deletedBy: User, application: Application) {
     DB.withTransaction { implicit c =>
-      PortsDao.findAll(Authorization.User(deletedBy.id), applications = Some(Seq(application.id))).map { port =>
-        PortsDao.delete(c, deletedBy, port)
+      Pager.create { offset =>
+        PortsDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset).map { port =>
+          PortsDao.delete(c, deletedBy, port)
+        }
       }
       dbHelpers.delete(c, deletedBy, application.id)
     }
