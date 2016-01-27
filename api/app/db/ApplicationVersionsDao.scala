@@ -11,7 +11,9 @@ import play.api.libs.json._
 
 object ApplicationVersionsDao {
 
-  private[this] val BaseQuery = Query(s"select * from journal.applications")
+  private[this] val BaseQuery = Query("""
+    select * from journal.applications
+  """.strip)
 
   def findAll(
     auth: Authorization,
