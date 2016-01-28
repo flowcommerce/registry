@@ -9,6 +9,16 @@ This is the central registry of applications we build. The main use cases:
 
   - support docker for development environments
 
+The design of the system includes:
+
+  - services which have names (e.g. postgresql) and default ports
+    (e.g. 5432). This enables identifying consistently the internal
+    ports an application users
+
+  - applications which are services w/ a list of assigned ports. These
+    ports map the internal port numbers to a globally unique external
+    port number.
+
 # CLI
 
 See https://github.com/flowcommerce/tools/blob/master/bin/registry
@@ -21,23 +31,24 @@ that the implementation leaves room adjacent to the allocated port so
 that if you need another port in the future it is likely to be
 sequential.
 
-    curl -d id=splashpage -d type=api http://registry.api.flow.io/applications
+    curl -d id=splashpage -d service=play http://registry.api.flow.io/applications
 
-    curl -d id=www -d type=ui http://registry.api.flow.io/applications
+    curl -d id=www -d service=nodejs http://registry.api.flow.io/applications
 
-    curl -d id=splashpage-postgresql -d type=database http://registry.api.flow.io/applications
+    curl -d id=splashpage-postgresql -d service=nodejs http://registry.api.flow.io/applications
 
 or you can use PUT which will upsert the application, as well as
-allocate a part for this application type if not already allocated.
+allocate a port for this service if not already allocated.
 
-    curl -X -d type=api PUT http://registry.api.flow.io/applications/splashpage
+    curl -X PUT -d service=play http://registry.api.flow.io/applications/splashpage
 
 # Notes:
 
-The type of the application is used to provide consistent port allocations:
-  - ui: 0
-  - api: 1
-  - database: 9
+We also provide consistent external port allocations based on the service name:
+
+  - nodejs: 0
+  - play: 1
+  - postgresql: 9
 
 # Example allocations:
 
