@@ -7,7 +7,7 @@ services:
   - docker
 before_script:
   - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-  - docker run -d -p 127.0.0.1:5400:5432 flowcommerce/registry-postgresql:latest
+  - docker run -d -p 127.0.0.1:5400:5432 flowcommerce/registry-postgresql:0.0.2
 script: 
   - sbt ++$TRAVIS_SCALA_VERSION clean compile test
   - curl https://s3.amazonaws.com/io.flow.aws-s3-public/util/api-lint/api-lint.jar > /tmp/api-lint.jar && java -jar /tmp/api-lint.jar flow/registry
