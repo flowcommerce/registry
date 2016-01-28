@@ -1,6 +1,6 @@
 package db
 
-import io.flow.registry.v0.models.{Application, ApplicationPutForm, PortType}
+import io.flow.registry.v0.models.{Application, ApplicationPutForm, Service}
 import io.flow.postgresql.Authorization
 import java.util.UUID
 import play.api.test._
@@ -15,13 +15,13 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   def validatePort(modulus: Int, app: Application) {
     app.ports.size must be(1)
     app.ports.foreach { p =>
-      if (p.num % 10 != modulus) {
-        fail(s"Application port of type[${p.`type`}] port[${p.num}] must end in ${modulus}")
+      if (p.external % 10 != modulus) {
+        fail(s"Application port[${p.external}] for service[${p.service.id}] must end in ${modulus}")
       }
     }
   }
 
-  "respects application type when allocating ports" in {
+  "respects application service when allocating ports" in {
     val base = UUID.randomUUID.toString.replaceAll("\\-", "")
 
     validatePort(
@@ -29,7 +29,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       createApplication(
         createApplicationForm().copy(
           id = base + "-ui",
-          `type` = Seq(PortType.Ui)
+          service = "nodejs"
         )
       )
     )
@@ -39,7 +39,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       createApplication(
         createApplicationForm().copy(
           id = base + "-api",
-          `type` = Seq(PortType.Api)
+          service = "play"
         )
       )
     )
@@ -49,7 +49,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       createApplication(
         createApplicationForm().copy(
           id = base + "-db",
-          `type` = Seq(PortType.Database)
+          service = "postgresql"
         )
       )
     )
@@ -60,38 +60,38 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "allocates ports based on type" in {
     val base = UUID.randomUUID.toString.replaceAll("\\-", "")
 
-    val ui = createApplication(createApplicationForm().copy(id = base + "-ui", `type` = Seq(PortType.Ui)))
-    val api = createApplication(createApplicationForm().copy(id = base + "-api", `type` = Seq(PortType.Api)))
-    val postgresql = createApplication(createApplicationForm().copy(id = base + "-db", `type` = Seq(PortType.Database)))
+    val ui = createApplication(createApplicationForm().copy(id = base + "-ui", service = "nodejs"))
+    val api = createApplication(createApplicationForm().copy(id = base + "-api", service = "play"))
+    val postgresql = createApplication(createApplicationForm().copy(id = base + "-db", service = "postgresql"))
 
-    val uiPort = ui.ports.map(_.num).headOption.getOrElse {
+    val uiPort = ui.ports.map(_.external).headOption.getOrElse {
       sys.error("Failed to allocate port")
     }
 
     (uiPort % 10) must be(0)
-    api.ports.map(_.num) must be(Seq(uiPort + 1))
-    postgresql.ports.map(_.num) must be(Seq(uiPort + 9))
+    api.ports.map(_.external) must be(Seq(uiPort + 1))
+    postgresql.ports.map(_.external) must be(Seq(uiPort + 9))
   }
 
   "allocates block ranges in sets of 10" in {
     val base = UUID.randomUUID.toString.replaceAll("\\-", "")
 
-    val api = createApplication(createApplicationForm().copy(id = base))
+    val api = createApplication(createApplicationForm().copy(id = base, service = "play"))
 
     // inject the other app here so we have to 'jump' over its allocation
-    val other = createApplication(createApplicationForm().copy(id = UUID.randomUUID.toString.replaceAll("\\-", "")))
+    val other = createApplication(createApplicationForm().copy(id = createUrlKey(), service = "play"))
 
-    val api2 = createApplication(createApplicationForm().copy(id = base + "-api2"))
+    val api2 = createApplication(createApplicationForm().copy(id = base + "-api2", service = "play"))
 
-    val apiPort = api.ports.map(_.num).headOption.getOrElse {
+    val apiPort = api.ports.map(_.external).headOption.getOrElse {
       sys.error("Failed to allocate port")
     }
 
-    val otherPort = other.ports.map(_.num).headOption.getOrElse {
+    val otherPort = other.ports.map(_.external).headOption.getOrElse {
       sys.error("Failed to allocate port for other app")
     }
 
-    val api2Port = api2.ports.map(_.num).headOption.getOrElse {
+    val api2Port = api2.ports.map(_.external).headOption.getOrElse {
       sys.error("Failed to allocate port")
     }
 
@@ -103,52 +103,52 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "deleting an application also deletes its ports" in {
     val app = createApplication()
-    val portNumber = app.ports.map(_.num).headOption.getOrElse {
+    val portNumber = app.ports.map(_.external).headOption.getOrElse {
       sys.error("No port for application")
     }
-    PortsDao.findByNumber(Authorization.All, portNumber).getOrElse {
+    PortsDao.findByExternal(Authorization.All, portNumber).getOrElse {
       sys.error("Could not find port")
     }
 
     ApplicationsDao.delete(testUser, app)
     ApplicationsDao.findById(Authorization.All, app.id) must be(None)
-    PortsDao.findByNumber(Authorization.All, portNumber) must be(None)
+    PortsDao.findByExternal(Authorization.All, portNumber) must be(None)
   }
 
   "upsert creates new application" in {
     val id = createApplicationForm().id
     val app = rightOrErrors(
-      ApplicationsDao.upsert(testUser, id, ApplicationPutForm(`type` = Seq(PortType.Api)))
+      ApplicationsDao.upsert(testUser, id, ApplicationPutForm(service = "play"))
     )
 
     app.id must be(id)
   }
 
   "upsert allocates new ports" in {
-    val app = createApplication(createApplicationForm().copy(`type` = Seq(PortType.Ui)))
-    val portNumber = app.ports.map(_.num).headOption.getOrElse {
+    val app = createApplication(createApplicationForm().copy(service = "nodejs"))
+    val portNumber = app.ports.map(_.external).headOption.getOrElse {
       sys.error("No port for application")
     }
-    app.ports.map(_.num) must be(Seq(portNumber))
+    app.ports.map(_.external) must be(Seq(portNumber))
 
     val updated = rightOrErrors(
       ApplicationsDao.upsert(
         testUser,
         app.id,
-        ApplicationPutForm(`type` = Seq(PortType.Api))
+        ApplicationPutForm(service = "play")
       )
     )
-    updated.ports.map(_.num) must be(Seq(portNumber, portNumber + 1))
+    updated.ports.map(_.external) must be(Seq(portNumber, portNumber + 1))
 
     // Now test idempotence
     val updatedAgain = rightOrErrors(
       ApplicationsDao.upsert(
         testUser,
         app.id,
-        ApplicationPutForm(`type` = Seq(PortType.Api))
+        ApplicationPutForm(service = "play")
       )
     )
-    updatedAgain.ports.map(_.num) must be(Seq(portNumber, portNumber + 1))
+    updatedAgain.ports.map(_.external) must be(Seq(portNumber, portNumber + 1))
   }
 
   "can reuse ID once deleted" in {

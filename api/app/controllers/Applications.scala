@@ -3,7 +3,7 @@ package controllers
 import db.{ApplicationsDao, ApplicationVersionsDao}
 import io.flow.common.v0.models.User
 import io.flow.common.v0.models.json._
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, PortType}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Service}
 import io.flow.registry.v0.models.json._
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
@@ -20,7 +20,7 @@ class Applications @javax.inject.Inject() (
   def get(
     id: Option[Seq[String]],
     port: Option[Seq[Long]],
-    `type`: Option[Seq[PortType]],
+    service: Option[Seq[String]],
     prefix: Option[String],
     q: Option[String],
     limit: Long = 25,
@@ -37,8 +37,8 @@ class Applications @javax.inject.Inject() (
             ApplicationsDao.findAll(
               Authorization.User(request.user.id),
               ids = optionals(id),
+              services = optionals(service),
               portNumbers = optionals(port),
-              portTypes = optionals(`type`),
               prefix = prefix,
               q = q,
               limit = limit,

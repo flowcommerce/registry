@@ -11,7 +11,15 @@ import java.util.UUID
 trait Helpers {
 
   lazy val testUser = createUser()
+  lazy val testService = ServicesDao.findById(Authorization.All, "test").getOrElse {
+    rightOrErrors(ServicesDao.create(testUser, createServiceForm()))
+  }
+
   val idGenerator = IdGenerator("tst")
+
+  def createUrlKey(prefix: String = "tst"): String = {
+    prefix +  UUID.randomUUID.toString.replaceAll("\\-", "")
+  }
 
   def createTestId(): String = {
     idGenerator.randomId()
@@ -36,6 +44,21 @@ trait Helpers {
     }
   }
 
+  def createService(
+    form: ServiceForm = createServiceForm()
+  ) (
+    implicit user: User = testUser
+  ): Service = {
+    rightOrErrors(ServicesDao.create(user, form))
+  }
+
+  def createServiceForm(): ServiceForm = {
+    ServiceForm(
+      id = createUrlKey("svc"),
+      defaultPort = 8080
+    )
+  }
+  
   def createApplication(
     form: ApplicationForm = createApplicationForm()
   ) (
@@ -44,19 +67,20 @@ trait Helpers {
     rightOrErrors(ApplicationsDao.create(user, form))
   }
 
-  def createApplicationForm(): ApplicationForm = {
-    // Note that id cannot have dashes as we assume dashes as
-    // separators when trying to find a common base name of the
-    // application during port allocation
+  def createApplicationForm(
+    service: Service = testService
+  ): ApplicationForm = {
     ApplicationForm(
-      id = UUID.randomUUID.toString.replaceAll("\\-", ""),
-      `type` = Seq(PortType.Api)
+      id = createUrlKey("app"),
+      service = service.id
     )
   }
 
-  def createApplicationPutForm(): ApplicationPutForm = {
+  def createApplicationPutForm(
+    service: Service = testService
+  ): ApplicationPutForm = {
     ApplicationPutForm(
-      `type` = Seq(PortType.Api)
+      service = service.id
     )
   }
 
@@ -65,18 +89,19 @@ trait Helpers {
   ) (
     implicit user: User = testUser
   ): InternalPort = {
-    rightOrErrors(PortsDao.create(user, form))
+    PortsDao.create(user, form)
   }
 
   def createPortForm(
     application: Application = createApplication()
   ): PortForm = {
-    val num: Long  = PortsDao.maxPortNumber.getOrElse(6000)
+    val nextPort: Long = PortsDao.maxExternalPortNumber.getOrElse(6000)
 
     PortForm(
       applicationId = application.id,
-      typ = PortType.Api,
-      num = num + 1
+      serviceId = testService.id,
+      internal = testService.defaultPort,
+      external = nextPort + 1
     )
   }
 

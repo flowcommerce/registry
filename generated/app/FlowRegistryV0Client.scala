@@ -12,11 +12,13 @@ package io.flow.registry.v0.models {
 
   case class ApplicationForm(
     id: String,
-    `type`: Seq[io.flow.registry.v0.models.PortType]
+    service: String,
+    port: _root_.scala.Option[Long] = None
   )
 
   case class ApplicationPutForm(
-    `type`: Seq[io.flow.registry.v0.models.PortType]
+    service: String,
+    port: _root_.scala.Option[Long] = None
   )
 
   case class ApplicationVersion(
@@ -27,50 +29,35 @@ package io.flow.registry.v0.models {
   )
 
   case class Port(
-    `type`: io.flow.registry.v0.models.PortType,
-    num: Long
+    service: io.flow.registry.v0.models.ServiceReference,
+    internal: Long,
+    external: Long
   )
 
-  sealed trait PortType
+  /**
+   * A service is used to identify what type of software is actually running. We use
+   * this to enable setting up application types with enough configuration info by
+   * default to support our use cases around docker, CI, etc. The name service comes
+   * from
+   * https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.txt
+   */
+  case class Service(
+    id: String,
+    defaultPort: Long
+  )
 
-  object PortType {
+  case class ServiceForm(
+    id: String,
+    defaultPort: Long
+  )
 
-    case object Api extends PortType { override def toString = "api" }
-    /**
-     * Any type of storage interface
-     */
-    case object Database extends PortType { override def toString = "database" }
-    /**
-     * Any user interface
-     */
-    case object Ui extends PortType { override def toString = "ui" }
+  case class ServicePutForm(
+    defaultPort: Long
+  )
 
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends PortType
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Api, Database, Ui)
-
-    private[this]
-    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
-
-    def apply(value: String): PortType = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): _root_.scala.Option[PortType] = byName.get(value.toLowerCase)
-
-  }
+  case class ServiceReference(
+    id: String
+  )
 
 }
 
@@ -103,36 +90,6 @@ package io.flow.registry.v0.models {
       }
     }
 
-    implicit val jsonReadsRegistryPortType = new play.api.libs.json.Reads[io.flow.registry.v0.models.PortType] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.registry.v0.models.PortType] = {
-        js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.PortType(v.value))
-          case _ => {
-            (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.PortType(v))
-              case err: play.api.libs.json.JsError => err
-            }
-          }
-        }
-      }
-    }
-
-    def jsonWritesRegistryPortType(obj: io.flow.registry.v0.models.PortType) = {
-      play.api.libs.json.JsString(obj.toString)
-    }
-
-    def jsObjectPortType(obj: io.flow.registry.v0.models.PortType) = {
-      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
-    }
-
-    implicit def jsonWritesRegistryPortType: play.api.libs.json.Writes[PortType] = {
-      new play.api.libs.json.Writes[io.flow.registry.v0.models.PortType] {
-        def writes(obj: io.flow.registry.v0.models.PortType) = {
-          jsonWritesRegistryPortType(obj)
-        }
-      }
-    }
-
     implicit def jsonReadsRegistryApplication: play.api.libs.json.Reads[Application] = {
       (
         (__ \ "id").read[String] and
@@ -158,15 +115,19 @@ package io.flow.registry.v0.models {
     implicit def jsonReadsRegistryApplicationForm: play.api.libs.json.Reads[ApplicationForm] = {
       (
         (__ \ "id").read[String] and
-        (__ \ "type").read[Seq[io.flow.registry.v0.models.PortType]]
+        (__ \ "service").read[String] and
+        (__ \ "port").readNullable[Long]
       )(ApplicationForm.apply _)
     }
 
     def jsObjectApplicationForm(obj: io.flow.registry.v0.models.ApplicationForm) = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
-        "type" -> play.api.libs.json.Json.toJson(obj.`type`)
-      )
+        "service" -> play.api.libs.json.JsString(obj.service)
+      ) ++ (obj.port match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("port" -> play.api.libs.json.JsNumber(x))
+      })
     }
 
     implicit def jsonWritesRegistryApplicationForm: play.api.libs.json.Writes[ApplicationForm] = {
@@ -178,13 +139,19 @@ package io.flow.registry.v0.models {
     }
 
     implicit def jsonReadsRegistryApplicationPutForm: play.api.libs.json.Reads[ApplicationPutForm] = {
-      (__ \ "type").read[Seq[io.flow.registry.v0.models.PortType]].map { x => new ApplicationPutForm(`type` = x) }
+      (
+        (__ \ "service").read[String] and
+        (__ \ "port").readNullable[Long]
+      )(ApplicationPutForm.apply _)
     }
 
     def jsObjectApplicationPutForm(obj: io.flow.registry.v0.models.ApplicationPutForm) = {
       play.api.libs.json.Json.obj(
-        "type" -> play.api.libs.json.Json.toJson(obj.`type`)
-      )
+        "service" -> play.api.libs.json.JsString(obj.service)
+      ) ++ (obj.port match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("port" -> play.api.libs.json.JsNumber(x))
+      })
     }
 
     implicit def jsonWritesRegistryApplicationPutForm: play.api.libs.json.Writes[ApplicationPutForm] = {
@@ -223,15 +190,17 @@ package io.flow.registry.v0.models {
 
     implicit def jsonReadsRegistryPort: play.api.libs.json.Reads[Port] = {
       (
-        (__ \ "type").read[io.flow.registry.v0.models.PortType] and
-        (__ \ "num").read[Long]
+        (__ \ "service").read[io.flow.registry.v0.models.ServiceReference] and
+        (__ \ "internal").read[Long] and
+        (__ \ "external").read[Long]
       )(Port.apply _)
     }
 
     def jsObjectPort(obj: io.flow.registry.v0.models.Port) = {
       play.api.libs.json.Json.obj(
-        "type" -> play.api.libs.json.JsString(obj.`type`.toString),
-        "num" -> play.api.libs.json.JsNumber(obj.num)
+        "service" -> jsObjectServiceReference(obj.service),
+        "internal" -> play.api.libs.json.JsNumber(obj.internal),
+        "external" -> play.api.libs.json.JsNumber(obj.external)
       )
     }
 
@@ -239,6 +208,86 @@ package io.flow.registry.v0.models {
       new play.api.libs.json.Writes[io.flow.registry.v0.models.Port] {
         def writes(obj: io.flow.registry.v0.models.Port) = {
           jsObjectPort(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsRegistryService: play.api.libs.json.Reads[Service] = {
+      (
+        (__ \ "id").read[String] and
+        (__ \ "default_port").read[Long]
+      )(Service.apply _)
+    }
+
+    def jsObjectService(obj: io.flow.registry.v0.models.Service) = {
+      play.api.libs.json.Json.obj(
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "default_port" -> play.api.libs.json.JsNumber(obj.defaultPort)
+      )
+    }
+
+    implicit def jsonWritesRegistryService: play.api.libs.json.Writes[Service] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.Service] {
+        def writes(obj: io.flow.registry.v0.models.Service) = {
+          jsObjectService(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsRegistryServiceForm: play.api.libs.json.Reads[ServiceForm] = {
+      (
+        (__ \ "id").read[String] and
+        (__ \ "default_port").read[Long]
+      )(ServiceForm.apply _)
+    }
+
+    def jsObjectServiceForm(obj: io.flow.registry.v0.models.ServiceForm) = {
+      play.api.libs.json.Json.obj(
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "default_port" -> play.api.libs.json.JsNumber(obj.defaultPort)
+      )
+    }
+
+    implicit def jsonWritesRegistryServiceForm: play.api.libs.json.Writes[ServiceForm] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.ServiceForm] {
+        def writes(obj: io.flow.registry.v0.models.ServiceForm) = {
+          jsObjectServiceForm(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsRegistryServicePutForm: play.api.libs.json.Reads[ServicePutForm] = {
+      (__ \ "default_port").read[Long].map { x => new ServicePutForm(defaultPort = x) }
+    }
+
+    def jsObjectServicePutForm(obj: io.flow.registry.v0.models.ServicePutForm) = {
+      play.api.libs.json.Json.obj(
+        "default_port" -> play.api.libs.json.JsNumber(obj.defaultPort)
+      )
+    }
+
+    implicit def jsonWritesRegistryServicePutForm: play.api.libs.json.Writes[ServicePutForm] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.ServicePutForm] {
+        def writes(obj: io.flow.registry.v0.models.ServicePutForm) = {
+          jsObjectServicePutForm(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsRegistryServiceReference: play.api.libs.json.Reads[ServiceReference] = {
+      (__ \ "id").read[String].map { x => new ServiceReference(id = x) }
+    }
+
+    def jsObjectServiceReference(obj: io.flow.registry.v0.models.ServiceReference) = {
+      play.api.libs.json.Json.obj(
+        "id" -> play.api.libs.json.JsString(obj.id)
+      )
+    }
+
+    implicit def jsonWritesRegistryServiceReference: play.api.libs.json.Writes[ServiceReference] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.ServiceReference] {
+        def writes(obj: io.flow.registry.v0.models.ServiceReference) = {
+          jsObjectServiceReference(obj)
         }
       }
     }
@@ -272,16 +321,7 @@ package io.flow.registry.v0 {
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
-    // Enum: PortType
-    private[this] val enumPortTypeNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${io.flow.registry.v0.models.PortType.all.mkString(", ")}"
 
-    implicit val pathBindableEnumPortType = new PathBindable.Parsing[io.flow.registry.v0.models.PortType] (
-      PortType.fromString(_).get, _.toString, enumPortTypeNotFound
-    )
-
-    implicit val queryStringBindableEnumPortType = new QueryStringBindable.Parsing[io.flow.registry.v0.models.PortType](
-      PortType.fromString(_).get, _.toString, enumPortTypeNotFound
-    )
 
   }
 
@@ -319,7 +359,7 @@ package io.flow.registry.v0 {
       override def get(
         id: _root_.scala.Option[Seq[String]] = None,
         port: _root_.scala.Option[Seq[Long]] = None,
-        `type`: _root_.scala.Option[Seq[io.flow.registry.v0.models.PortType]] = None,
+        service: _root_.scala.Option[Seq[String]] = None,
         prefix: _root_.scala.Option[String] = None,
         q: _root_.scala.Option[String] = None,
         limit: Long = 25,
@@ -335,7 +375,7 @@ package io.flow.registry.v0 {
         ).flatten ++
           id.getOrElse(Nil).map("id" -> _) ++
           port.getOrElse(Nil).map("port" -> _.toString) ++
-          `type`.getOrElse(Nil).map("type" -> _.toString)
+          service.getOrElse(Nil).map("service" -> _)
 
         _executeRequest("GET", s"/applications", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("Seq[io.flow.registry.v0.models.Application]", r, _.validate[Seq[io.flow.registry.v0.models.Application]])
@@ -529,7 +569,7 @@ package io.flow.registry.v0 {
     def get(
       id: _root_.scala.Option[Seq[String]] = None,
       port: _root_.scala.Option[Seq[Long]] = None,
-      `type`: _root_.scala.Option[Seq[io.flow.registry.v0.models.PortType]] = None,
+      service: _root_.scala.Option[Seq[String]] = None,
       prefix: _root_.scala.Option[String] = None,
       q: _root_.scala.Option[String] = None,
       limit: Long = 25,
