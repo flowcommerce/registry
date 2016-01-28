@@ -2,32 +2,32 @@ package db
 
 import io.flow.common.v0.models.{ChangeType, User}
 import io.flow.postgresql.{Authorization, Query, OrderBy}
-import io.flow.registry.v0.models.ApplicationVersion
+import io.flow.registry.v0.models.ServiceVersion
 import org.joda.time.DateTime
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-object ApplicationVersionsDao {
+object ServiceVersionsDao {
 
   private[this] val BaseQuery = Query("""
-    select applications.*
-      from journal.applications
+    select services.*
+      from journal.services
   """.stripMargin)
 
   def findAll(
     auth: Authorization,
     ids: Option[Seq[String]] = None,
-    applications: Option[Seq[String]] = None,
+    services: Option[Seq[String]] = None,
     limit: Long = 25,
     offset: Long = 0,
-    orderBy: OrderBy = OrderBy("journal_timestamp", Some("applications"))
-  ): Seq[ApplicationVersion] = {
+    orderBy: OrderBy = OrderBy("journal_timestamp", Some("services"))
+  ): Seq[ServiceVersion] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        optionalIn("applications.journal_id", ids.map(_.map(_.toLong))).
-        optionalIn("applications.id", applications).
+        optionalIn("services.journal_id", ids.map(_.map(_.toLong))).
+        optionalIn("services.id", services).
         limit(limit).
         offset(offset).
         orderBy(orderBy.sql).
@@ -37,17 +37,17 @@ object ApplicationVersionsDao {
     }
   }
 
-  private[this] def parser(): RowParser[ApplicationVersion] = {
+  private[this] def parser(): RowParser[ServiceVersion] = {
     SqlParser.get[Long]("journal_id") ~
     SqlParser.get[DateTime]("journal_timestamp") ~
     SqlParser.get[String]("journal_operation") ~
-    io.flow.registry.v0.anorm.parsers.Application.parser() map {
-      case id ~ ts ~ op ~ application => {
-        ApplicationVersion(
+    io.flow.registry.v0.anorm.parsers.Service.parser() map {
+      case id ~ ts ~ op ~ service => {
+        ServiceVersion(
           id = id.toString,
           timestamp = ts,
           `type` = ChangeType(op),
-          application = application
+          service = service
         )
       }
     }

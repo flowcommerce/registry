@@ -2,7 +2,7 @@ package db
 
 import io.flow.play.util.{IdGenerator, UrlKey}
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Service, Port}
+import io.flow.registry.v0.models.{Application, ApplicationForm, Service, Port}
 import io.flow.registry.v0.models.json._
 import io.flow.postgresql.{Authorization, Query, OrderBy, Pager}
 import io.flow.common.v0.models.User
@@ -117,9 +117,9 @@ object ApplicationsDao {
     }
   }
 
-  def upsert(createdBy: User, id: String, form: ApplicationPutForm): Either[Seq[String], Application] = {
-    findById(Authorization.All, id) match {
-      case Some(app) => {
+  def update(createdBy: User, app: Application, form: ApplicationForm): Either[Seq[String], Application] = {
+    validate(form, Some(app)) match {
+      case Nil => {
         val newService = !app.ports.map(_.service.id).contains(form.service)
 
         DB.withTransaction { implicit c =>
@@ -130,7 +130,7 @@ object ApplicationsDao {
           // Update the applications table to trigger the journal
           // write.
           SQL(UpdateQuery).on(
-            'id -> id,
+            'id -> app.id,
             'ports -> portsAsJson(c, app.id),
             'updated_by_user_id -> createdBy.id
           ).execute()
@@ -142,7 +142,7 @@ object ApplicationsDao {
           }
         )
       }
-      case None => create(createdBy, ApplicationForm(id = id, service = form.service))
+      case errors => Left(errors)
     }
   }
 
@@ -253,7 +253,7 @@ object ApplicationsDao {
         offset(offset).
         orderBy(sortSql).
         as(
-          parser().*
+          io.flow.registry.v0.anorm.parsers.Application.parser().*
         )
     }
   }

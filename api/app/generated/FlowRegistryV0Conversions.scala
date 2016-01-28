@@ -89,6 +89,8 @@ package io.flow.registry.v0.anorm.conversions {
     implicit val columnToMapRegistryServicePutForm: Column[Map[String, _root_.io.flow.registry.v0.models.ServicePutForm]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.ServicePutForm]] }
     implicit val columnToSeqRegistryServiceReference: Column[Seq[_root_.io.flow.registry.v0.models.ServiceReference]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.ServiceReference]] }
     implicit val columnToMapRegistryServiceReference: Column[Map[String, _root_.io.flow.registry.v0.models.ServiceReference]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.ServiceReference]] }
+    implicit val columnToSeqRegistryServiceVersion: Column[Seq[_root_.io.flow.registry.v0.models.ServiceVersion]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.ServiceVersion]] }
+    implicit val columnToMapRegistryServiceVersion: Column[Map[String, _root_.io.flow.registry.v0.models.ServiceVersion]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.ServiceVersion]] }
 
   }
 

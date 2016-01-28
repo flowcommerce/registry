@@ -1,8 +1,7 @@
 package db
 
-import io.flow.registry.v0.models.{Application, ApplicationPutForm, Service}
+import io.flow.registry.v0.models.{Application, ApplicationForm}
 import io.flow.postgresql.Authorization
-import java.util.UUID
 import play.api.test._
 import play.api.test.Helpers._
 import org.scalatest._
@@ -22,7 +21,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "respects application service when allocating ports" in {
-    val base = UUID.randomUUID.toString.replaceAll("\\-", "")
+    val base = createUrlKey()
 
     validatePort(
       0,
@@ -58,7 +57,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "allocates ports based on type" in {
-    val base = UUID.randomUUID.toString.replaceAll("\\-", "")
+    val base = createUrlKey()
 
     val ui = createApplication(createApplicationForm().copy(id = base + "-ui", service = "nodejs"))
     val api = createApplication(createApplicationForm().copy(id = base + "-api", service = "play"))
@@ -74,7 +73,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "allocates block ranges in sets of 10" in {
-    val base = UUID.randomUUID.toString.replaceAll("\\-", "")
+    val base = createUrlKey()
 
     val api = createApplication(createApplicationForm().copy(id = base, service = "play"))
 
@@ -115,16 +114,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     PortsDao.findByExternal(Authorization.All, portNumber) must be(None)
   }
 
-  "upsert creates new application" in {
-    val id = createApplicationForm().id
-    val app = rightOrErrors(
-      ApplicationsDao.upsert(testUser, id, ApplicationPutForm(service = "play"))
-    )
-
-    app.id must be(id)
-  }
-
-  "upsert allocates new ports" in {
+  "update allocates new ports" in {
     val app = createApplication(createApplicationForm().copy(service = "nodejs"))
     val portNumber = app.ports.map(_.external).headOption.getOrElse {
       sys.error("No port for application")
@@ -132,20 +122,20 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     app.ports.map(_.external) must be(Seq(portNumber))
 
     val updated = rightOrErrors(
-      ApplicationsDao.upsert(
+      ApplicationsDao.update(
         testUser,
-        app.id,
-        ApplicationPutForm(service = "play")
+        app,
+        ApplicationForm(id = app.id, service = "play")
       )
     )
     updated.ports.map(_.external) must be(Seq(portNumber, portNumber + 1))
 
     // Now test idempotence
     val updatedAgain = rightOrErrors(
-      ApplicationsDao.upsert(
+      ApplicationsDao.update(
         testUser,
-        app.id,
-        ApplicationPutForm(service = "play")
+        updated,
+        ApplicationForm(id = app.id, service = "play")
       )
     )
     updatedAgain.ports.map(_.external) must be(Seq(portNumber, portNumber + 1))

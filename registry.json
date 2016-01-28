@@ -27,13 +27,22 @@
         { "name": "default_port", "type": "long" }
       ]
     },
-    
+
     "service_reference": {
       "fields": [
         { "name": "id", "type": "string", "example": "play" }
       ]
     },
     
+    "service_version": {
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "timestamp", "type": "date-time-iso8601" },
+        { "name": "type", "type": "io.flow.common.v0.enums.change_type" },
+        { "name": "service", "type": "service" }
+      ]
+    },
+
     "application": {
       "fields": [
         { "name": "id", "type": "string" },
@@ -87,6 +96,89 @@
           }
         }
       ]
+    },
+
+    "service": {
+      "operations": [
+        {
+          "method": "GET",
+          "description": "Search services. Always paginated.",
+          "parameters": [
+            { "name": "id", "type": "[string]", "required": false, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "minimum": 1, "maximum": 100 },
+            { "name": "offset", "type": "long", "default": 0, "minimum": 0 },
+            { "name": "sort", "type": "string", "default": "-created_at" }
+          ],
+          "responses": {
+            "200": { "type": "[service]" },
+            "401": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "GET",
+          "description": "Provides visibility into recent changes of each service, including deletion",
+          "path": "/versions",
+          "parameters": [
+            { "name": "id", "type": "[string]", "required": false, "maximum": 100 },
+            { "name": "service", "type": "[string]", "description": "Filter to services with any one of these ids.", "required": false, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "minimum": 1, "maximum": 100 },
+            { "name": "offset", "type": "long", "default": 0, "minimum": 0 },
+            { "name": "sort", "type": "string", "default": "journal_timestamp" }
+          ],
+          "responses": {
+            "200": { "type": "[service_version]" },
+            "401": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "GET",
+          "description": "Returns information about a specific service.",
+          "path": "/:id",
+          "responses": {
+            "200": { "type": "service" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "POST",
+          "description": "Create a new service.",
+          "body": { "type": "service_form" },
+          "responses": {
+            "201": { "type": "service" },
+            "401": { "type": "unit" },
+            "422": { "type": "[io.flow.common.v0.models.error]" }
+          }
+        },
+
+        {
+          "method": "PUT",
+          "path": "/:id",
+          "description": "Upsert an service with the specified id.",
+          "body": { "type": "service_put_form" },
+          "responses": {
+            "200": { "type": "service" },
+            "201": { "type": "service" },
+            "401": { "type": "unit" },
+            "422": { "type": "[io.flow.common.v0.models.error]" }
+          }
+        },
+
+        {
+          "method": "DELETE",
+          "description": "Delete the service with this id",
+          "path": "/:id",
+          "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" },
+            "422": { "type": "[io.flow.common.v0.models.error]" }
+          }
+        }
+      ]          
     },
 
     "application": {

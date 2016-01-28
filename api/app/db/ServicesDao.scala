@@ -2,7 +2,7 @@ package db
 
 import io.flow.play.util.{IdGenerator, UrlKey}
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Service, ServiceForm, ServicePutForm, Port}
+import io.flow.registry.v0.models.{Service, ServiceForm, Port}
 import io.flow.registry.v0.models.json._
 import io.flow.postgresql.{Authorization, Query, OrderBy, Pager}
 import io.flow.common.v0.models.User
@@ -92,9 +92,8 @@ object ServicesDao {
     }
   }
 
-  def upsert(createdBy: User, existing: Service, form: ServicePutForm): Either[Seq[String], Service] = {
-    val serviceForm = ServiceForm(id = existing.id, defaultPort = form.defaultPort)
-    validate(serviceForm, existing = Some(existing)) match {
+  def update(createdBy: User, existing: Service, form: ServiceForm): Either[Seq[String], Service] = {
+    validate(form, existing = Some(existing)) match {
       case Nil => {
         DB.withConnection { implicit c =>
           SQL(UpdateQuery).on(

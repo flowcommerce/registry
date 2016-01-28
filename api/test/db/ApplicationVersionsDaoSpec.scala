@@ -1,7 +1,7 @@
 package db
 
 import io.flow.common.v0.models.ChangeType
-import io.flow.registry.v0.models.{ApplicationPutForm, Service}
+import io.flow.registry.v0.models.ApplicationForm
 import io.flow.postgresql.Authorization
 import play.api.test._
 import play.api.test.Helpers._
@@ -32,7 +32,7 @@ class ApplicationVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpe
     val newService = createService()
     val app = createApplication()
     val updated = rightOrErrors(
-      ApplicationsDao.upsert(testUser, app.id, ApplicationPutForm(service = newService.id))
+      ApplicationsDao.update(testUser, app, ApplicationForm(id = app.id, service = newService.id))
     )
 
     val versions = ApplicationVersionsDao.findAll(Authorization.All, applications = Some(Seq(app.id)))

@@ -19,7 +19,18 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     )
   }
 
-  "PUT /applications/:id upserts application" in new WithServer(port=port) {
+  "PUT /applications/:id updates application" in new WithServer(port=port) {
+    val application = createApplication(createApplicationForm().copy(service = "play"))
+    await(identifiedClient.applications.putById(application.id, createApplicationPutForm().copy(service = "nodejs")))
+
+    val updated = await(
+      identifiedClient.applications.getById(application.id)
+    )
+    updated.id must beEqualTo(application.id)
+    updated.ports.map(_.service.id) must beEqualTo(Seq("nodejs", "play"))
+  }
+
+  "PUT /applications/:id creates application" in new WithServer(port=port) {
     val id = createTestId()
     val updated = await(identifiedClient.applications.putById(id, createApplicationPutForm()))
     await(

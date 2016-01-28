@@ -1,9 +1,9 @@
 package controllers
 
-import db.{ApplicationsDao, ApplicationVersionsDao}
+import db.{ApplicationsDao, ServicesDao, ServiceVersionsDao}
 import io.flow.common.v0.models.User
 import io.flow.common.v0.models.json._
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Service}
+import io.flow.registry.v0.models.{Service, ServiceForm, ServicePutForm}
 import io.flow.registry.v0.models.json._
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
@@ -11,7 +11,7 @@ import io.flow.postgresql.{Authorization, OrderBy}
 import play.api.mvc._
 import play.api.libs.json._
 
-class Applications @javax.inject.Inject() (
+class Services @javax.inject.Inject() (
   val userTokensClient: io.flow.play.clients.UserTokensClient
 ) extends Controller
      with io.flow.play.controllers.IdentifiedRestController
@@ -19,10 +19,6 @@ class Applications @javax.inject.Inject() (
 
   def get(
     id: Option[Seq[String]],
-    port: Option[Seq[Long]],
-    service: Option[Seq[String]],
-    prefix: Option[String],
-    q: Option[String],
     limit: Long = 25,
     offset: Long = 0,
     sort: String
@@ -34,13 +30,9 @@ class Applications @javax.inject.Inject() (
       case Right(orderBy) => {
         Ok(
           Json.toJson(
-            ApplicationsDao.findAll(
+            ServicesDao.findAll(
               Authorization.User(request.user.id),
               ids = optionals(id),
-              services = optionals(service),
-              portNumbers = optionals(port),
-              prefix = prefix,
-              q = q,
               limit = limit,
               offset = offset,
               orderBy = orderBy
@@ -53,7 +45,7 @@ class Applications @javax.inject.Inject() (
 
   def getVersions(
     id: Option[Seq[String]],
-    application: Option[Seq[String]],
+    service: Option[Seq[String]],
     limit: Long = 25,
     offset: Long = 0,
     sort: String
@@ -65,10 +57,10 @@ class Applications @javax.inject.Inject() (
       case Right(orderBy) => {
         Ok(
           Json.toJson(
-            ApplicationVersionsDao.findAll(
+            ServiceVersionsDao.findAll(
               Authorization.User(request.user.id),
               ids = optionals(id),
-              applications = optionals(application),
+              services = optionals(service),
               limit = limit,
               offset = offset,
               orderBy = orderBy
@@ -80,21 +72,21 @@ class Applications @javax.inject.Inject() (
   }
   
   def getById(id: String) = Identified { request =>
-    withApplication(request.user, id) { app =>
-      Ok(Json.toJson(app))
+    withService(request.user, id) { service =>
+      Ok(Json.toJson(service))
     }
   }
 
   def post() = Identified { request =>
     JsValue.sync(request.contentType, request.body) { js =>
-      js.validate[ApplicationForm] match {
+      js.validate[ServiceForm] match {
         case e: JsError => {
           UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
         }
-        case s: JsSuccess[ApplicationForm] => {
-          ApplicationsDao.create(request.user, s.get) match {
+        case s: JsSuccess[ServiceForm] => {
+          ServicesDao.create(request.user, s.get) match {
             case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-            case Right(app) => Created(Json.toJson(app))
+            case Right(service) => Created(Json.toJson(service))
           }
         }
       }
@@ -103,24 +95,24 @@ class Applications @javax.inject.Inject() (
 
   def putById(id: String) = Identified { request =>
     JsValue.sync(request.contentType, request.body) { js =>
-      js.validate[ApplicationPutForm] match {
+      js.validate[ServicePutForm] match {
         case e: JsError => {
           UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
         }
-        case s: JsSuccess[ApplicationPutForm] => {
+        case s: JsSuccess[ServicePutForm] => {
           val putForm = s.get
-          val form = ApplicationForm(id = id, service = putForm.service, port = putForm.port)
-          ApplicationsDao.findById(Authorization.User(request.user.id), id) match {
+          val form = ServiceForm(id = id, defaultPort = putForm.defaultPort)
+          ServicesDao.findById(Authorization.User(request.user.id), id) match {
             case None => {
-              ApplicationsDao.create(request.user, form) match {
+              ServicesDao.create(request.user, form) match {
                 case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-                case Right(application) => Created(Json.toJson(application))
+                case Right(service) => Created(Json.toJson(service))
               }
             }
-            case Some(application) => {
-              ApplicationsDao.update(request.user, application, form) match {
+            case Some(service) => {
+              ServicesDao.update(request.user, service, form) match {
                 case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-                case Right(application) => Ok(Json.toJson(application))
+                case Right(service) => Ok(Json.toJson(service))
               }
             }
           }
@@ -130,21 +122,28 @@ class Applications @javax.inject.Inject() (
   }
 
   def deleteById(id: String) = Identified { request =>
-    withApplication(request.user, id) { app =>
-      ApplicationsDao.delete(request.user, app)
-      NoContent
+    withService(request.user, id) { service =>
+      ApplicationsDao.findAll(Authorization.All, services = Some(Seq(service.id)), limit = 1) match {
+        case Nil => {
+          ServicesDao.delete(request.user, service)
+          NoContent
+        }
+        case apps => {
+          UnprocessableEntity(Json.toJson(Validation.error("1 or more applications is using this service")))
+        }
+      }
     }
   }
 
-  def withApplication(user: User, id: String)(
-    f: Application => Result
+  def withService(user: User, id: String)(
+    f: Service => Result
   ) = {
-    ApplicationsDao.findById(Authorization.User(user.id), id) match {
+    ServicesDao.findById(Authorization.User(user.id), id) match {
       case None => {
         Results.NotFound
       }
-      case Some(application) => {
-        f(application)
+      case Some(service) => {
+        f(service)
       }
     }
   }
