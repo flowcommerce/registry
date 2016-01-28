@@ -44,5 +44,14 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "org.scalatest" %% "scalatest" % "2.2.6" % "test"
   ),
   scalacOptions += "-feature",
-  coverageHighlighting := true
+  coverageHighlighting := true,
+  resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
+  resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
+  resolvers += "Artifactory" at "https://flow.artifactoryonline.com/flow/libs-release/",
+  credentials += Credentials(
+    "Artifactory Realm",
+    "flow.artifactoryonline.com",
+    System.getenv("ARTIFACTORY_USERNAME"),
+    System.getenv("ARTIFACTORY_PASSWORD")
+  )
 )
