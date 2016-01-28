@@ -59,6 +59,12 @@ trait Helpers {
     )
   }
   
+  def createServicePutForm(): ServicePutForm = {
+    ServicePutForm(
+      defaultPort = 8080
+    )
+  }
+  
   def createApplication(
     form: ApplicationForm = createApplicationForm()
   ) (

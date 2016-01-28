@@ -1,7 +1,6 @@
 package controllers
 
 import io.flow.registry.v0.models.{Application, ApplicationForm, Service}
-import java.util.UUID
 import play.api.libs.ws._
 import play.api.test._
 
@@ -13,7 +12,10 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val application = createApplication()
     val id = application.id
 
-    identifiedClient.applications.deleteById(id)
+    await(
+      identifiedClient.applications.deleteById(id)
+    )
+
     expectNotFound(
       identifiedClient.applications.getById(id)
     )
@@ -135,7 +137,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
   }
 
   "GET /applications by prefix" in new WithServer(port=port) {
-    val prefix = UUID.randomUUID.toString.replaceAll("\\-", "")
+    val prefix = createUrlKey()
     val application1 = createApplication(createApplicationForm().copy(id = prefix + "-1"))
     val application2 = createApplication(createApplicationForm().copy(id = prefix + "-2"))
 
@@ -149,7 +151,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
   }
 
   "GET /applications by query" in new WithServer(port=port) {
-    val prefix = UUID.randomUUID.toString.replaceAll("\\-", "")
+    val prefix = createUrlKey()
     val application1 = createApplication(createApplicationForm().copy(id = prefix + "-foo-1"))
     val application2 = createApplication(createApplicationForm().copy(id = prefix + "-foo-2"))
     val ids = Seq(application1.id, application2.id)
@@ -167,7 +169,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     ).map(_.id) must beEqualTo(Seq(application2.id))
 
     await(
-      identifiedClient.applications.get(q = Some(UUID.randomUUID.toString))
+      identifiedClient.applications.get(q = Some(createUrlKey()))
     ) must beEqualTo(Nil)
   }
 
