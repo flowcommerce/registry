@@ -3,6 +3,10 @@ scala:
   - 2.11.7
 jdk:
   - oraclejdk8
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot/
 services:
   - docker
 before_script:
@@ -11,3 +15,6 @@ before_script:
 script: 
   - sbt ++$TRAVIS_SCALA_VERSION clean compile test
   - curl https://s3.amazonaws.com/io.flow.aws-s3-public/util/api-lint/api-lint.jar > /tmp/api-lint.jar && java -jar /tmp/api-lint.jar flow/registry
+  # Tricks to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
