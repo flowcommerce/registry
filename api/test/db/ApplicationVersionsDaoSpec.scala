@@ -1,7 +1,7 @@
 package db
 
 import io.flow.common.v0.models.ChangeType
-import io.flow.registry.v0.models.{ApplicationPutForm, PortType}
+import io.flow.registry.v0.models.ApplicationForm
 import io.flow.postgresql.Authorization
 import play.api.test._
 import play.api.test.Helpers._
@@ -18,7 +18,7 @@ class ApplicationVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpe
     val versions = ApplicationVersionsDao.findAll(Authorization.All, applications = Some(Seq(app.id)))
     versions.map(_.application.id) must be(Seq(app.id))
     versions.map(_.`type`) must be(Seq(ChangeType.Insert))
-    versions.flatMap(_.application.ports).map(_.num) must be(app.ports.map(_.num))
+    versions.flatMap(_.application.ports).map(_.external) must be(app.ports.map(_.external))
   }
 
   "versions delete" in {
@@ -29,15 +29,16 @@ class ApplicationVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpe
   }
 
   "versions port changes" in {
+    val newService = createService()
     val app = createApplication()
     val updated = rightOrErrors(
-      ApplicationsDao.upsert(testUser, app.id, ApplicationPutForm(`type` = Seq(PortType.Api)))
+      ApplicationsDao.update(testUser, app, ApplicationForm(id = app.id, service = newService.id))
     )
 
     val versions = ApplicationVersionsDao.findAll(Authorization.All, applications = Some(Seq(app.id)))
     versions.size must be(2)
-    versions(0).application.ports.map(_.num) must be(app.ports.map(_.num))
-    versions(1).application.ports.map(_.num) must be(updated.ports.map(_.num))
+    versions(0).application.ports.map(_.external) must be(app.ports.map(_.external))
+    versions(1).application.ports.map(_.external) must be(updated.ports.map(_.external))
   }
 
 }

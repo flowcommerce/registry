@@ -71,8 +71,6 @@ package io.flow.registry.v0.anorm.conversions {
     implicit val columnToMapUUID: Column[Map[String, _root_.java.util.UUID]] = parser { _.as[Map[String, _root_.java.util.UUID]] }
 
     import io.flow.registry.v0.models.json._
-    implicit val columnToSeqRegistryPortType: Column[Seq[_root_.io.flow.registry.v0.models.PortType]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.PortType]] }
-    implicit val columnToMapRegistryPortType: Column[Map[String, _root_.io.flow.registry.v0.models.PortType]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.PortType]] }
     implicit val columnToSeqRegistryApplication: Column[Seq[_root_.io.flow.registry.v0.models.Application]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.Application]] }
     implicit val columnToMapRegistryApplication: Column[Map[String, _root_.io.flow.registry.v0.models.Application]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.Application]] }
     implicit val columnToSeqRegistryApplicationForm: Column[Seq[_root_.io.flow.registry.v0.models.ApplicationForm]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.ApplicationForm]] }
@@ -83,6 +81,16 @@ package io.flow.registry.v0.anorm.conversions {
     implicit val columnToMapRegistryApplicationVersion: Column[Map[String, _root_.io.flow.registry.v0.models.ApplicationVersion]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.ApplicationVersion]] }
     implicit val columnToSeqRegistryPort: Column[Seq[_root_.io.flow.registry.v0.models.Port]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.Port]] }
     implicit val columnToMapRegistryPort: Column[Map[String, _root_.io.flow.registry.v0.models.Port]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.Port]] }
+    implicit val columnToSeqRegistryService: Column[Seq[_root_.io.flow.registry.v0.models.Service]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.Service]] }
+    implicit val columnToMapRegistryService: Column[Map[String, _root_.io.flow.registry.v0.models.Service]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.Service]] }
+    implicit val columnToSeqRegistryServiceForm: Column[Seq[_root_.io.flow.registry.v0.models.ServiceForm]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.ServiceForm]] }
+    implicit val columnToMapRegistryServiceForm: Column[Map[String, _root_.io.flow.registry.v0.models.ServiceForm]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.ServiceForm]] }
+    implicit val columnToSeqRegistryServicePutForm: Column[Seq[_root_.io.flow.registry.v0.models.ServicePutForm]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.ServicePutForm]] }
+    implicit val columnToMapRegistryServicePutForm: Column[Map[String, _root_.io.flow.registry.v0.models.ServicePutForm]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.ServicePutForm]] }
+    implicit val columnToSeqRegistryServiceReference: Column[Seq[_root_.io.flow.registry.v0.models.ServiceReference]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.ServiceReference]] }
+    implicit val columnToMapRegistryServiceReference: Column[Map[String, _root_.io.flow.registry.v0.models.ServiceReference]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.ServiceReference]] }
+    implicit val columnToSeqRegistryServiceVersion: Column[Seq[_root_.io.flow.registry.v0.models.ServiceVersion]] = parser { _.as[Seq[_root_.io.flow.registry.v0.models.ServiceVersion]] }
+    implicit val columnToMapRegistryServiceVersion: Column[Map[String, _root_.io.flow.registry.v0.models.ServiceVersion]] = parser { _.as[Map[String, _root_.io.flow.registry.v0.models.ServiceVersion]] }
 
   }
 

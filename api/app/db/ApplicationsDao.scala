@@ -2,7 +2,7 @@ package db
 
 import io.flow.play.util.{IdGenerator, UrlKey}
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, PortType, Port}
+import io.flow.registry.v0.models.{Application, ApplicationForm, Service, Port}
 import io.flow.registry.v0.models.json._
 import io.flow.postgresql.{Authorization, Query, OrderBy, Pager}
 import io.flow.common.v0.models.User
@@ -10,14 +10,13 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 
 import io.flow.registry.v0.anorm.conversions.Json._
 
 object ApplicationsDao {
 
-  private[this] val urlKey = UrlKey(minKeyLength = 4)
-  private[this] val SortByPort = "(select min(num) from ports where application_id = applications.id)"
+  private[this] val urlKey = UrlKey(minKeyLength = 3)
+  private[this] val SortByPort = "(select min(external) from ports where application_id = applications.id)"
 
   private[this] val BaseQuery = Query(s"""
     select applications.id,
@@ -61,16 +60,37 @@ object ApplicationsDao {
       }
     }
 
-    val typeErrors = form.`type`.flatMap {
-      case PortType.UNDEFINED(_) => {
-        Some("Invalid application type. Must be one of: " + PortType.all.map(_.toString).sorted.mkString(", "))
+    val serviceErrors = ServicesDao.findById(Authorization.All, form.service) match {
+      case None => {
+        Seq("Service not found")
       }
       case _ => {
-        None
+        Nil
       }
-    }.distinct
+    }
 
-    idErrors ++ typeErrors
+    val portErrors = form.port match {
+      case None => {
+        Nil
+      }
+      case Some(port) => {
+        ServicesDao.validatePort(port) match {
+          case Nil => {
+            ApplicationsDao.findByPortNumber(Authorization.All, port) match {
+              case None => {
+                Nil
+              }
+              case Some(app) => {
+                Seq(s"Port ${port} is already assigned to the application ${app.id}")
+              }
+            }
+          }
+          case errors => errors
+        }
+      }
+    }
+
+    idErrors ++ serviceErrors ++ portErrors
   }
 
   def create(createdBy: User, form: ApplicationForm): Either[Seq[String], Application] = {
@@ -78,9 +98,7 @@ object ApplicationsDao {
       case Nil => {
         DB.withTransaction { implicit c =>
           val id = form.id.trim
-          form.`type`.map { t =>
-            createPort(c, createdBy, id, t)
-          }
+          createPort(c, createdBy, id, form.port, form.service)
 
           SQL(InsertQuery).on(
             'id -> id,
@@ -99,21 +117,20 @@ object ApplicationsDao {
     }
   }
 
-  def upsert(createdBy: User, id: String, form: ApplicationPutForm): Either[Seq[String], Application] = {
-    findById(Authorization.All, id) match {
-      case Some(app) => {
-        val newTypes = form.`type`.filter { t =>
-          !app.ports.map(_.`type`).contains(t)
-        }
+  def update(createdBy: User, app: Application, form: ApplicationForm): Either[Seq[String], Application] = {
+    validate(form, Some(app)) match {
+      case Nil => {
+        val newService = !app.ports.map(_.service.id).contains(form.service)
+
         DB.withTransaction { implicit c =>
-          newTypes.map { t =>
-            createPort(c, createdBy, app.id, t)
+          if (newService) {
+            createPort(c, createdBy, app.id, form.port, form.service)
           }
 
           // Update the applications table to trigger the journal
           // write.
           SQL(UpdateQuery).on(
-            'id -> id,
+            'id -> app.id,
             'ports -> portsAsJson(c, app.id),
             'updated_by_user_id -> createdBy.id
           ).execute()
@@ -125,7 +142,7 @@ object ApplicationsDao {
           }
         )
       }
-      case None => create(createdBy, ApplicationForm(id = id, `type` = form.`type`))
+      case errors => Left(errors)
     }
   }
 
@@ -146,16 +163,25 @@ object ApplicationsDao {
     ).toString
   }
 
-  private[this] def createPort(implicit c: java.sql.Connection, createdBy: User, id: String, typ: PortType) {
-    PortsDao.create(
-      c,
-      createdBy,
-      PortForm(
-        applicationId = id,
-        typ = typ,
-        num = DefaultPortAllocator(id, typ).num
+  private[this] def createPort(
+    implicit c: java.sql.Connection,
+    createdBy: User,
+    applicationId: String,
+    internalPort: Option[Long],
+    serviceId: String
+  ) {
+    ServicesDao.findById(Authorization.All, serviceId).map { service =>
+      PortsDao.create(
+        c,
+        createdBy,
+        PortForm(
+          applicationId = applicationId,
+          serviceId = service.id,
+          internal = internalPort.getOrElse(service.defaultPort),
+          external = DefaultPortAllocator(applicationId, service.id).number
+        )
       )
-    )
+    }
   }
 
   def delete(deletedBy: User, application: Application) {
@@ -180,8 +206,8 @@ object ApplicationsDao {
   def findAll(
     auth: Authorization,
     ids: Option[Seq[String]] = None,
+    services: Option[Seq[String]] = None,
     portNumbers: Option[Seq[Long]] = None,
-    portTypes: Option[Seq[PortType]] = None,
     prefix: Option[String] = None,
     q: Option[String] = None,
     limit: Long = 25,
@@ -202,15 +228,15 @@ object ApplicationsDao {
       BaseQuery.
         optionalIn("applications.id", ids).
         and(
-          portNumbers.map { nums =>
+          services.map { ids =>
             // TODO: bind variables
-            s"applications.id in (select application_id from ports where num in (%s))".format(nums.mkString(", "))
+            s"applications.id in (select application_id from ports where service_id in (%s))".format(ids.mkString("'", "', '", "'"))
           }
         ).
         and(
-          portTypes.map { types =>
+          portNumbers.map { nums =>
             // TODO: bind variables
-            s"applications.id in (select application_id from ports where type in (%s))".format(types.mkString("'", "', '", "'"))
+            s"applications.id in (select application_id from ports where external in (%s))".format(nums.mkString(", "))
           }
         ).
         and(
@@ -227,7 +253,7 @@ object ApplicationsDao {
         offset(offset).
         orderBy(sortSql).
         as(
-          parser().*
+          io.flow.registry.v0.anorm.parsers.Application.parser().*
         )
     }
   }
@@ -246,12 +272,7 @@ object ApplicationsDao {
       case id ~ ports => {
         io.flow.registry.v0.models.Application(
           id = id,
-          ports = ports.getOrElse(Nil).map { js =>
-            Port(
-              `type` = PortType( (js \ "type").as[String] ),
-              num = (js \ "num").as[Long]
-            )
-          }
+          ports = ports.getOrElse(Nil).map { _.as[Port] }
         )
       }
     }

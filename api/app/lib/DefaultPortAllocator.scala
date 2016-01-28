@@ -2,7 +2,7 @@ package io.flow.registry.api.lib
 
 import db.{ApplicationsDao, PortsDao}
 import io.flow.postgresql.Authorization
-import io.flow.registry.v0.models.PortType
+import io.flow.registry.v0.models.Service
 
 /**
  * Parses the name of the application and allocates the default port
@@ -14,7 +14,7 @@ import io.flow.registry.v0.models.PortType
  * collissions with external software
  * 
  *  - start at 6000 ( > postgresql port )
- *  - blacklist any num ending in 00 (things people randomly are
+ *  - blacklist any number ending in 00 (things people randomly are
  *    more likely to use like 7000, 8000, 9000)
  *  - create a blacklist of well known ports that we encounter
  *    (e.g. 8080)
@@ -25,10 +25,11 @@ import io.flow.registry.v0.models.PortType
  * and repeat the process.
  * 
  * @param name The name of the application (e.g. splashpage, splashpage-postgresql) 
+ * @param serviceName The name of the service (e.g. postgresql, nodejs, etc.) 
  */
 case class DefaultPortAllocator(
   name: String,
-  applicationType: PortType
+  serviceName: String
 ) {
 
   private[this] val Blacklist = Seq(8080)
@@ -37,10 +38,10 @@ case class DefaultPortAllocator(
 
   private[this] val Blocksize = 10
 
-  private[this] val defaults = Map[PortType, Int](
-    PortType.Api -> 1,
-    PortType.Ui -> 0,
-    PortType.Database -> 9
+  private[this] val defaults = Map[String, Int](
+    "nodejs" -> 0,
+    "play" -> 1,
+    "postgresql" -> 9
   )
 
   private[this] val prefix = {
@@ -54,22 +55,22 @@ case class DefaultPortAllocator(
 
   /**
     * The port offset for this type of application (based on its
-    * name). Will be a num >= 0 and <= 9. If specified, we will try
+    * name). Will be a number >= 0 and <= 9. If specified, we will try
     * to make sure a port is allocated that ends with this
-    * num. Otherwise we just generated the next sequential port
-    * num.
+    * number. Otherwise we just generated the next sequential port
+    * number.
     */
-  val offset: Option[Int] = defaults.get(applicationType)
+  val offset: Option[Int] = defaults.get(serviceName)
 
   private[this] val applicationBasePorts = ApplicationsDao.findAll(Authorization.All, prefix = Some(prefix)).
     flatMap(_.ports).
-    map(_.num).
+    map(_.external).
     map(toBase(_)).
     sorted.
     distinct
 
   private[this] var i = 0
-  private[this] var last: Long = toBase(PortsDao.maxPortNumber().getOrElse(MinPortNumber - Blocksize))
+  private[this] var last: Long = toBase(PortsDao.maxExternalPortNumber().getOrElse(MinPortNumber - Blocksize))
 
   @scala.annotation.tailrec
   private[this] def nextBlock(): Long = {
@@ -90,12 +91,12 @@ case class DefaultPortAllocator(
   }
 
   /**
-    * The base port num (not taking into account the offset)
+    * The base port number (not taking into account the offset)
     */
   @scala.annotation.tailrec
-  final def num(): Long = {
+  final def number(): Long = {
     firstAvailablePort(nextBlock(), offset) match {
-      case None => num()
+      case None => number()
       case Some(v) => v
     }
   }
@@ -116,25 +117,25 @@ case class DefaultPortAllocator(
   }
 
   /**
-    * Given a port num (e.g. 8201) returns the base port num
+    * Given a port number (e.g. 8201) returns the base port number
     * (e.g. 8200)
     */
-  def toBase(num: Long): Long = {
-    num - (num % Blocksize)
+  def toBase(number: Long): Long = {
+    number - (number % Blocksize)
   }
 
-  def isPortAvailable(num: Long): Boolean = {
-    if (Blacklist.contains(num)) {
+  def isPortAvailable(number: Long): Boolean = {
+    if (Blacklist.contains(number)) {
       false
     } else {
-      PortsDao.findByNumber(Authorization.All, num).isEmpty
+      PortsDao.findByExternal(Authorization.All, number).isEmpty
     }
   }
 
-  def isBlockAvailable(num: Long): Boolean = {
-    if (Blacklist.contains(num)) {
+  def isBlockAvailable(number: Long): Boolean = {
+    if (Blacklist.contains(number)) {
       false
-    } else if (num % 100 == 0) {
+    } else if (number % 100 == 0) {
       false
     } else {
       true

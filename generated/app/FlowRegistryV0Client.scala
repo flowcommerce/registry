@@ -12,11 +12,13 @@ package io.flow.registry.v0.models {
 
   case class ApplicationForm(
     id: String,
-    `type`: Seq[io.flow.registry.v0.models.PortType]
+    service: String,
+    port: _root_.scala.Option[Long] = None
   )
 
   case class ApplicationPutForm(
-    `type`: Seq[io.flow.registry.v0.models.PortType]
+    service: String,
+    port: _root_.scala.Option[Long] = None
   )
 
   case class ApplicationVersion(
@@ -27,50 +29,42 @@ package io.flow.registry.v0.models {
   )
 
   case class Port(
-    `type`: io.flow.registry.v0.models.PortType,
-    num: Long
+    service: io.flow.registry.v0.models.ServiceReference,
+    internal: Long,
+    external: Long
   )
 
-  sealed trait PortType
+  /**
+   * A service is used to identify what type of software is actually running. We use
+   * this to enable setting up application types with enough configuration info by
+   * default to support our use cases around docker, CI, etc. The name service comes
+   * from
+   * https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.txt
+   */
+  case class Service(
+    id: String,
+    defaultPort: Long
+  )
 
-  object PortType {
+  case class ServiceForm(
+    id: String,
+    defaultPort: Long
+  )
 
-    case object Api extends PortType { override def toString = "api" }
-    /**
-     * Any type of storage interface
-     */
-    case object Database extends PortType { override def toString = "database" }
-    /**
-     * Any user interface
-     */
-    case object Ui extends PortType { override def toString = "ui" }
+  case class ServicePutForm(
+    defaultPort: Long
+  )
 
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends PortType
+  case class ServiceReference(
+    id: String
+  )
 
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Api, Database, Ui)
-
-    private[this]
-    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
-
-    def apply(value: String): PortType = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): _root_.scala.Option[PortType] = byName.get(value.toLowerCase)
-
-  }
+  case class ServiceVersion(
+    id: String,
+    timestamp: _root_.org.joda.time.DateTime,
+    `type`: io.flow.common.v0.models.ChangeType,
+    service: io.flow.registry.v0.models.Service
+  )
 
 }
 
@@ -103,36 +97,6 @@ package io.flow.registry.v0.models {
       }
     }
 
-    implicit val jsonReadsRegistryPortType = new play.api.libs.json.Reads[io.flow.registry.v0.models.PortType] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.registry.v0.models.PortType] = {
-        js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.PortType(v.value))
-          case _ => {
-            (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.PortType(v))
-              case err: play.api.libs.json.JsError => err
-            }
-          }
-        }
-      }
-    }
-
-    def jsonWritesRegistryPortType(obj: io.flow.registry.v0.models.PortType) = {
-      play.api.libs.json.JsString(obj.toString)
-    }
-
-    def jsObjectPortType(obj: io.flow.registry.v0.models.PortType) = {
-      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
-    }
-
-    implicit def jsonWritesRegistryPortType: play.api.libs.json.Writes[PortType] = {
-      new play.api.libs.json.Writes[io.flow.registry.v0.models.PortType] {
-        def writes(obj: io.flow.registry.v0.models.PortType) = {
-          jsonWritesRegistryPortType(obj)
-        }
-      }
-    }
-
     implicit def jsonReadsRegistryApplication: play.api.libs.json.Reads[Application] = {
       (
         (__ \ "id").read[String] and
@@ -158,15 +122,19 @@ package io.flow.registry.v0.models {
     implicit def jsonReadsRegistryApplicationForm: play.api.libs.json.Reads[ApplicationForm] = {
       (
         (__ \ "id").read[String] and
-        (__ \ "type").read[Seq[io.flow.registry.v0.models.PortType]]
+        (__ \ "service").read[String] and
+        (__ \ "port").readNullable[Long]
       )(ApplicationForm.apply _)
     }
 
     def jsObjectApplicationForm(obj: io.flow.registry.v0.models.ApplicationForm) = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
-        "type" -> play.api.libs.json.Json.toJson(obj.`type`)
-      )
+        "service" -> play.api.libs.json.JsString(obj.service)
+      ) ++ (obj.port match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("port" -> play.api.libs.json.JsNumber(x))
+      })
     }
 
     implicit def jsonWritesRegistryApplicationForm: play.api.libs.json.Writes[ApplicationForm] = {
@@ -178,13 +146,19 @@ package io.flow.registry.v0.models {
     }
 
     implicit def jsonReadsRegistryApplicationPutForm: play.api.libs.json.Reads[ApplicationPutForm] = {
-      (__ \ "type").read[Seq[io.flow.registry.v0.models.PortType]].map { x => new ApplicationPutForm(`type` = x) }
+      (
+        (__ \ "service").read[String] and
+        (__ \ "port").readNullable[Long]
+      )(ApplicationPutForm.apply _)
     }
 
     def jsObjectApplicationPutForm(obj: io.flow.registry.v0.models.ApplicationPutForm) = {
       play.api.libs.json.Json.obj(
-        "type" -> play.api.libs.json.Json.toJson(obj.`type`)
-      )
+        "service" -> play.api.libs.json.JsString(obj.service)
+      ) ++ (obj.port match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("port" -> play.api.libs.json.JsNumber(x))
+      })
     }
 
     implicit def jsonWritesRegistryApplicationPutForm: play.api.libs.json.Writes[ApplicationPutForm] = {
@@ -223,15 +197,17 @@ package io.flow.registry.v0.models {
 
     implicit def jsonReadsRegistryPort: play.api.libs.json.Reads[Port] = {
       (
-        (__ \ "type").read[io.flow.registry.v0.models.PortType] and
-        (__ \ "num").read[Long]
+        (__ \ "service").read[io.flow.registry.v0.models.ServiceReference] and
+        (__ \ "internal").read[Long] and
+        (__ \ "external").read[Long]
       )(Port.apply _)
     }
 
     def jsObjectPort(obj: io.flow.registry.v0.models.Port) = {
       play.api.libs.json.Json.obj(
-        "type" -> play.api.libs.json.JsString(obj.`type`.toString),
-        "num" -> play.api.libs.json.JsNumber(obj.num)
+        "service" -> jsObjectServiceReference(obj.service),
+        "internal" -> play.api.libs.json.JsNumber(obj.internal),
+        "external" -> play.api.libs.json.JsNumber(obj.external)
       )
     }
 
@@ -239,6 +215,112 @@ package io.flow.registry.v0.models {
       new play.api.libs.json.Writes[io.flow.registry.v0.models.Port] {
         def writes(obj: io.flow.registry.v0.models.Port) = {
           jsObjectPort(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsRegistryService: play.api.libs.json.Reads[Service] = {
+      (
+        (__ \ "id").read[String] and
+        (__ \ "default_port").read[Long]
+      )(Service.apply _)
+    }
+
+    def jsObjectService(obj: io.flow.registry.v0.models.Service) = {
+      play.api.libs.json.Json.obj(
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "default_port" -> play.api.libs.json.JsNumber(obj.defaultPort)
+      )
+    }
+
+    implicit def jsonWritesRegistryService: play.api.libs.json.Writes[Service] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.Service] {
+        def writes(obj: io.flow.registry.v0.models.Service) = {
+          jsObjectService(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsRegistryServiceForm: play.api.libs.json.Reads[ServiceForm] = {
+      (
+        (__ \ "id").read[String] and
+        (__ \ "default_port").read[Long]
+      )(ServiceForm.apply _)
+    }
+
+    def jsObjectServiceForm(obj: io.flow.registry.v0.models.ServiceForm) = {
+      play.api.libs.json.Json.obj(
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "default_port" -> play.api.libs.json.JsNumber(obj.defaultPort)
+      )
+    }
+
+    implicit def jsonWritesRegistryServiceForm: play.api.libs.json.Writes[ServiceForm] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.ServiceForm] {
+        def writes(obj: io.flow.registry.v0.models.ServiceForm) = {
+          jsObjectServiceForm(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsRegistryServicePutForm: play.api.libs.json.Reads[ServicePutForm] = {
+      (__ \ "default_port").read[Long].map { x => new ServicePutForm(defaultPort = x) }
+    }
+
+    def jsObjectServicePutForm(obj: io.flow.registry.v0.models.ServicePutForm) = {
+      play.api.libs.json.Json.obj(
+        "default_port" -> play.api.libs.json.JsNumber(obj.defaultPort)
+      )
+    }
+
+    implicit def jsonWritesRegistryServicePutForm: play.api.libs.json.Writes[ServicePutForm] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.ServicePutForm] {
+        def writes(obj: io.flow.registry.v0.models.ServicePutForm) = {
+          jsObjectServicePutForm(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsRegistryServiceReference: play.api.libs.json.Reads[ServiceReference] = {
+      (__ \ "id").read[String].map { x => new ServiceReference(id = x) }
+    }
+
+    def jsObjectServiceReference(obj: io.flow.registry.v0.models.ServiceReference) = {
+      play.api.libs.json.Json.obj(
+        "id" -> play.api.libs.json.JsString(obj.id)
+      )
+    }
+
+    implicit def jsonWritesRegistryServiceReference: play.api.libs.json.Writes[ServiceReference] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.ServiceReference] {
+        def writes(obj: io.flow.registry.v0.models.ServiceReference) = {
+          jsObjectServiceReference(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsRegistryServiceVersion: play.api.libs.json.Reads[ServiceVersion] = {
+      (
+        (__ \ "id").read[String] and
+        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
+        (__ \ "type").read[io.flow.common.v0.models.ChangeType] and
+        (__ \ "service").read[io.flow.registry.v0.models.Service]
+      )(ServiceVersion.apply _)
+    }
+
+    def jsObjectServiceVersion(obj: io.flow.registry.v0.models.ServiceVersion) = {
+      play.api.libs.json.Json.obj(
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "timestamp" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.timestamp)),
+        "type" -> play.api.libs.json.JsString(obj.`type`.toString),
+        "service" -> jsObjectService(obj.service)
+      )
+    }
+
+    implicit def jsonWritesRegistryServiceVersion: play.api.libs.json.Writes[ServiceVersion] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.ServiceVersion] {
+        def writes(obj: io.flow.registry.v0.models.ServiceVersion) = {
+          jsObjectServiceVersion(obj)
         }
       }
     }
@@ -272,16 +354,7 @@ package io.flow.registry.v0 {
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
-    // Enum: PortType
-    private[this] val enumPortTypeNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${io.flow.registry.v0.models.PortType.all.mkString(", ")}"
 
-    implicit val pathBindableEnumPortType = new PathBindable.Parsing[io.flow.registry.v0.models.PortType] (
-      PortType.fromString(_).get, _.toString, enumPortTypeNotFound
-    )
-
-    implicit val queryStringBindableEnumPortType = new QueryStringBindable.Parsing[io.flow.registry.v0.models.PortType](
-      PortType.fromString(_).get, _.toString, enumPortTypeNotFound
-    )
 
   }
 
@@ -315,11 +388,13 @@ package io.flow.registry.v0 {
 
     def healthchecks: Healthchecks = Healthchecks
 
+    def services: Services = Services
+
     object Applications extends Applications {
       override def get(
         id: _root_.scala.Option[Seq[String]] = None,
         port: _root_.scala.Option[Seq[Long]] = None,
-        `type`: _root_.scala.Option[Seq[io.flow.registry.v0.models.PortType]] = None,
+        service: _root_.scala.Option[Seq[String]] = None,
         prefix: _root_.scala.Option[String] = None,
         q: _root_.scala.Option[String] = None,
         limit: Long = 25,
@@ -335,7 +410,7 @@ package io.flow.registry.v0 {
         ).flatten ++
           id.getOrElse(Nil).map("id" -> _) ++
           port.getOrElse(Nil).map("port" -> _.toString) ++
-          `type`.getOrElse(Nil).map("type" -> _.toString)
+          service.getOrElse(Nil).map("service" -> _)
 
         _executeRequest("GET", s"/applications", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("Seq[io.flow.registry.v0.models.Application]", r, _.validate[Seq[io.flow.registry.v0.models.Application]])
@@ -422,6 +497,101 @@ package io.flow.registry.v0 {
         _executeRequest("GET", s"/_internal_/healthcheck").map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.common.v0.models.Healthcheck", r, _.validate[io.flow.common.v0.models.Healthcheck])
           case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+    }
+
+    object Services extends Services {
+      override def get(
+        id: _root_.scala.Option[Seq[String]] = None,
+        limit: Long = 25,
+        offset: Long = 0,
+        sort: String = "-created_at"
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.Service]] = {
+        val queryParameters = Seq(
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString),
+          Some("sort" -> sort)
+        ).flatten ++
+          id.getOrElse(Nil).map("id" -> _)
+
+        _executeRequest("GET", s"/services", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("Seq[io.flow.registry.v0.models.Service]", r, _.validate[Seq[io.flow.registry.v0.models.Service]])
+          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+
+      override def getVersions(
+        id: _root_.scala.Option[Seq[String]] = None,
+        service: _root_.scala.Option[Seq[String]] = None,
+        limit: Long = 25,
+        offset: Long = 0,
+        sort: String = "journal_timestamp"
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.ServiceVersion]] = {
+        val queryParameters = Seq(
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString),
+          Some("sort" -> sort)
+        ).flatten ++
+          id.getOrElse(Nil).map("id" -> _) ++
+          service.getOrElse(Nil).map("service" -> _)
+
+        _executeRequest("GET", s"/services/versions", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("Seq[io.flow.registry.v0.models.ServiceVersion]", r, _.validate[Seq[io.flow.registry.v0.models.ServiceVersion]])
+          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+
+      override def getById(
+        id: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Service] = {
+        _executeRequest("GET", s"/services/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
+          case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Service", r, _.validate[io.flow.registry.v0.models.Service])
+          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+        }
+      }
+
+      override def post(
+        serviceForm: io.flow.registry.v0.models.ServiceForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Service] = {
+        val payload = play.api.libs.json.Json.toJson(serviceForm)
+
+        _executeRequest("POST", s"/services", body = Some(payload)).map {
+          case r if r.status == 201 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Service", r, _.validate[io.flow.registry.v0.models.Service])
+          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw new io.flow.registry.v0.errors.ErrorsResponse(r)
+          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
+        }
+      }
+
+      override def putById(
+        id: String,
+        servicePutForm: io.flow.registry.v0.models.ServicePutForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Service] = {
+        val payload = play.api.libs.json.Json.toJson(servicePutForm)
+
+        _executeRequest("PUT", s"/services/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", body = Some(payload)).map {
+          case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Service", r, _.validate[io.flow.registry.v0.models.Service])
+          case r if r.status == 201 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Service", r, _.validate[io.flow.registry.v0.models.Service])
+          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw new io.flow.registry.v0.errors.ErrorsResponse(r)
+          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 201, 401, 422")
+        }
+      }
+
+      override def deleteById(
+        id: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+        _executeRequest("DELETE", s"/services/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
+          case r if r.status == 204 => ()
+          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw new io.flow.registry.v0.errors.ErrorsResponse(r)
+          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404, 422")
         }
       }
     }
@@ -518,6 +688,7 @@ package io.flow.registry.v0 {
     trait Client {
       def applications: io.flow.registry.v0.Applications
       def healthchecks: io.flow.registry.v0.Healthchecks
+      def services: io.flow.registry.v0.Services
     }
 
   }
@@ -529,7 +700,7 @@ package io.flow.registry.v0 {
     def get(
       id: _root_.scala.Option[Seq[String]] = None,
       port: _root_.scala.Option[Seq[Long]] = None,
-      `type`: _root_.scala.Option[Seq[io.flow.registry.v0.models.PortType]] = None,
+      service: _root_.scala.Option[Seq[String]] = None,
       prefix: _root_.scala.Option[String] = None,
       q: _root_.scala.Option[String] = None,
       limit: Long = 25,
@@ -580,6 +751,58 @@ package io.flow.registry.v0 {
 
   trait Healthchecks {
     def getHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.Healthcheck]
+  }
+
+  trait Services {
+    /**
+     * Search services. Always paginated.
+     */
+    def get(
+      id: _root_.scala.Option[Seq[String]] = None,
+      limit: Long = 25,
+      offset: Long = 0,
+      sort: String = "-created_at"
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.Service]]
+
+    /**
+     * Provides visibility into recent changes of each service, including deletion
+     */
+    def getVersions(
+      id: _root_.scala.Option[Seq[String]] = None,
+      service: _root_.scala.Option[Seq[String]] = None,
+      limit: Long = 25,
+      offset: Long = 0,
+      sort: String = "journal_timestamp"
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.ServiceVersion]]
+
+    /**
+     * Returns information about a specific service.
+     */
+    def getById(
+      id: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Service]
+
+    /**
+     * Create a new service.
+     */
+    def post(
+      serviceForm: io.flow.registry.v0.models.ServiceForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Service]
+
+    /**
+     * Upsert an service with the specified id.
+     */
+    def putById(
+      id: String,
+      servicePutForm: io.flow.registry.v0.models.ServicePutForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Service]
+
+    /**
+     * Delete the service with this id
+     */
+    def deleteById(
+      id: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
   package errors {

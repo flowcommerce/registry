@@ -4,18 +4,44 @@
   "imports": [
     { "uri": "http://www.apidoc.me/flow/common/0.0.9/service.json" }
   ],
-
-  "enums": {
-    "port_type": {
-      "values": [
-        { "name": "api" },
-        { "name": "database", "description": "Any type of storage interface" },
-        { "name": "ui", "description": "Any user interface" }
-      ]
-    }
-  },
   
   "models": {
+
+    "service": {
+      "description": "A service is used to identify what type of software is actually running. We use this to enable setting up application types with enough configuration info by default to support our use cases around docker, CI, etc. The name service comes from https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.txt",
+      "fields": [
+        { "name": "id", "type": "string", "example": "play" },
+        { "name": "default_port", "type": "long", "example": "9000" }
+      ]
+    },
+
+    "service_form": {
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "default_port", "type": "long" }
+      ]
+    },
+
+    "service_put_form": {
+      "fields": [
+        { "name": "default_port", "type": "long" }
+      ]
+    },
+
+    "service_reference": {
+      "fields": [
+        { "name": "id", "type": "string", "example": "play" }
+      ]
+    },
+    
+    "service_version": {
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "timestamp", "type": "date-time-iso8601" },
+        { "name": "type", "type": "io.flow.common.v0.enums.change_type" },
+        { "name": "service", "type": "service" }
+      ]
+    },
 
     "application": {
       "fields": [
@@ -27,13 +53,15 @@
     "application_form": {
       "fields": [
         { "name": "id", "type": "string" },
-        { "name": "type", "type": "[port_type]" }
+        { "name": "service", "type": "string" },
+        { "name": "port", "type": "long", "required": false, "description": "The port number that this application runs on. Defaults to the service's default port number." }
       ]
     },
 
     "application_put_form": {
       "fields": [
-        { "name": "type", "type": "[port_type]" }
+        { "name": "service", "type": "string" },
+        { "name": "port", "type": "long", "required": false, "description": "The port number that this application runs on. Defaults to the service's default port number." }
       ]
     },
 
@@ -48,8 +76,9 @@
 
     "port": {
       "fields": [
-        { "name": "type", "type": "port_type" },
-        { "name": "num", "type": "long" }
+        { "name": "service", "type": "service_reference" },
+        { "name": "internal", "type": "long", "description": "The port on which this service is running internally. If running in a container, this is the port inside the container." },
+        { "name": "external", "type": "long", "description": "The port on which clients access this service. If running in a container, this is the host port." }
       ]
     }
 
@@ -69,6 +98,89 @@
       ]
     },
 
+    "service": {
+      "operations": [
+        {
+          "method": "GET",
+          "description": "Search services. Always paginated.",
+          "parameters": [
+            { "name": "id", "type": "[string]", "required": false, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "minimum": 1, "maximum": 100 },
+            { "name": "offset", "type": "long", "default": 0, "minimum": 0 },
+            { "name": "sort", "type": "string", "default": "-created_at" }
+          ],
+          "responses": {
+            "200": { "type": "[service]" },
+            "401": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "GET",
+          "description": "Provides visibility into recent changes of each service, including deletion",
+          "path": "/versions",
+          "parameters": [
+            { "name": "id", "type": "[string]", "required": false, "maximum": 100 },
+            { "name": "service", "type": "[string]", "description": "Filter to services with any one of these ids.", "required": false, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "minimum": 1, "maximum": 100 },
+            { "name": "offset", "type": "long", "default": 0, "minimum": 0 },
+            { "name": "sort", "type": "string", "default": "journal_timestamp" }
+          ],
+          "responses": {
+            "200": { "type": "[service_version]" },
+            "401": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "GET",
+          "description": "Returns information about a specific service.",
+          "path": "/:id",
+          "responses": {
+            "200": { "type": "service" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "POST",
+          "description": "Create a new service.",
+          "body": { "type": "service_form" },
+          "responses": {
+            "201": { "type": "service" },
+            "401": { "type": "unit" },
+            "422": { "type": "[io.flow.common.v0.models.error]" }
+          }
+        },
+
+        {
+          "method": "PUT",
+          "path": "/:id",
+          "description": "Upsert an service with the specified id.",
+          "body": { "type": "service_put_form" },
+          "responses": {
+            "200": { "type": "service" },
+            "201": { "type": "service" },
+            "401": { "type": "unit" },
+            "422": { "type": "[io.flow.common.v0.models.error]" }
+          }
+        },
+
+        {
+          "method": "DELETE",
+          "description": "Delete the service with this id",
+          "path": "/:id",
+          "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" },
+            "422": { "type": "[io.flow.common.v0.models.error]" }
+          }
+        }
+      ]          
+    },
+
     "application": {
       "operations": [
         {
@@ -77,7 +189,7 @@
           "parameters": [
             { "name": "id", "type": "[string]", "required": false, "maximum": 100 },
             { "name": "port", "type": "[long]", "required": false, "maximum": 100 },
-            { "name": "type", "type": "[port_type]", "required": false, "maximum": 100 },
+            { "name": "service", "type": "[string]", "required": false, "maximum": 100 },
             { "name": "prefix", "type": "string", "required": false, "description": "Find the applications with this exact prefix (computed as the string up the last dash, of if no dash, the full string)" },
             { "name": "q", "type": "string", "required": false, "description": "Arbitrary query search. Case insensitive" },
             { "name": "limit", "type": "long", "default": 25, "minimum": 1, "maximum": 100 },

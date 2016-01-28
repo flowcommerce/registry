@@ -9,18 +9,6 @@ package io.flow.registry.v0.anorm.parsers {
 
   import io.flow.registry.v0.anorm.conversions.Json._
 
-  object PortType {
-
-    def parserWithPrefix(prefix: String, sep: String = "_") = parser(s"$prefix${sep}name")
-
-    def parser(name: String = "port_type"): RowParser[io.flow.registry.v0.models.PortType] = {
-      SqlParser.str(name) map {
-        case value => io.flow.registry.v0.models.PortType(value)
-      }
-    }
-
-  }
-
   object Application {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
@@ -49,19 +37,23 @@ package io.flow.registry.v0.anorm.parsers {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
       id = s"$prefix${sep}id",
-      `type` = s"$prefix${sep}type"
+      service = s"$prefix${sep}service",
+      port = s"$prefix${sep}port"
     )
 
     def parser(
       id: String = "id",
-      `type`: String = "type"
+      service: String = "service",
+      port: String = "port"
     ): RowParser[io.flow.registry.v0.models.ApplicationForm] = {
       SqlParser.str(id) ~
-      SqlParser.get[Seq[io.flow.registry.v0.models.PortType]](`type`) map {
-        case id ~ typeInstance => {
+      SqlParser.str(service) ~
+      SqlParser.long(port).? map {
+        case id ~ service ~ port => {
           io.flow.registry.v0.models.ApplicationForm(
             id = id,
-            `type` = typeInstance
+            service = service,
+            port = port
           )
         }
       }
@@ -72,16 +64,20 @@ package io.flow.registry.v0.anorm.parsers {
   object ApplicationPutForm {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
-      `type` = s"$prefix${sep}type"
+      service = s"$prefix${sep}service",
+      port = s"$prefix${sep}port"
     )
 
     def parser(
-      `type`: String = "type"
+      service: String = "service",
+      port: String = "port"
     ): RowParser[io.flow.registry.v0.models.ApplicationPutForm] = {
-      SqlParser.get[Seq[io.flow.registry.v0.models.PortType]](`type`) map {
-        case typeInstance => {
+      SqlParser.str(service) ~
+      SqlParser.long(port).? map {
+        case service ~ port => {
           io.flow.registry.v0.models.ApplicationPutForm(
-            `type` = typeInstance
+            service = service,
+            port = port
           )
         }
       }
@@ -124,20 +120,144 @@ package io.flow.registry.v0.anorm.parsers {
   object Port {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
-      `type` = s"$prefix${sep}type",
-      num = s"$prefix${sep}num"
+      servicePrefix = s"$prefix${sep}service",
+      internal = s"$prefix${sep}internal",
+      external = s"$prefix${sep}external"
     )
 
     def parser(
-      `type`: String = "type",
-      num: String = "num"
+      servicePrefix: String = "service",
+      internal: String = "internal",
+      external: String = "external"
     ): RowParser[io.flow.registry.v0.models.Port] = {
-      io.flow.registry.v0.anorm.parsers.PortType.parser(`type`) ~
-      SqlParser.long(num) map {
-        case typeInstance ~ num => {
+      io.flow.registry.v0.anorm.parsers.ServiceReference.parserWithPrefix(servicePrefix) ~
+      SqlParser.long(internal) ~
+      SqlParser.long(external) map {
+        case service ~ internal ~ external => {
           io.flow.registry.v0.models.Port(
+            service = service,
+            internal = internal,
+            external = external
+          )
+        }
+      }
+    }
+
+  }
+
+  object Service {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      id = s"$prefix${sep}id",
+      defaultPort = s"$prefix${sep}default_port"
+    )
+
+    def parser(
+      id: String = "id",
+      defaultPort: String = "default_port"
+    ): RowParser[io.flow.registry.v0.models.Service] = {
+      SqlParser.str(id) ~
+      SqlParser.long(defaultPort) map {
+        case id ~ defaultPort => {
+          io.flow.registry.v0.models.Service(
+            id = id,
+            defaultPort = defaultPort
+          )
+        }
+      }
+    }
+
+  }
+
+  object ServiceForm {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      id = s"$prefix${sep}id",
+      defaultPort = s"$prefix${sep}default_port"
+    )
+
+    def parser(
+      id: String = "id",
+      defaultPort: String = "default_port"
+    ): RowParser[io.flow.registry.v0.models.ServiceForm] = {
+      SqlParser.str(id) ~
+      SqlParser.long(defaultPort) map {
+        case id ~ defaultPort => {
+          io.flow.registry.v0.models.ServiceForm(
+            id = id,
+            defaultPort = defaultPort
+          )
+        }
+      }
+    }
+
+  }
+
+  object ServicePutForm {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      defaultPort = s"$prefix${sep}default_port"
+    )
+
+    def parser(
+      defaultPort: String = "default_port"
+    ): RowParser[io.flow.registry.v0.models.ServicePutForm] = {
+      SqlParser.long(defaultPort) map {
+        case defaultPort => {
+          io.flow.registry.v0.models.ServicePutForm(
+            defaultPort = defaultPort
+          )
+        }
+      }
+    }
+
+  }
+
+  object ServiceReference {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      id = s"$prefix${sep}id"
+    )
+
+    def parser(
+      id: String = "id"
+    ): RowParser[io.flow.registry.v0.models.ServiceReference] = {
+      SqlParser.str(id) map {
+        case id => {
+          io.flow.registry.v0.models.ServiceReference(
+            id = id
+          )
+        }
+      }
+    }
+
+  }
+
+  object ServiceVersion {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      id = s"$prefix${sep}id",
+      timestamp = s"$prefix${sep}timestamp",
+      `type` = s"$prefix${sep}type",
+      servicePrefix = s"$prefix${sep}service"
+    )
+
+    def parser(
+      id: String = "id",
+      timestamp: String = "timestamp",
+      `type`: String = "type",
+      servicePrefix: String = "service"
+    ): RowParser[io.flow.registry.v0.models.ServiceVersion] = {
+      SqlParser.str(id) ~
+      SqlParser.get[_root_.org.joda.time.DateTime](timestamp) ~
+      io.flow.common.v0.anorm.parsers.ChangeType.parser(`type`) ~
+      io.flow.registry.v0.anorm.parsers.Service.parserWithPrefix(servicePrefix) map {
+        case id ~ timestamp ~ typeInstance ~ service => {
+          io.flow.registry.v0.models.ServiceVersion(
+            id = id,
+            timestamp = timestamp,
             `type` = typeInstance,
-            num = num
+            service = service
           )
         }
       }

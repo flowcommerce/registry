@@ -10,43 +10,24 @@ class PortsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "validate" must {
-
-    "port > 1024" in {
-      Seq(-100, 0, 80, 1024).foreach { port =>
-        PortsDao.validate(createPortForm().copy(num = port)) must be(
-          Seq("Port must be > 1024")
-        )
-      }
-    }
-
-    "port is unique" in {
-      val port = createPort()
-      PortsDao.validate(createPortForm().copy(num = port.num)) must be(
-        Seq(s"Port ${port.num} is already assigned to the application ${port.applicationId}")
-      )
-    }
-
-  }
-
   "create" in {
     val form = createPortForm()
     val port = createPort(form)
-    port.num must be(form.num)
+    port.external must be(form.external)
   }
 
-  "maxPortNumber" in {
+  "maxExternalPortNumber" in {
     val port1 = createPort()
-    val maxPortNumber = PortsDao.maxPortNumber().getOrElse {
-      sys.error("Failed to find max port num")
+    val maxExternalPortNumber = PortsDao.maxExternalPortNumber().getOrElse {
+      sys.error("Failed to find max port external")
     }
 
     val port2 = createPort()
-    val newMaxPortNumber = PortsDao.maxPortNumber().getOrElse {
-      sys.error("Failed to find max port num")
+    val newMaxPortNumber = PortsDao.maxExternalPortNumber().getOrElse {
+      sys.error("Failed to find max external port number")
     }
 
-    newMaxPortNumber > maxPortNumber must be(true)
+    newMaxPortNumber > maxExternalPortNumber must be(true)
   }
 
   "findById" in {
@@ -73,17 +54,17 @@ class PortsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       PortsDao.findAll(Authorization.All, ids = Some(Seq(port1.id, createTestId()))).map(_.id) must be(Seq(port1.id))
     }
 
-    "filter by nums" in {
+    "filter by externals" in {
       val port1 = createPort()
       val port2 = createPort()
 
-      PortsDao.findAll(Authorization.All, nums = Some(Seq(port1.num, port2.num))).map(_.id).sorted must be(
+      PortsDao.findAll(Authorization.All, externals = Some(Seq(port1.external, port2.external))).map(_.id).sorted must be(
         Seq(port1.id, port2.id).sorted
       )
 
-      PortsDao.findAll(Authorization.All, nums = Some(Nil)) must be(Nil)
-      PortsDao.findAll(Authorization.All, nums = Some(Seq(-5))) must be(Nil)
-      PortsDao.findAll(Authorization.All, nums = Some(Seq(port1.num, -10))).map(_.id) must be(Seq(port1.id))
+      PortsDao.findAll(Authorization.All, externals = Some(Nil)) must be(Nil)
+      PortsDao.findAll(Authorization.All, externals = Some(Seq(-5))) must be(Nil)
+      PortsDao.findAll(Authorization.All, externals = Some(Seq(port1.external, -10))).map(_.id) must be(Seq(port1.id))
     }
 
   }
