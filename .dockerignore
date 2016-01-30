@@ -1,0 +1,13 @@
+target/
+logs/
+generated/target/
+api/target/
+api/logs/
+project/target/
+.git
+.ivy2
+*.swp
+*.swo
+.DS_STORE
+*.md
+!README.md
