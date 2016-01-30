@@ -1,17 +1,19 @@
 #!/bin/sh
 
-/web/tools/bin/registry applications post --id registry --service play
-/web/tools/bin/registry applications post --id registry-postgresql --service postgresql
+# Registry and user are now bootstrapped as part of the database
+#
+# /web/tools/bin/registry applications post --id registry --service play
+# /web/tools/bin/registry applications post --id registry-postgresql --service postgresql
+# 
+# /web/tools/bin/registry applications post --id user --service play
+# /web/tools/bin/registry applications post --id user-postgresql --service postgresql
+
+/web/tools/bin/registry applications post --id authorization --service play
+/web/tools/bin/registry applications post --id authorization-postgresql --service postgresql
 
 /web/tools/bin/registry applications post --id splashpage --service play
 /web/tools/bin/registry applications post --id splashpage-www --service nodejs
 /web/tools/bin/registry applications post --id splashpage-postgresql --service postgresql
-
-/web/tools/bin/registry applications post --id user --service play
-/web/tools/bin/registry applications post --id user-postgresql --service postgresql
-
-/web/tools/bin/registry applications post --id authorization --service play
-/web/tools/bin/registry applications post --id authorization-postgresql --service postgresql
 
 /web/tools/bin/registry applications post --id fulfillment --service play
 /web/tools/bin/registry applications post --id fulfillment-postgresql --service postgresql
