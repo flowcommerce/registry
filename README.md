@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/flowcommerce/registry.svg?token=8bzVqzHy6JVEQr9mN9hx&branch=master)](https://travis-ci.com/flowcommerce/registry)
+
 # Registry
 
 This is the central registry of applications we build. The main use cases:
