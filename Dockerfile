@@ -6,4 +6,4 @@ WORKDIR /opt/play
 
 RUN sbt clean stage
   
-RUN ["java", "-jar", "/root/environment-provider.jar", "run", "play", "registry", "api/target/universal/stage/bin/registry-api"]
+ENTRYPOINT ["java", "-jar", "/root/environment-provider.jar", "run", "play", "registry", "api/target/universal/stage/bin/registry-api"]
