@@ -5,5 +5,5 @@ ADD . /opt/play
 WORKDIR /opt/play
 
 RUN sbt clean stage
-  
-ENTRYPOINT ["java", "-jar", "/root/environment-provider.jar", "run", "play", "registry", "api/target/universal/stage/bin/registry-api"]
+
+CMD "java -jar /root/environment-provider.jar run play registry api/target/universal/stage/bin/registry-api $env"
