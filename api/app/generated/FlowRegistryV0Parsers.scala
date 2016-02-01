@@ -13,19 +13,23 @@ package io.flow.registry.v0.anorm.parsers {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
       id = s"$prefix${sep}id",
-      ports = s"$prefix${sep}ports"
+      ports = s"$prefix${sep}ports",
+      dependencies = s"$prefix${sep}dependencies"
     )
 
     def parser(
       id: String = "id",
-      ports: String = "ports"
+      ports: String = "ports",
+      dependencies: String = "dependencies"
     ): RowParser[io.flow.registry.v0.models.Application] = {
       SqlParser.str(id) ~
-      SqlParser.get[Seq[io.flow.registry.v0.models.Port]](ports) map {
-        case id ~ ports => {
+      SqlParser.get[Seq[io.flow.registry.v0.models.Port]](ports) ~
+      SqlParser.get[Seq[String]](dependencies) map {
+        case id ~ ports ~ dependencies => {
           io.flow.registry.v0.models.Application(
             id = id,
-            ports = ports
+            ports = ports,
+            dependencies = dependencies
           )
         }
       }
@@ -38,22 +42,26 @@ package io.flow.registry.v0.anorm.parsers {
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
       id = s"$prefix${sep}id",
       service = s"$prefix${sep}service",
-      port = s"$prefix${sep}port"
+      port = s"$prefix${sep}port",
+      dependencies = s"$prefix${sep}dependencies"
     )
 
     def parser(
       id: String = "id",
       service: String = "service",
-      port: String = "port"
+      port: String = "port",
+      dependencies: String = "dependencies"
     ): RowParser[io.flow.registry.v0.models.ApplicationForm] = {
       SqlParser.str(id) ~
       SqlParser.str(service) ~
-      SqlParser.long(port).? map {
-        case id ~ service ~ port => {
+      SqlParser.long(port).? ~
+      SqlParser.get[Seq[String]](dependencies) map {
+        case id ~ service ~ port ~ dependencies => {
           io.flow.registry.v0.models.ApplicationForm(
             id = id,
             service = service,
-            port = port
+            port = port,
+            dependencies = dependencies
           )
         }
       }
@@ -65,19 +73,23 @@ package io.flow.registry.v0.anorm.parsers {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
       service = s"$prefix${sep}service",
-      port = s"$prefix${sep}port"
+      port = s"$prefix${sep}port",
+      dependencies = s"$prefix${sep}dependencies"
     )
 
     def parser(
       service: String = "service",
-      port: String = "port"
+      port: String = "port",
+      dependencies: String = "dependencies"
     ): RowParser[io.flow.registry.v0.models.ApplicationPutForm] = {
-      SqlParser.str(service) ~
-      SqlParser.long(port).? map {
-        case service ~ port => {
+      SqlParser.str(service).? ~
+      SqlParser.long(port).? ~
+      SqlParser.get[Seq[String]](dependencies).? map {
+        case service ~ port ~ dependencies => {
           io.flow.registry.v0.models.ApplicationPutForm(
             service = service,
-            port = port
+            port = port,
+            dependencies = dependencies
           )
         }
       }

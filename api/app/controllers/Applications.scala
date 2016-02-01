@@ -109,16 +109,28 @@ class Applications @javax.inject.Inject() (
         }
         case s: JsSuccess[ApplicationPutForm] => {
           val putForm = s.get
-          val form = ApplicationForm(id = id, service = putForm.service, port = putForm.port)
           ApplicationsDao.findById(Authorization.User(request.user.id), id) match {
             case None => {
-              ApplicationsDao.create(request.user, form) match {
-                case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-                case Right(application) => Created(Json.toJson(application))
+              putForm.service match {
+                case None => {
+                  UnprocessableEntity(Json.toJson(Validation.error("Must specify service when creating application")))
+                }
+                case Some(service) => {
+                  val form = ApplicationForm(
+                    id = id,
+                    service = service,
+                    port = putForm.port,
+                    dependencies = putForm.dependencies.getOrElse(Nil)
+                  )
+                  ApplicationsDao.create(request.user, form) match {
+                    case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+                    case Right(application) => Created(Json.toJson(application))
+                  }
+                }
               }
             }
             case Some(application) => {
-              ApplicationsDao.update(request.user, application, form) match {
+              ApplicationsDao.update(request.user, application, putForm) match {
                 case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
                 case Right(application) => Ok(Json.toJson(application))
               }

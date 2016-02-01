@@ -82,12 +82,8 @@ trait Helpers {
     )
   }
 
-  def createApplicationPutForm(
-    service: Service = testService
-  ): ApplicationPutForm = {
-    ApplicationPutForm(
-      service = service.id
-    )
+  def createApplicationPutForm(): ApplicationPutForm = {
+    ApplicationPutForm()
   }
 
   def createPort(
@@ -111,4 +107,22 @@ trait Helpers {
     )
   }
 
+  def createDependency(
+    form: DependencyForm = createDependencyForm()
+  ) (
+    implicit user: User = testUser
+  ): InternalDependency = {
+    DependenciesDao.create(user, form)
+  }
+
+  def createDependencyForm(
+    application: Application = createApplication(),
+    dependency: Application = createApplication()
+  ): DependencyForm = {
+    DependencyForm(
+      applicationId = application.id,
+      dependencyId = dependency.id
+    )
+  }
+  
 }
