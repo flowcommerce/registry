@@ -1,7 +1,7 @@
 api
 ===
-project defining the REST API itself. See api/api.json for a full
-description of the API.
+
+  See ./registry.json
 
 apidoc
 ======
