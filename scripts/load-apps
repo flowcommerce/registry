@@ -4,9 +4,9 @@
 #
 # /web/tools/bin/registry applications post --id registry --service play
 # /web/tools/bin/registry applications post --id registry-postgresql --service postgresql
-
-/web/tools/bin/registry applications post --id user --service play
-/web/tools/bin/registry applications post --id user-postgresql --service postgresql
+#
+# /web/tools/bin/registry applications post --id user --service play
+# /web/tools/bin/registry applications post --id user-postgresql --service postgresql
 
 /web/tools/bin/registry applications post --id authorization --service play
 /web/tools/bin/registry applications post --id authorization-postgresql --service postgresql
