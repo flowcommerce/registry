@@ -20,20 +20,22 @@ object ApplicationsDao {
 
   private[this] val BaseQuery = Query(s"""
     select applications.id,
-           applications.ports
+           applications.ports,
+           applications.dependencies
       from applications
   """)
 
   private[this] val InsertQuery = """
     insert into applications
-    (id, ports, updated_by_user_id)
+    (id, ports, dependencies, updated_by_user_id)
     values
-    ({id}, {ports}::json, {updated_by_user_id})
+    ({id}, {ports}::json, {dependencies}::json, {updated_by_user_id})
   """
 
   private[this] val UpdateQuery = """
     update applications
        set ports = {ports}::json,
+           dependencies = {dependencies}::json,
            updated_by_user_id = {updated_by_user_id}
      where id = {id}
   """
@@ -69,6 +71,25 @@ object ApplicationsDao {
       }
     }
 
+    val dependencyErrors = form.dependencies.flatMap { dep =>
+      ApplicationsDao.findById(Authorization.All, dep) match {
+        case None => {
+          Seq(s"Dependency[$dep] references a non existing application")
+        }
+        case Some(app) => {
+          app.id == form.id.trim match {
+            case true => {
+              Seq(s"Cannot declare dependency[$dep] on self")
+            }
+            case false => {
+              // TODO: Check for circular dependencies here
+              Nil
+            }
+          }
+        }
+      }
+    }
+
     val portErrors = form.port match {
       case None => {
         Nil
@@ -90,7 +111,7 @@ object ApplicationsDao {
       }
     }
 
-    idErrors ++ serviceErrors ++ portErrors
+    idErrors ++ serviceErrors ++ dependencyErrors ++ portErrors
   }
 
   def create(createdBy: User, form: ApplicationForm): Either[Seq[String], Application] = {
@@ -103,6 +124,7 @@ object ApplicationsDao {
           SQL(InsertQuery).on(
             'id -> id,
             'ports -> portsAsJson(c, id),
+            'dependencies -> dependenciesAsJson(c, id),
             'updated_by_user_id -> createdBy.id
           ).execute()
         }
@@ -132,6 +154,7 @@ object ApplicationsDao {
           SQL(UpdateQuery).on(
             'id -> app.id,
             'ports -> portsAsJson(c, app.id),
+            'dependencies -> dependenciesAsJson(c, app.id),
             'updated_by_user_id -> createdBy.id
           ).execute()
 
@@ -163,6 +186,23 @@ object ApplicationsDao {
     ).toString
   }
 
+  /**
+    * Fetches all dependencies from the dependencies table and returns as a JSON
+    * string for denormalization in the applications table.
+    */
+  private[this] def dependenciesAsJson(implicit c: java.sql.Connection, applicationId: String): String = {
+    Json.toJson(
+      Pager.create { offset =>
+        DependenciesDao.findAllWithConnection(
+          c,
+          Authorization.All,
+          applications = Some(Seq(applicationId)),
+          offset = offset
+        )
+      }.toSeq.map(_.dependencyId)
+    ).toString
+  }
+
   private[this] def createPort(
     implicit c: java.sql.Connection,
     createdBy: User,
@@ -182,6 +222,22 @@ object ApplicationsDao {
         )
       )
     }
+  }
+
+  private[this] def createDependency(
+    implicit c: java.sql.Connection,
+    createdBy: User,
+    applicationId: String,
+    dependencyId: String
+  ) {
+    DependenciesDao.create(
+      c,
+      createdBy,
+      DependencyForm(
+        applicationId = applicationId,
+        dependencyId = dependencyId
+      )
+    )
   }
 
   def delete(deletedBy: User, application: Application) {
@@ -260,19 +316,22 @@ object ApplicationsDao {
 
   /**
     * Write custom parser as it is possible for an application to not
-    * have any ports in which case anorm will NOT find the column
-    * named ports.
+    * have any ports/dependencies in which case anorm will NOT find
+    * the column named ports/dependencies.
     */
   private[this] def parser(
     id: String = "id",
-    ports: String = "ports"
+    ports: String = "ports",
+    dependencies: String = "dependencies"
   ): RowParser[io.flow.registry.v0.models.Application] = {
     SqlParser.str(id) ~
-    SqlParser.get[Seq[JsObject]](ports).? map {
-      case id ~ ports => {
+    SqlParser.get[Seq[JsObject]](ports).? ~
+    SqlParser.get[Seq[JsObject]](dependencies).? map {
+      case id ~ ports ~ dependencies => {
         io.flow.registry.v0.models.Application(
           id = id,
-          ports = ports.getOrElse(Nil).map { _.as[Port] }
+          ports = ports.getOrElse(Nil).map { _.as[Port] },
+          dependencies = dependencies.getOrElse(Nil).map { _.as[String] }
         )
       }
     }

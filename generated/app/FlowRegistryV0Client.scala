@@ -7,18 +7,21 @@ package io.flow.registry.v0.models {
 
   case class Application(
     id: String,
-    ports: Seq[io.flow.registry.v0.models.Port]
+    ports: Seq[io.flow.registry.v0.models.Port],
+    dependencies: Seq[String]
   )
 
   case class ApplicationForm(
     id: String,
     service: String,
-    port: _root_.scala.Option[Long] = None
+    port: _root_.scala.Option[Long] = None,
+    dependencies: Seq[String] = Nil
   )
 
   case class ApplicationPutForm(
     service: String,
-    port: _root_.scala.Option[Long] = None
+    port: _root_.scala.Option[Long] = None,
+    dependencies: _root_.scala.Option[Seq[String]] = None
   )
 
   case class ApplicationVersion(
@@ -100,14 +103,16 @@ package io.flow.registry.v0.models {
     implicit def jsonReadsRegistryApplication: play.api.libs.json.Reads[Application] = {
       (
         (__ \ "id").read[String] and
-        (__ \ "ports").read[Seq[io.flow.registry.v0.models.Port]]
+        (__ \ "ports").read[Seq[io.flow.registry.v0.models.Port]] and
+        (__ \ "dependencies").read[Seq[String]]
       )(Application.apply _)
     }
 
     def jsObjectApplication(obj: io.flow.registry.v0.models.Application) = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
-        "ports" -> play.api.libs.json.Json.toJson(obj.ports)
+        "ports" -> play.api.libs.json.Json.toJson(obj.ports),
+        "dependencies" -> play.api.libs.json.Json.toJson(obj.dependencies)
       )
     }
 
@@ -123,14 +128,16 @@ package io.flow.registry.v0.models {
       (
         (__ \ "id").read[String] and
         (__ \ "service").read[String] and
-        (__ \ "port").readNullable[Long]
+        (__ \ "port").readNullable[Long] and
+        (__ \ "dependencies").read[Seq[String]]
       )(ApplicationForm.apply _)
     }
 
     def jsObjectApplicationForm(obj: io.flow.registry.v0.models.ApplicationForm) = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
-        "service" -> play.api.libs.json.JsString(obj.service)
+        "service" -> play.api.libs.json.JsString(obj.service),
+        "dependencies" -> play.api.libs.json.Json.toJson(obj.dependencies)
       ) ++ (obj.port match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("port" -> play.api.libs.json.JsNumber(x))
@@ -148,7 +155,8 @@ package io.flow.registry.v0.models {
     implicit def jsonReadsRegistryApplicationPutForm: play.api.libs.json.Reads[ApplicationPutForm] = {
       (
         (__ \ "service").read[String] and
-        (__ \ "port").readNullable[Long]
+        (__ \ "port").readNullable[Long] and
+        (__ \ "dependencies").readNullable[Seq[String]]
       )(ApplicationPutForm.apply _)
     }
 
@@ -158,6 +166,10 @@ package io.flow.registry.v0.models {
       ) ++ (obj.port match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("port" -> play.api.libs.json.JsNumber(x))
+      }) ++
+      (obj.dependencies match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("dependencies" -> play.api.libs.json.Json.toJson(x))
       })
     }
 

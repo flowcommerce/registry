@@ -46,7 +46,8 @@
     "application": {
       "fields": [
         { "name": "id", "type": "string" },
-        { "name": "ports", "type": "[port]", "description": "All of the ports assigned to this application" }
+        { "name": "ports", "type": "[port]", "description": "All of the ports assigned to this application" },
+        { "name": "dependencies", "type": "[string]", "description": "A list of the direct dependencies of this application. Guaranteed to be non-cyclical over the set of all applications." }
       ]
     },
 
@@ -54,17 +55,19 @@
       "fields": [
         { "name": "id", "type": "string" },
         { "name": "service", "type": "string" },
-        { "name": "port", "type": "long", "required": false, "description": "The port number that this application runs on. Defaults to the service's default port number." }
+        { "name": "port", "type": "long", "required": false, "description": "The port number that this application runs on. Defaults to the service's default port number." },
+        { "name": "dependencies", "type": "[string]", "default": [], "description": "The application IDs on which this application is dependent" }
       ]
     },
 
     "application_put_form": {
       "fields": [
         { "name": "service", "type": "string" },
-        { "name": "port", "type": "long", "required": false, "description": "The port number that this application runs on. Defaults to the service's default port number." }
+        { "name": "port", "type": "long", "required": false },
+        { "name": "dependencies", "type": "[string]", "required": false }
       ]
     },
-
+    
     "application_version": {
       "fields": [
         { "name": "id", "type": "string" },

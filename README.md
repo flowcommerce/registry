@@ -21,10 +21,15 @@ The design of the system includes:
     ports map the internal port numbers to a globally unique external
     port number.
 
+  - declared dependencies on other applications. This can be used to,
+    for example, generate the appropriate sequence in which to start
+    the applications so that they their dependencies are started in
+    order. Note that we enforce that there can be no cyclical
+    dependencies.
+
 # CLI
 
-See https://github.com/flowcommerce/tools/blob/master/bin/registry
-
+    See https://github.com/flowcommerce/tools/blob/master/bin/registry
 
 # API
 
