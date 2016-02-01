@@ -2,7 +2,7 @@ package db
 
 import io.flow.play.util.{IdGenerator, UrlKey}
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Application, ApplicationForm, Service, Port}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Service, Port}
 import io.flow.registry.v0.models.json._
 import io.flow.postgresql.{Authorization, Query, OrderBy, Pager}
 import io.flow.common.v0.models.User
@@ -43,15 +43,16 @@ object ApplicationsDao {
   private[this] val dbHelpers = DbHelpers("applications")
 
   private[db] def validate(
-    form: ApplicationForm,
+    id: String,
+    form: ApplicationPutForm,
     existing: Option[Application] = None
   ): Seq[String] = {
-    val idErrors = if (form.id.trim.isEmpty) {
+    val idErrors = if (id.trim.isEmpty) {
       Seq("Id cannot be empty")
     } else {
-      ApplicationsDao.findById(Authorization.All, form.id) match {
+      ApplicationsDao.findById(Authorization.All, id) match {
         case None => {
-          urlKey.validate(form.id)
+          urlKey.validate(id)
         }
         case Some(application) => {
           Some(application.id) == existing.map(_.id) match {
@@ -62,28 +63,42 @@ object ApplicationsDao {
       }
     }
 
-    val serviceErrors = ServicesDao.findById(Authorization.All, form.service) match {
+    val serviceErrors = form.service match {
       case None => {
-        Seq("Service not found")
-      }
-      case _ => {
         Nil
+      }
+      case Some(service) => {
+        ServicesDao.findById(Authorization.All, service) match {
+          case None => {
+            Seq("Service not found")
+          }
+          case _ => {
+            Nil
+          }
+        }
       }
     }
 
-    val dependencyErrors = form.dependencies.flatMap { dep =>
-      ApplicationsDao.findById(Authorization.All, dep) match {
-        case None => {
-          Seq(s"Dependency[$dep] references a non existing application")
-        }
-        case Some(app) => {
-          app.id == form.id.trim match {
+    val dependencyErrors = form.dependencies match {
+      case None => {
+        Nil
+      }
+      case Some(deps) => {
+        deps.flatMap { dependencyId =>
+          dependencyId == id.trim match {
             case true => {
-              Seq(s"Cannot declare dependency[$dep] on self")
+              Seq(s"Cannot declare dependency[$dependencyId] on self")
             }
             case false => {
-              // TODO: Check for circular dependencies here
-              Nil
+              ApplicationsDao.findById(Authorization.All, dependencyId) match {
+                case None => {
+                  Seq(s"Dependency[$dependencyId] references a non existing application")
+                }
+                case Some(app) => {
+                  // TODO: Check for circular dependencies here
+                  Nil
+                }
+              }
             }
           }
         }
@@ -115,11 +130,18 @@ object ApplicationsDao {
   }
 
   def create(createdBy: User, form: ApplicationForm): Either[Seq[String], Application] = {
-    validate(form) match {
+    val putForm = ApplicationPutForm(
+      service = Some(form.service),
+      port = form.port,
+      dependencies = Some(form.dependencies)
+    )
+    validate(form.id, putForm) match {
       case Nil => {
         DB.withTransaction { implicit c =>
           val id = form.id.trim
           createPort(c, createdBy, id, form.port, form.service)
+
+          form.dependencies.foreach { depId => createDependency(c, createdBy, id, depId) }
 
           SQL(InsertQuery).on(
             'id -> id,
@@ -139,14 +161,20 @@ object ApplicationsDao {
     }
   }
 
-  def update(createdBy: User, app: Application, form: ApplicationForm): Either[Seq[String], Application] = {
-    validate(form, Some(app)) match {
+  def update(createdBy: User, app: Application, form: ApplicationPutForm): Either[Seq[String], Application] = {
+    validate(app.id, form, Some(app)) match {
       case Nil => {
-        val newService = !app.ports.map(_.service.id).contains(form.service)
+        val newDependencies = form.dependencies.filter { !app.dependencies.contains(_) }
 
         DB.withTransaction { implicit c =>
-          if (newService) {
-            createPort(c, createdBy, app.id, form.port, form.service)
+          form.service.foreach { service =>
+            if (!app.ports.map(_.service.id).contains(service)) {
+              createPort(c, createdBy, app.id, form.port, service)
+            }
+          }
+
+          newDependencies.foreach { dependencies =>
+            dependencies.foreach { dep => createDependency(c, createdBy, app.id, dep) }
           }
 
           // Update the applications table to trigger the journal

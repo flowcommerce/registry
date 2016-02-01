@@ -62,7 +62,7 @@
 
     "application_put_form": {
       "fields": [
-        { "name": "service", "type": "string" },
+        { "name": "service", "type": "string", "required": false },
         { "name": "port", "type": "long", "required": false },
         { "name": "dependencies", "type": "[string]", "required": false }
       ]

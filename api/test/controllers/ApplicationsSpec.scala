@@ -23,7 +23,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
   "PUT /applications/:id updates application" in new WithServer(port=port) {
     val application = createApplication(createApplicationForm().copy(service = "play"))
-    await(identifiedClient.applications.putById(application.id, createApplicationPutForm().copy(service = "nodejs")))
+    await(identifiedClient.applications.putById(application.id, createApplicationPutForm().copy(service = Some("nodejs"))))
 
     val updated = await(
       identifiedClient.applications.getById(application.id)
@@ -32,12 +32,25 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     updated.ports.map(_.service.id) must beEqualTo(Seq("nodejs", "play"))
   }
 
+  "PUT /applications/:id requires service to create an application" in new WithServer(port=port) {
+    val id = createTestId()
+
+    expectErrors(
+      identifiedClient.applications.putById(id, createApplicationPutForm())
+    ).errors.map(_.message) must beEqualTo(
+      Seq("Must specify service when creating application")
+    )
+  }
+
   "PUT /applications/:id creates application" in new WithServer(port=port) {
     val id = createTestId()
-    val updated = await(identifiedClient.applications.putById(id, createApplicationPutForm()))
-    await(
+    await(identifiedClient.applications.putById(id, createApplicationPutForm().copy(service = Some("play"))))
+
+    val updated = await(
       identifiedClient.applications.getById(id)
-    ).id must beEqualTo(id)
+    )
+    updated.id must beEqualTo(id)
+    updated.ports.map(_.service.id) must beEqualTo(Seq("play"))
   }
 
   "POST /applications" in new WithServer(port=port) {
@@ -45,6 +58,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     val application = await(identifiedClient.applications.post(form))
     application.id must beEqualTo(form.id)
+    application.dependencies must be(Nil)
   }
 
   "POST /applications w/ existing id" in new WithServer(port=port) {
@@ -86,6 +100,38 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
       identifiedClient.applications.post(form)
     ).errors.map(_.message) must beEqualTo(
       Seq("Service not found")
+    )
+  }
+
+  "POST /applications w/ dependencies" in new WithServer(port=port) {
+    val dep1 = createApplication()
+    val dep2 = createApplication()
+    val form = createApplicationForm().copy(dependencies = Seq(dep1.id, dep2.id))
+
+    val application = await(identifiedClient.applications.post(form))
+    application.id must beEqualTo(form.id)
+    application.dependencies must beEqualTo(Seq(dep1.id, dep2.id).sorted)
+  }
+
+  "POST /applications w/ invalid dependency ID" in new WithServer(port=port) {
+    val dependencyId = createTestId()
+    val form = createApplicationForm().copy(dependencies = Seq(dependencyId))
+
+    expectErrors(
+      identifiedClient.applications.post(form)
+    ).errors.map(_.message) must beEqualTo(
+      Seq(s"Dependency[$dependencyId] references a non existing application")
+    )
+  }
+
+  "POST /applications w/ self as a dependency" in new WithServer(port=port) {
+    val id = createTestId()
+    val form = createApplicationForm().copy(id = id, dependencies = Seq(id))
+
+    expectErrors(
+      identifiedClient.applications.post(form)
+    ).errors.map(_.message) must beEqualTo(
+      Seq(s"Cannot declare dependency[$id] on self")
     )
   }
 

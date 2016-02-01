@@ -1,6 +1,6 @@
 package db
 
-import io.flow.registry.v0.models.{Application, ApplicationForm}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
 import io.flow.postgresql.Authorization
 import play.api.test._
 import play.api.test.Helpers._
@@ -125,7 +125,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       ApplicationsDao.update(
         testUser,
         app,
-        ApplicationForm(id = app.id, service = "play")
+        ApplicationPutForm(service = Some("play"))
       )
     )
     updated.ports.map(_.external) must be(Seq(portNumber, portNumber + 1))
@@ -135,7 +135,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       ApplicationsDao.update(
         testUser,
         updated,
-        ApplicationForm(id = app.id, service = "play")
+        ApplicationPutForm(service = Some("play"))
       )
     )
     updatedAgain.ports.map(_.external) must be(Seq(portNumber, portNumber + 1))
