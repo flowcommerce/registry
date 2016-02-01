@@ -79,7 +79,7 @@ object ApplicationsDao {
       }
     }
 
-    val dependencyErrors = form.dependencies match {
+    val dependencyErrors = form.dependency match {
       case None => {
         Nil
       }
@@ -133,7 +133,7 @@ object ApplicationsDao {
     val putForm = ApplicationPutForm(
       service = Some(form.service),
       port = form.port,
-      dependencies = Some(form.dependencies)
+      dependency = Some(form.dependency)
     )
     validate(form.id, putForm) match {
       case Nil => {
@@ -141,7 +141,7 @@ object ApplicationsDao {
           val id = form.id.trim
           createPort(c, createdBy, id, form.port, form.service)
 
-          form.dependencies.foreach { depId => createDependency(c, createdBy, id, depId) }
+          form.dependency.foreach { depId => createDependency(c, createdBy, id, depId) }
 
           SQL(InsertQuery).on(
             'id -> id,
@@ -164,7 +164,10 @@ object ApplicationsDao {
   def update(createdBy: User, app: Application, form: ApplicationPutForm): Either[Seq[String], Application] = {
     validate(app.id, form, Some(app)) match {
       case Nil => {
-        val newDependencies = form.dependencies.filter { !app.dependencies.contains(_) }
+        val newDependencies = form.dependency match {
+          case None => Nil
+          case Some(deps) => deps.filter { !app.dependencies.contains(_) }
+        }
 
         DB.withTransaction { implicit c =>
           form.service.foreach { service =>
@@ -173,9 +176,7 @@ object ApplicationsDao {
             }
           }
 
-          newDependencies.foreach { dependencies =>
-            dependencies.foreach { dep => createDependency(c, createdBy, app.id, dep) }
-          }
+          newDependencies.foreach { dep => createDependency(c, createdBy, app.id, dep) }
 
           // Update the applications table to trigger the journal
           // write.

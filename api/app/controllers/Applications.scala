@@ -120,7 +120,7 @@ class Applications @javax.inject.Inject() (
                     id = id,
                     service = service,
                     port = putForm.port,
-                    dependencies = putForm.dependencies.getOrElse(Nil)
+                    dependency = putForm.dependency.getOrElse(Nil)
                   )
                   ApplicationsDao.create(request.user, form) match {
                     case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))

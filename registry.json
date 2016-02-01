@@ -56,7 +56,7 @@
         { "name": "id", "type": "string" },
         { "name": "service", "type": "string" },
         { "name": "port", "type": "long", "required": false, "description": "The port number that this application runs on. Defaults to the service's default port number." },
-        { "name": "dependencies", "type": "[string]", "default": [], "description": "The application IDs on which this application is dependent" }
+        { "name": "dependency", "type": "[string]", "default": [], "description": "The application IDs on which this application is dependent" }
       ]
     },
 
@@ -64,7 +64,7 @@
       "fields": [
         { "name": "service", "type": "string", "required": false },
         { "name": "port", "type": "long", "required": false },
-        { "name": "dependencies", "type": "[string]", "required": false }
+        { "name": "dependency", "type": "[string]", "required": false }
       ]
     },
     
