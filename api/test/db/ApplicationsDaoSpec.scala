@@ -147,4 +147,15 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val app2 = createApplication(createApplicationForm().copy(id = app.id))
   }
 
+  "validates that there are no circular dependencies" in {
+    val base = createApplication()
+    val other = createApplication(createApplicationForm().copy(dependency = Seq(base.id)))
+    val form = createApplicationPutForm().copy(dependency = Some(Seq(other.id)))
+
+    ApplicationsDao.update(testUser, base, form).left.get must be(
+      Seq(s"Application[${base.id}] Cannot declare a circular dependency on[${other.id}]")
+    )
+
+  }
+
 }
