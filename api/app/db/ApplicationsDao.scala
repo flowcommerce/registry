@@ -95,9 +95,39 @@ object ApplicationsDao {
                   Seq(s"Dependency[$dependencyId] references a non existing application")
                 }
                 case Some(app) => {
-                  // TODO: Check for circular dependencies here
                   Nil
                 }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    val circularDependencyErrors = existing match {
+      case None => {
+        Nil
+      }
+      case Some(app) => {
+        form.dependency match {
+          case None => {
+            Nil
+          }
+          case Some(deps) => {
+            val circularDependency = Pager.create { offset =>
+              DependenciesDao.findAll(
+                Authorization.All,
+                dependencies = Some(Seq(app.id)),
+                offset = offset
+              )
+            }.toList.find { dep => deps.contains(dep.applicationId) }
+
+            circularDependency match {
+              case None => {
+                Nil
+              }
+              case Some(dep) => {
+                Seq(s"Application[${app.id}] Cannot declare a circular dependency on[${dep.applicationId}]")
               }
             }
           }
@@ -126,7 +156,7 @@ object ApplicationsDao {
       }
     }
 
-    idErrors ++ serviceErrors ++ dependencyErrors ++ portErrors
+    idErrors ++ serviceErrors ++ dependencyErrors ++ circularDependencyErrors ++ portErrors
   }
 
   def create(createdBy: User, form: ApplicationForm): Either[Seq[String], Application] = {

@@ -74,12 +74,13 @@ object DependenciesDao {
     auth: Authorization,
     ids: Option[Seq[String]] = None,
     applications: Option[Seq[String]] = None,
+    dependencies: Option[Seq[String]] = None,
     limit: Long = 25,
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("dependencies.application_id, dependencies.dependency_id")
   ): Seq[InternalDependency] = {
     DB.withConnection { implicit c =>
-      findAllWithConnection(c, auth, ids, applications, limit, offset, orderBy)
+      findAllWithConnection(c, auth, ids, applications, dependencies, limit, offset, orderBy)
     }
   }
 
@@ -88,6 +89,7 @@ object DependenciesDao {
     auth: Authorization,
     ids: Option[Seq[String]] = None,
     applications: Option[Seq[String]] = None,
+    dependencies: Option[Seq[String]] = None,    
     limit: Long = 25,
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("dependencies.application_id, dependencies.dependency_id")
@@ -96,6 +98,7 @@ object DependenciesDao {
     BaseQuery.
       optionalIn("dependencies.id", ids).
       optionalIn("dependencies.application_id", applications).
+      optionalIn("dependencies.dependency_id", dependencies).
       limit(limit).
       offset(offset).
       orderBy(orderBy.sql).
