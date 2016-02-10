@@ -163,7 +163,7 @@ object ApplicationsDao {
     val putForm = ApplicationPutForm(
       service = Some(form.service),
       port = form.port,
-      dependency = Some(form.dependency)
+      dependency = form.dependency
     )
     validate(form.id, putForm) match {
       case Nil => {
@@ -171,7 +171,12 @@ object ApplicationsDao {
           val id = form.id.trim
           createPort(c, createdBy, id, form.port, form.service)
 
-          form.dependency.foreach { depId => createDependency(c, createdBy, id, depId) }
+          form.dependency match {
+            case None => // Intentional no-op
+            case Some(deps) => {
+              deps.foreach { depId => createDependency(c, createdBy, id, depId) }
+            }
+          }
 
           SQL(InsertQuery).on(
             'id -> id,

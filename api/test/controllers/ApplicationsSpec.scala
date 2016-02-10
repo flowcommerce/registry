@@ -106,7 +106,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
   "POST /applications w/ dependencies" in new WithServer(port=port) {
     val dep1 = createApplication()
     val dep2 = createApplication()
-    val form = createApplicationForm().copy(dependency = Seq(dep1.id, dep2.id))
+    val form = createApplicationForm().copy(dependency = Some(Seq(dep1.id, dep2.id)))
 
     val application = await(identifiedClient.applications.post(form))
     application.id must beEqualTo(form.id)
@@ -115,7 +115,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
   "POST /applications w/ invalid dependency ID" in new WithServer(port=port) {
     val dependencyId = createTestId()
-    val form = createApplicationForm().copy(dependency = Seq(dependencyId))
+    val form = createApplicationForm().copy(dependency = Some(Seq(dependencyId)))
 
     expectErrors(
       identifiedClient.applications.post(form)
@@ -126,7 +126,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
   "POST /applications w/ self as a dependency" in new WithServer(port=port) {
     val id = createTestId()
-    val form = createApplicationForm().copy(id = id, dependency = Seq(id))
+    val form = createApplicationForm().copy(id = id, dependency = Some(Seq(id)))
 
     expectErrors(
       identifiedClient.applications.post(form)
