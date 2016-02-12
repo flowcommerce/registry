@@ -114,6 +114,14 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     PortsDao.findByExternal(Authorization.All, portNumber) must be(None)
   }
 
+  "deleting an application also deletes its dependencies" in {
+    val app = createApplication()
+    val app2 = createApplication(createApplicationForm().copy(dependency = Some(Seq(app.id))))
+
+    ApplicationsDao.delete(testUser, app2)
+    ApplicationsDao.findById(Authorization.All, app2.id) must be(None)
+  }
+
   "update allocates new ports" in {
     val app = createApplication(createApplicationForm().copy(service = "nodejs"))
     val portNumber = app.ports.map(_.external).headOption.getOrElse {
