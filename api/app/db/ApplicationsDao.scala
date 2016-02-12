@@ -310,7 +310,14 @@ object ApplicationsDao {
         PortsDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset).map { port =>
           PortsDao.delete(c, deletedBy, port)
         }
-      }
+      }.toSeq
+
+      Pager.create { offset =>
+        DependenciesDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset).map { port =>
+          DependenciesDao.delete(c, deletedBy, port)
+        }
+      }.toSeq
+
       dbHelpers.delete(c, deletedBy, application.id)
     }
   }
