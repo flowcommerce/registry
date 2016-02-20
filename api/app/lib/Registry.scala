@@ -1,29 +1,20 @@
 package io.flow.registry.api.lib
 
 import db.ApplicationsDao
-
+import io.flow.play.clients.{MockRegistry, Registry, RegistryApplicationProvider}
+import io.flow.postgresql.Authorization
 import play.api.{Environment, Configuration, Mode}
 import play.api.inject.Module
 
-import io.flow.play.clients.{MockRegistry, ProductionRegistry, Registry, RegistryConstants}
-import io.flow.play.util.DefaultConfig
-import io.flow.postgresql.Authorization
+/**
+  * Since we are the registry, we can look up app info from our local
+  * database (instead of an HTTP call to ourselves).
+  */
+class LocalRegistry() extends RegistryApplicationProvider {
 
-class LocalRegistry() extends Registry with RegistryConstants {
-
-  override def host(applicationId: String) = {
-    ApplicationsDao.findById(Authorization.All, applicationId) match {
-      case None => {
-        sys.error("application[$applicationId] not found in registrydb")
-      }
-      case Some(app) => {
-        val port = app.ports.headOption.getOrElse {
-          sys.error(s"application[$applicationId] does not have any ports in registry")
-        }
-        val host = s"http://${DevHost}:${port.external}"
-        log("Development", applicationId, s"Host[$host]")
-        host
-      }
+  override def getById(applicationId: String) = {
+    ApplicationsDao.findById(Authorization.All, applicationId).getOrElse {
+      sys.error("application[$applicationId] not found in registrydb")
     }
   }
 
@@ -33,10 +24,7 @@ class LocalRegistryModule extends Module {
 
   def bindings(env: Environment, conf: Configuration) = {
     env.mode match {
-      case Mode.Prod => Seq(
-        bind[Registry].to[ProductionRegistry]
-      )
-      case Mode.Dev => Seq(
+      case Mode.Prod | Mode.Dev => Seq(
         bind[Registry].to[LocalRegistry]
       )
       case Mode.Test => Seq(
