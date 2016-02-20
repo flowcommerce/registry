@@ -3,6 +3,7 @@ package io.flow.registry.api.lib
 import db.ApplicationsDao
 import io.flow.play.clients.{MockRegistry, ProductionRegistry, Registry, RegistryApplicationProvider}
 import io.flow.postgresql.Authorization
+import io.flow.play.util.FlowEnvironment
 import play.api.{Environment, Configuration, Mode}
 import play.api.inject.Module
 
@@ -23,13 +24,18 @@ class LocalRegistry() extends RegistryApplicationProvider {
 class LocalRegistryModule extends Module {
 
   def bindings(env: Environment, conf: Configuration) = {
+
     env.mode match {
-      case Mode.Prod => Seq(
-        bind[Registry].to[ProductionRegistry]
-      )
-      case Mode.Dev => Seq(
-        bind[Registry].to[LocalRegistry]
-      )
+      case Mode.Prod | Mode.Dev => {
+        FlowEnvironment.Current match {
+          case FlowEnvironment.Production => Seq(
+            bind[Registry].to[ProductionRegistry]
+          )
+          case FlowEnvironment.Development => Seq(
+            bind[Registry].to[LocalRegistry]
+          )
+        }
+      }
       case Mode.Test => Seq(
         bind[Registry].to[MockRegistry]
       )
