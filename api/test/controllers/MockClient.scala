@@ -2,7 +2,7 @@ package controllers
 
 import io.flow.registry.v0.{Authorization, Client}
 import io.flow.registry.v0.errors.{ErrorsResponse, UnitResponse}
-import io.flow.play.clients.{MockAuthorizationClient, MockUserTokensClient}
+import io.flow.play.clients.MockUserTokensClient
 import io.flow.common.v0.models.User
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
@@ -26,7 +26,6 @@ trait MockClient extends db.Helpers {
     user: User = MockUserTokensClient.makeUser(),
     token: String = createTestId()
   ): Client = {
-    MockAuthorizationClient.grantAll(user.id)
     MockUserTokensClient.add(user, token = Some(token))
     new Client(
       s"http://localhost:$port",
