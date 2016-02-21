@@ -3,7 +3,7 @@ package io.flow.registry.api.lib
 import db.ApplicationsDao
 import io.flow.play.clients.{MockRegistry, ProductionRegistry, Registry, RegistryApplicationProvider}
 import io.flow.postgresql.Authorization
-import io.flow.play.util.FlowEnvironment
+import io.flow.play.util.{Config, FlowEnvironment}
 import play.api.{Environment, Configuration, Mode}
 import play.api.inject.Module
 
@@ -11,7 +11,10 @@ import play.api.inject.Module
   * Since we are the registry, we can look up app info from our local
   * database (instead of an HTTP call to ourselves).
   */
-class LocalRegistry() extends RegistryApplicationProvider {
+@javax.inject.Singleton
+class LocalRegistry @javax.inject.Inject() (
+  override val config: Config
+) extends RegistryApplicationProvider {
 
   override def getById(applicationId: String) = {
     ApplicationsDao.findById(Authorization.All, applicationId).getOrElse {
