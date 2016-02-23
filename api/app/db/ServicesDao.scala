@@ -58,12 +58,12 @@ object ServicesDao {
       }
     }
 
-    idErrors ++ validatePort(form.defaultPort)
+    idErrors ++ validatePort("Default port", form.defaultPort)
   }
 
-  private[db] def validatePort(port: Long): Seq[String] = {
+  private[db] def validatePort(label: String, port: Long): Seq[String] = {
     if (port <= 1024) {
-      Seq("Port must be > 1024")
+      Seq(s"$label must be > 1024")
     } else {
       Nil
     }
