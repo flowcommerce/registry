@@ -38,8 +38,8 @@ object PortsDao {
     select ports.id,
            ports.application_id,
            ports.service_id,
-           ports.internal,
-           ports.external
+           ports.external,
+           ports.internal
       from ports
   """)
 
