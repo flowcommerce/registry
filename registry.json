@@ -55,7 +55,8 @@
       "fields": [
         { "name": "id", "type": "string" },
         { "name": "service", "type": "string" },
-        { "name": "port", "type": "long", "required": false, "description": "The port number that this application runs on. Defaults to the service's default port number." },
+        { "name": "external", "type": "long", "required": false, "description": "The external port number to allocate to this application. Defaults to a unique port assigned by the registry." },
+        { "name": "internal", "type": "long", "required": false, "description": "The internal port number that this application runs on. Defaults to the service's default port number." },
         { "name": "dependency", "type": "[string]", "required": false, "description": "The application IDs on which this application is dependent" }
       ]
     },
@@ -63,7 +64,8 @@
     "application_put_form": {
       "fields": [
         { "name": "service", "type": "string", "required": false },
-        { "name": "port", "type": "long", "required": false },
+        { "name": "external", "type": "long", "required": false },
+        { "name": "internal", "type": "long", "required": false },
         { "name": "dependency", "type": "[string]", "required": false }
       ]
     },
@@ -191,7 +193,7 @@
           "description": "Search applications. Always paginated.",
           "parameters": [
             { "name": "id", "type": "[string]", "required": false, "maximum": 100 },
-            { "name": "port", "type": "[long]", "required": false, "maximum": 100 },
+            { "name": "port", "type": "[long]", "required": false, "description": "Find the application assigned this external port number", "maximum": 100 },
             { "name": "service", "type": "[string]", "required": false, "maximum": 100 },
             { "name": "prefix", "type": "string", "required": false, "description": "Find the applications with this exact prefix (computed as the string up the last dash, of if no dash, the full string)" },
             { "name": "q", "type": "string", "required": false, "description": "Arbitrary query search. Case insensitive" },

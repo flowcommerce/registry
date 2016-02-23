@@ -135,19 +135,19 @@ object ApplicationsDao {
       }
     }
 
-    val portErrors = form.port match {
+    val externalErrors = form.external match {
       case None => {
         Nil
       }
       case Some(port) => {
-        ServicesDao.validatePort(port) match {
+        ServicesDao.validatePort("External port", port) match {
           case Nil => {
             ApplicationsDao.findByPortNumber(Authorization.All, port) match {
               case None => {
                 Nil
               }
               case Some(app) => {
-                Seq(s"Port ${port} is already assigned to the application ${app.id}")
+                Seq(s"External port ${port} is already assigned to the application ${app.id}")
               }
             }
           }
@@ -156,20 +156,33 @@ object ApplicationsDao {
       }
     }
 
-    idErrors ++ serviceErrors ++ dependencyErrors ++ circularDependencyErrors ++ portErrors
+    val internalErrors = form.internal match {
+      case None => {
+        Nil
+      }
+      case Some(port) => {
+        (port > 0) match {
+          case true => Nil
+          case false => Seq("Internal port must be > 0")
+        }
+      }
+    }
+
+    idErrors ++ serviceErrors ++ dependencyErrors ++ circularDependencyErrors ++ externalErrors ++ internalErrors
   }
 
   def create(createdBy: User, form: ApplicationForm): Either[Seq[String], Application] = {
     val putForm = ApplicationPutForm(
       service = Some(form.service),
-      port = form.port,
+      external = form.external,
+      internal = form.internal,
       dependency = form.dependency
     )
     validate(form.id, putForm) match {
       case Nil => {
         DB.withTransaction { implicit c =>
           val id = form.id.trim
-          createPort(c, createdBy, id, form.port, form.service)
+          createPort(c, createdBy, id, form.external, form.internal, form.service)
 
           form.dependency match {
             case None => // Intentional no-op
@@ -207,7 +220,7 @@ object ApplicationsDao {
         DB.withTransaction { implicit c =>
           form.service.foreach { service =>
             if (!app.ports.map(_.service.id).contains(service)) {
-              createPort(c, createdBy, app.id, form.port, service)
+              createPort(c, createdBy, app.id, form.external, form.internal, service)
             }
           }
 
@@ -272,6 +285,7 @@ object ApplicationsDao {
     createdBy: User,
     applicationId: String,
     internalPort: Option[Long],
+    externalPort: Option[Long],
     serviceId: String
   ) {
     ServicesDao.findById(Authorization.All, serviceId).map { service =>
@@ -282,7 +296,7 @@ object ApplicationsDao {
           applicationId = applicationId,
           serviceId = service.id,
           internal = internalPort.getOrElse(service.defaultPort),
-          external = DefaultPortAllocator(applicationId, service.id).number
+          external = externalPort.getOrElse(DefaultPortAllocator(applicationId, service.id).number)
         )
       )
     }

@@ -72,14 +72,25 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     )
   }
 
-  "POST /applications w/ invalid port" in new WithServer(port=port) {
+  "POST /applications w/ invalid external port" in new WithServer(port=port) {
     val application = createApplication()
-    val form = createApplicationForm().copy(port = Some(200))
+    val form = createApplicationForm().copy(external = Some(200))
 
     expectErrors(
       identifiedClient.applications.post(form)
     ).errors.map(_.message) must beEqualTo(
-      Seq("Port must be > 1024")
+      Seq("External port must be > 1024")
+    )
+  }
+
+  "POST /applications w/ invalid internal port" in new WithServer(port=port) {
+    val application = createApplication()
+    val form = createApplicationForm().copy(internal = Some(-200))
+
+    expectErrors(
+      identifiedClient.applications.post(form)
+    ).errors.map(_.message) must beEqualTo(
+      Seq("Internal port must be > 0")
     )
   }
 

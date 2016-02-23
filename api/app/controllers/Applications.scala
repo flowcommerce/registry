@@ -119,7 +119,8 @@ class Applications @javax.inject.Inject() (
                   val form = ApplicationForm(
                     id = id,
                     service = service,
-                    port = putForm.port,
+                    external = putForm.external,
+                    internal = putForm.internal,
                     dependency = putForm.dependency
                   )
                   ApplicationsDao.create(request.user, form) match {

@@ -62,7 +62,7 @@ class ServicesSpec extends PlaySpecification with MockClient {
     expectErrors(
       identifiedClient.services.post(form)
     ).errors.map(_.message) must beEqualTo(
-      Seq("Port must be > 1024")
+      Seq("Default port must be > 1024")
     )
   }
 
