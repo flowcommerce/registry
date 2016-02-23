@@ -178,11 +178,19 @@ object ApplicationsDao {
       internal = form.internal,
       dependency = form.dependency
     )
+
     validate(form.id, putForm) match {
       case Nil => {
         DB.withTransaction { implicit c =>
           val id = form.id.trim
-          createPort(c, createdBy, id, form.external, form.internal, form.service)
+          createPort(
+            c,
+            createdBy = createdBy,
+            applicationId = id,
+            internal = form.internal,
+            external = form.external,
+            serviceId = form.service
+          )
 
           form.dependency match {
             case None => // Intentional no-op
@@ -220,7 +228,14 @@ object ApplicationsDao {
         DB.withTransaction { implicit c =>
           form.service.foreach { service =>
             if (!app.ports.map(_.service.id).contains(service)) {
-              createPort(c, createdBy, app.id, form.external, form.internal, service)
+              createPort(
+                c,
+                createdBy = createdBy,
+                applicationId = app.id,
+                external = form.external,
+                internal = form.internal,
+                serviceId = service
+              )
             }
           }
 
@@ -284,8 +299,8 @@ object ApplicationsDao {
     implicit c: java.sql.Connection,
     createdBy: User,
     applicationId: String,
-    internalPort: Option[Long],
-    externalPort: Option[Long],
+    external: Option[Long],
+    internal: Option[Long],
     serviceId: String
   ) {
     ServicesDao.findById(Authorization.All, serviceId).map { service =>
@@ -295,8 +310,8 @@ object ApplicationsDao {
         PortForm(
           applicationId = applicationId,
           serviceId = service.id,
-          internal = internalPort.getOrElse(service.defaultPort),
-          external = externalPort.getOrElse(DefaultPortAllocator(applicationId, service.id).number)
+          internal = internal.getOrElse(service.defaultPort),
+          external = external.getOrElse(DefaultPortAllocator(applicationId, service.id).number)
         )
       )
     }

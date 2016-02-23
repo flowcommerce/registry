@@ -72,6 +72,18 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     )
   }
 
+  "POST /applications w/ valid explicit ports" in new WithServer(port=port) {
+    val external: Long = db.PortsDao.maxExternalPortNumber.getOrElse(6000l) + 3l
+    val internal = 1234
+
+    val application = createApplication(createApplicationForm().copy(external = Some(external), internal = Some(internal)))
+    val appPort = application.ports.headOption.getOrElse {
+      sys.error("No ports created")
+    }
+    appPort.external must beEqualTo(external)
+    appPort.internal must beEqualTo(internal)
+  }
+
   "POST /applications w/ invalid external port" in new WithServer(port=port) {
     val application = createApplication()
     val form = createApplicationForm().copy(external = Some(200))
