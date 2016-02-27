@@ -1,4 +1,4 @@
-FROM flowdocker/play:0.0.18
+FROM flowdocker/play:0.0.19
 
 ADD . /opt/play
 
