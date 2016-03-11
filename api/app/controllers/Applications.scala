@@ -1,7 +1,7 @@
 package controllers
 
 import db.{ApplicationsDao, ApplicationVersionsDao}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.common.v0.models.json._
 import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Service}
 import io.flow.registry.v0.models.json._
@@ -149,7 +149,7 @@ class Applications @javax.inject.Inject() (
     }
   }
 
-  def withApplication(user: User, id: String)(
+  def withApplication(user: UserReference, id: String)(
     f: Application => Result
   ) = {
     ApplicationsDao.findById(Authorization.User(user.id), id) match {

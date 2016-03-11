@@ -1,6 +1,6 @@
 package db
 
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.play.util.IdGenerator
 import io.flow.postgresql.{Authorization, Query, OrderBy}
 import io.flow.registry.v0.models.{ServiceReference, Port}
@@ -53,7 +53,7 @@ object PortsDao {
   private[this] val dbHelpers = DbHelpers("ports")
   private[this] val idGenerator = IdGenerator("prt")
 
-  def create(createdBy: User, form: PortForm): InternalPort = {
+  def create(createdBy: UserReference, form: PortForm): InternalPort = {
     val id = DB.withConnection { implicit c =>
       create(c, createdBy, form)
     }
@@ -64,7 +64,7 @@ object PortsDao {
 
   private[db] def create(
     implicit c: java.sql.Connection,
-    createdBy: User,
+    createdBy: UserReference,
     form: PortForm
   ): String = {
     val id = idGenerator.randomId()
@@ -79,7 +79,7 @@ object PortsDao {
     id
   }
 
-  def delete(implicit c: java.sql.Connection, deletedBy: User, port: InternalPort) {
+  def delete(implicit c: java.sql.Connection, deletedBy: UserReference, port: InternalPort) {
     dbHelpers.delete(c, deletedBy, port.id)
   }
 
