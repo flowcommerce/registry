@@ -1,6 +1,6 @@
 package db
 
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.Authorization
 import io.flow.registry.v0.models._
 import io.flow.play.clients.MockUserTokensClient
@@ -33,8 +33,8 @@ trait Helpers {
     createTestId() + "@test.flow.io"
   }
 
-  def createUser(): User = {
-    MockUserTokensClient.makeUser()
+  def createUser(): UserReference = {
+    MockUserTokensClient.makeUserReference()
   }
 
   def rightOrErrors[T](result: Either[Seq[String], T]): T = {
@@ -47,7 +47,7 @@ trait Helpers {
   def createService(
     form: ServiceForm = createServiceForm()
   ) (
-    implicit user: User = testUser
+    implicit user: UserReference = testUser
   ): Service = {
     rightOrErrors(ServicesDao.create(user, form))
   }
@@ -68,7 +68,7 @@ trait Helpers {
   def createApplication(
     form: ApplicationForm = createApplicationForm()
   ) (
-    implicit user: User = testUser
+    implicit user: UserReference = testUser
   ): Application = {
     rightOrErrors(ApplicationsDao.create(user, form))
   }
@@ -89,7 +89,7 @@ trait Helpers {
   def createPort(
     form: PortForm = createPortForm()
   ) (
-    implicit user: User = testUser
+    implicit user: UserReference = testUser
   ): InternalPort = {
     PortsDao.create(user, form)
   }
@@ -110,7 +110,7 @@ trait Helpers {
   def createDependency(
     form: DependencyForm = createDependencyForm()
   ) (
-    implicit user: User = testUser
+    implicit user: UserReference = testUser
   ): InternalDependency = {
     DependenciesDao.create(user, form)
   }

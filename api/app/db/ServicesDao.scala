@@ -5,7 +5,7 @@ import io.flow.registry.api.lib.DefaultPortAllocator
 import io.flow.registry.v0.models.{Service, ServiceForm, Port}
 import io.flow.registry.v0.models.json._
 import io.flow.postgresql.{Authorization, Query, OrderBy, Pager}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -69,7 +69,7 @@ object ServicesDao {
     }
   }
   
-  def create(createdBy: User, form: ServiceForm): Either[Seq[String], Service] = {
+  def create(createdBy: UserReference, form: ServiceForm): Either[Seq[String], Service] = {
     validate(form) match {
       case Nil => {
         DB.withConnection { implicit c =>
@@ -92,7 +92,7 @@ object ServicesDao {
     }
   }
 
-  def update(createdBy: User, existing: Service, form: ServiceForm): Either[Seq[String], Service] = {
+  def update(createdBy: UserReference, existing: Service, form: ServiceForm): Either[Seq[String], Service] = {
     validate(form, existing = Some(existing)) match {
       case Nil => {
         DB.withConnection { implicit c =>
@@ -113,7 +113,7 @@ object ServicesDao {
     }
   }
 
-  def delete(deletedBy: User, service: Service) {
+  def delete(deletedBy: UserReference, service: Service) {
     dbHelpers.delete(deletedBy, service.id)
   }
 

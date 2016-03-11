@@ -5,7 +5,7 @@ import io.flow.registry.api.lib.DefaultPortAllocator
 import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Service, Port}
 import io.flow.registry.v0.models.json._
 import io.flow.postgresql.{Authorization, Query, OrderBy, Pager}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -171,7 +171,7 @@ object ApplicationsDao {
     idErrors ++ serviceErrors ++ dependencyErrors ++ circularDependencyErrors ++ externalErrors ++ internalErrors
   }
 
-  def create(createdBy: User, form: ApplicationForm): Either[Seq[String], Application] = {
+  def create(createdBy: UserReference, form: ApplicationForm): Either[Seq[String], Application] = {
     val putForm = ApplicationPutForm(
       service = Some(form.service),
       external = form.external,
@@ -217,7 +217,7 @@ object ApplicationsDao {
     }
   }
 
-  def update(createdBy: User, app: Application, form: ApplicationPutForm): Either[Seq[String], Application] = {
+  def update(createdBy: UserReference, app: Application, form: ApplicationPutForm): Either[Seq[String], Application] = {
     validate(app.id, form, Some(app)) match {
       case Nil => {
         val newDependencies = form.dependency match {
@@ -297,7 +297,7 @@ object ApplicationsDao {
 
   private[this] def createPort(
     implicit c: java.sql.Connection,
-    createdBy: User,
+    createdBy: UserReference,
     applicationId: String,
     external: Option[Long],
     internal: Option[Long],
@@ -319,7 +319,7 @@ object ApplicationsDao {
 
   private[this] def createDependency(
     implicit c: java.sql.Connection,
-    createdBy: User,
+    createdBy: UserReference,
     applicationId: String,
     dependencyId: String
   ) {
@@ -333,7 +333,7 @@ object ApplicationsDao {
     )
   }
 
-  def delete(deletedBy: User, application: Application) {
+  def delete(deletedBy: UserReference, application: Application) {
     DB.withTransaction { implicit c =>
       Pager.create { offset =>
         PortsDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset).map { port =>

@@ -1,6 +1,6 @@
 package db
 
-import io.flow.common.v0.models.{ExpandableUser, ExpandableUserUndefinedType, User, UserReference}
+import io.flow.common.v0.models.UserReference
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -11,7 +11,7 @@ case class DbHelpers(tableName: String) {
     select util.delete_by_id({updated_by_user_id}, '$tableName', {id})
   """
 
-  def delete(deletedBy: ExpandableUser, id: String) {
+  def delete(deletedBy: UserReference, id: String) {
     DB.withConnection { implicit c =>
       delete(c, deletedBy, id)
     }
@@ -19,21 +19,13 @@ case class DbHelpers(tableName: String) {
 
   def delete(
     implicit c: java.sql.Connection,
-    deletedBy: ExpandableUser,
+    deletedBy: UserReference,
     id: String
   ) {
     SQL(DeleteQuery).on(
-      'updated_by_user_id -> userId(deletedBy),
+      'updated_by_user_id -> deletedBy.id,
       'id -> id
     ).execute()
   }
 
-  def userId(user: ExpandableUser): String = {
-    user match {
-      case o: User => o.id
-      case UserReference(id) => id
-      case ExpandableUserUndefinedType(other) => sys.error(s"Invalid org[$other]")
-    }
-  }
-  
 }

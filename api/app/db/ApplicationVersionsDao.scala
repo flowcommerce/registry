@@ -1,6 +1,6 @@
 package db
 
-import io.flow.common.v0.models.{ChangeType, User}
+import io.flow.common.v0.models.ChangeType
 import io.flow.postgresql.{Authorization, Query, OrderBy}
 import io.flow.registry.v0.models.ApplicationVersion
 import org.joda.time.DateTime

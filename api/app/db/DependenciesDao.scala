@@ -1,6 +1,6 @@
 package db
 
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.play.util.IdGenerator
 import io.flow.postgresql.{Authorization, Query, OrderBy}
 import anorm._
@@ -38,7 +38,7 @@ object DependenciesDao {
   private[this] val dbHelpers = DbHelpers("dependencies")
   private[this] val idGenerator = IdGenerator("dep")
 
-  def create(createdBy: User, form: DependencyForm): InternalDependency = {
+  def create(createdBy: UserReference, form: DependencyForm): InternalDependency = {
     val id = DB.withConnection { implicit c =>
       create(c, createdBy, form)
     }
@@ -49,7 +49,7 @@ object DependenciesDao {
 
   private[db] def create(
     implicit c: java.sql.Connection,
-    createdBy: User,
+    createdBy: UserReference,
     form: DependencyForm
   ): String = {
     val id = idGenerator.randomId()
@@ -62,7 +62,7 @@ object DependenciesDao {
     id
   }
 
-  def delete(implicit c: java.sql.Connection, deletedBy: User, dependency: InternalDependency) {
+  def delete(implicit c: java.sql.Connection, deletedBy: UserReference, dependency: InternalDependency) {
     dbHelpers.delete(c, deletedBy, dependency.id)
   }
 

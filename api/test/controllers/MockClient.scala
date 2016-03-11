@@ -3,7 +3,7 @@ package controllers
 import io.flow.registry.v0.{Authorization, Client}
 import io.flow.registry.v0.errors.{ErrorsResponse, UnitResponse}
 import io.flow.play.clients.MockUserTokensClient
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Try}
@@ -23,7 +23,7 @@ trait MockClient extends db.Helpers {
     * granted all privileges.
     */
   def makeIdentifiedClient(
-    user: User = MockUserTokensClient.makeUser(),
+    user: UserReference = MockUserTokensClient.makeUserReference(),
     token: String = createTestId()
   ): Client = {
     MockUserTokensClient.add(user, token = Some(token))
