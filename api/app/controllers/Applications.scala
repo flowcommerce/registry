@@ -12,7 +12,7 @@ import play.api.mvc._
 import play.api.libs.json._
 
 class Applications @javax.inject.Inject() (
-  val userTokensClient: io.flow.play.clients.UserTokensClient
+  val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller
      with io.flow.play.controllers.IdentifiedRestController
 {
