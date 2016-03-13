@@ -2,7 +2,8 @@ package controllers
 
 import io.flow.registry.v0.{Authorization, Client}
 import io.flow.registry.v0.errors.{ErrorsResponse, UnitResponse}
-import io.flow.play.clients.MockUserTokensClient
+import io.flow.play.clients.MockTokenClient
+import io.flow.token.v0.models.Token
 import io.flow.common.v0.models.UserReference
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
@@ -16,17 +17,19 @@ trait MockClient extends db.Helpers {
   val port = 9010
 
   lazy val anonClient = new Client(s"http://localhost:$port")
-  lazy val identifiedClient = makeIdentifiedClient(user = testUser)
+  def identifiedClient = makeIdentifiedClient(user = testUser)
 
   /**
     * Generates an instance of the client where the user has been
     * granted all privileges.
     */
   def makeIdentifiedClient(
-    user: UserReference = MockUserTokensClient.makeUserReference(),
+    user: UserReference = UserReference(id = idGenerator.randomId()),
     token: String = createTestId()
   ): Client = {
-    MockUserTokensClient.add(user, token = Some(token))
+    val mockClient = play.api.Play.current.injector.instanceOf[MockTokenClient]
+    mockClient.data.add(token, Token(user = user))
+
     new Client(
       s"http://localhost:$port",
       auth = Some(Authorization.Basic(token))

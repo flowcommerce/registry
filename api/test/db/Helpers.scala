@@ -3,7 +3,6 @@ package db
 import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.Authorization
 import io.flow.registry.v0.models._
-import io.flow.play.clients.MockUserTokensClient
 import io.flow.play.util.{IdGenerator, UrlKey}
 import io.flow.postgresql.OrderBy
 import java.util.UUID
@@ -34,7 +33,7 @@ trait Helpers {
   }
 
   def createUser(): UserReference = {
-    MockUserTokensClient.makeUserReference()
+    UserReference(id = idGenerator.randomId())
   }
 
   def rightOrErrors[T](result: Either[Seq[String], T]): T = {
