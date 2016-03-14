@@ -1,7 +1,7 @@
 package io.flow.registry.api.lib
 
 import db.ApplicationsDao
-import io.flow.play.clients.{MockRegistry, ProductionRegistry, Registry, RegistryApplicationProvider}
+import io.flow.play.clients.{MockRegistry, ProductionRegistry, Registry, RegistryConstants}
 import io.flow.postgresql.Authorization
 import io.flow.play.util.{Config, FlowEnvironment}
 import play.api.{Environment, Configuration, Mode}
@@ -13,13 +13,19 @@ import play.api.inject.Module
   */
 @javax.inject.Singleton
 class LocalRegistry @javax.inject.Inject() (
-  override val config: Config
-) extends RegistryApplicationProvider {
+  app: play.api.Application
+) extends Registry {
 
-  override def getById(applicationId: String) = {
-    ApplicationsDao.findById(Authorization.All, applicationId).getOrElse {
+  override def host(applicationId: String): String = {
+    val app = ApplicationsDao.findById(Authorization.All, applicationId).getOrElse {
       sys.error("application[$applicationId] not found in registrydb")
     }
+
+    val port = app.ports.headOption.getOrElse {
+      sys.error(s"application[$applicationId] does not have any ports in registry")
+    }
+
+    RegistryConstants.developmentHost(applicationId, port.external)
   }
 
 }
