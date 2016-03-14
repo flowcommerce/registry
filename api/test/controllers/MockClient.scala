@@ -17,13 +17,13 @@ trait MockClient extends db.Helpers {
   val port = 9010
 
   lazy val anonClient = new Client(s"http://localhost:$port")
-  def identifiedClient = makeIdentifiedClient(user = testUser)
 
   /**
-    * Generates an instance of the client where the user has been
-    * granted all privileges.
+    * Generates an instance of the client where the token has been
+    * registered with the mock token client to identify the specified
+    * user.
     */
-  def makeIdentifiedClient(
+  def identifiedClient(
     user: UserReference = UserReference(id = idGenerator.randomId()),
     token: String = createTestId()
   ): Client = {
