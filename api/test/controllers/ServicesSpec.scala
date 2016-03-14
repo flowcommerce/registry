@@ -14,10 +14,10 @@ class ServicesSpec extends PlaySpecification with MockClient {
     val id = service.id
 
     await(
-      identifiedClient.services.deleteById(id)
+      identifiedClient().services.deleteById(id)
     )
     expectNotFound(
-      identifiedClient.services.getById(id)
+      identifiedClient().services.getById(id)
     )
   }
 
@@ -25,22 +25,22 @@ class ServicesSpec extends PlaySpecification with MockClient {
     val service = createService(createServiceForm().copy(defaultPort = 5000))
     service.defaultPort must beEqualTo(5000)
 
-    val updated = await(identifiedClient.services.putById(service.id, createServicePutForm().copy(defaultPort = 5001)))
+    val updated = await(identifiedClient().services.putById(service.id, createServicePutForm().copy(defaultPort = 5001)))
     updated.defaultPort must beEqualTo(5001)
   }
 
   "PUT /services/:id creates service" in new WithServer(port=port) {
     val id = createTestId()
-    val updated = await(identifiedClient.services.putById(id, createServicePutForm()))
+    val updated = await(identifiedClient().services.putById(id, createServicePutForm()))
     await(
-      identifiedClient.services.getById(id)
+      identifiedClient().services.getById(id)
     ).id must beEqualTo(id)
   }
 
   "POST /services" in new WithServer(port=port) {
     val form = createServiceForm()
 
-    val service = await(identifiedClient.services.post(form))
+    val service = await(identifiedClient().services.post(form))
     service.id must beEqualTo(form.id)
   }
 
@@ -49,7 +49,7 @@ class ServicesSpec extends PlaySpecification with MockClient {
     val form = createServiceForm().copy(id = service.id)
 
     expectErrors(
-      identifiedClient.services.post(form)
+      identifiedClient().services.post(form)
     ).errors.map(_.message) must beEqualTo(
       Seq("Service with this id already exists")
     )
@@ -60,7 +60,7 @@ class ServicesSpec extends PlaySpecification with MockClient {
     val form = createServiceForm().copy(defaultPort = 200)
 
     expectErrors(
-      identifiedClient.services.post(form)
+      identifiedClient().services.post(form)
     ).errors.map(_.message) must beEqualTo(
       Seq("Default port must be > 1024")
     )
@@ -70,7 +70,7 @@ class ServicesSpec extends PlaySpecification with MockClient {
     val form = createServiceForm().copy(id = " a bad id ")
 
     expectErrors(
-      identifiedClient.services.post(form)
+      identifiedClient().services.post(form)
     ).errors.map(_.message) must beEqualTo(
       Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-id")
     )
@@ -79,11 +79,11 @@ class ServicesSpec extends PlaySpecification with MockClient {
   "GET /services/:id" in new WithServer(port=port) {
     val service = createService()
     await(
-      identifiedClient.services.getById(service.id)
+      identifiedClient().services.getById(service.id)
     ) must beEqualTo(service)
 
     expectNotFound(
-      identifiedClient.services.getById(createTestId())
+      identifiedClient().services.getById(createTestId())
     )
   }
 
@@ -115,11 +115,11 @@ class ServicesSpec extends PlaySpecification with MockClient {
     val service2 = createService()
 
     await(
-      identifiedClient.services.get(id = Some(Seq(service1.id, service2.id)))
+      identifiedClient().services.get(id = Some(Seq(service1.id, service2.id)))
     ).map(_.id).sorted must beEqualTo(Seq(service1.id, service2.id).sorted)
 
     await(
-      identifiedClient.services.get(id = Some(Seq(createTestId())))
+      identifiedClient().services.get(id = Some(Seq(createTestId())))
     ) must be(Nil)
   }
 
@@ -131,11 +131,11 @@ class ServicesSpec extends PlaySpecification with MockClient {
     val ids = Seq(service1.id, service2.id, service3.id)
 
     await(
-      identifiedClient.services.get(id = Some(ids), sort = "created_at", limit = 2)
+      identifiedClient().services.get(id = Some(ids), sort = "created_at", limit = 2)
     ).map(_.id) must beEqualTo(Seq(service1.id, service2.id))
 
     await(
-      identifiedClient.services.get(id = Some(ids), sort = "created_at", limit = 2, offset = 2)
+      identifiedClient().services.get(id = Some(ids), sort = "created_at", limit = 2, offset = 2)
     ).map(_.id) must beEqualTo(Seq(service3.id))
   }
 
@@ -145,21 +145,21 @@ class ServicesSpec extends PlaySpecification with MockClient {
     val ids = Seq(service1.id, service2.id)
 
     await(
-      identifiedClient.services.get(id = Some(ids), sort = "created_at")
+      identifiedClient().services.get(id = Some(ids), sort = "created_at")
     ).map(_.id) must beEqualTo(ids)
 
     await(
-      identifiedClient.services.get(id = Some(ids), sort = "-created_at")
+      identifiedClient().services.get(id = Some(ids), sort = "-created_at")
     ).map(_.id) must beEqualTo(ids.reverse)
   }
 
   "GET /services/versions" in new WithServer(port=port) {
     val service = createService(createServiceForm().copy(defaultPort = 5000))
-    val updated = await(identifiedClient.services.putById(service.id, createServicePutForm().copy(defaultPort = 5001)))
-    await(identifiedClient.services.deleteById(service.id))
+    val updated = await(identifiedClient().services.putById(service.id, createServicePutForm().copy(defaultPort = 5001)))
+    await(identifiedClient().services.deleteById(service.id))
 
     val versions = await(
-      identifiedClient.services.getVersions(service = Some(Seq(service.id)))
+      identifiedClient().services.getVersions(service = Some(Seq(service.id)))
     )
     versions.map(_.`type`) must beEqualTo(Seq(ChangeType.Insert, ChangeType.Update, ChangeType.Delete))
     versions(0).service.defaultPort must beEqualTo(5000)
