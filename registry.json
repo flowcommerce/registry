@@ -1,5 +1,6 @@
  {
   "name": "registry",
+  "base_url": "https://registry.api.flow.io",   
 
   "imports": [
     { "uri": "http://www.apidoc.me/flow/common/0.0.9/service.json" }
