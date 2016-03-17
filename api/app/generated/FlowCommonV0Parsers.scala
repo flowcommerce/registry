@@ -313,6 +313,30 @@ package io.flow.common.v0.anorm.parsers {
 
   }
 
+  object Measurement {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      value = s"$prefix${sep}value",
+      units = s"$prefix${sep}units"
+    )
+
+    def parser(
+      value: String = "value",
+      units: String = "units"
+    ): RowParser[io.flow.common.v0.models.Measurement] = {
+      SqlParser.str(value) ~
+      io.flow.common.v0.anorm.parsers.UnitOfMeasurement.parser(units) map {
+        case value ~ units => {
+          io.flow.common.v0.models.Measurement(
+            value = value,
+            units = units
+          )
+        }
+      }
+    }
+
+  }
+
   object Name {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
