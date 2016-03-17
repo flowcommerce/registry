@@ -103,6 +103,8 @@ package io.flow.common.v0.anorm.conversions {
     implicit val columnToMapCommonHealthcheck: Column[Map[String, _root_.io.flow.common.v0.models.Healthcheck]] = parser { _.as[Map[String, _root_.io.flow.common.v0.models.Healthcheck]] }
     implicit val columnToSeqCommonLocation: Column[Seq[_root_.io.flow.common.v0.models.Location]] = parser { _.as[Seq[_root_.io.flow.common.v0.models.Location]] }
     implicit val columnToMapCommonLocation: Column[Map[String, _root_.io.flow.common.v0.models.Location]] = parser { _.as[Map[String, _root_.io.flow.common.v0.models.Location]] }
+    implicit val columnToSeqCommonMeasurement: Column[Seq[_root_.io.flow.common.v0.models.Measurement]] = parser { _.as[Seq[_root_.io.flow.common.v0.models.Measurement]] }
+    implicit val columnToMapCommonMeasurement: Column[Map[String, _root_.io.flow.common.v0.models.Measurement]] = parser { _.as[Map[String, _root_.io.flow.common.v0.models.Measurement]] }
     implicit val columnToSeqCommonName: Column[Seq[_root_.io.flow.common.v0.models.Name]] = parser { _.as[Seq[_root_.io.flow.common.v0.models.Name]] }
     implicit val columnToMapCommonName: Column[Map[String, _root_.io.flow.common.v0.models.Name]] = parser { _.as[Map[String, _root_.io.flow.common.v0.models.Name]] }
     implicit val columnToSeqCommonOrganization: Column[Seq[_root_.io.flow.common.v0.models.Organization]] = parser { _.as[Seq[_root_.io.flow.common.v0.models.Organization]] }

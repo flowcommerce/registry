@@ -66,6 +66,11 @@ package io.flow.common.v0.models {
     value: String
   )
 
+  case class Measurement(
+    value: String,
+    units: io.flow.common.v0.models.UnitOfMeasurement
+  )
+
   case class Name(
     first: _root_.scala.Option[String] = None,
     last: _root_.scala.Option[String] = None
@@ -942,6 +947,28 @@ package io.flow.common.v0.models {
       new play.api.libs.json.Writes[io.flow.common.v0.models.Location] {
         def writes(obj: io.flow.common.v0.models.Location) = {
           jsObjectLocation(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsCommonMeasurement: play.api.libs.json.Reads[Measurement] = {
+      (
+        (__ \ "value").read[String] and
+        (__ \ "units").read[io.flow.common.v0.models.UnitOfMeasurement]
+      )(Measurement.apply _)
+    }
+
+    def jsObjectMeasurement(obj: io.flow.common.v0.models.Measurement) = {
+      play.api.libs.json.Json.obj(
+        "value" -> play.api.libs.json.JsString(obj.value),
+        "units" -> play.api.libs.json.JsString(obj.units.toString)
+      )
+    }
+
+    implicit def jsonWritesCommonMeasurement: play.api.libs.json.Writes[Measurement] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.Measurement] {
+        def writes(obj: io.flow.common.v0.models.Measurement) = {
+          jsObjectMeasurement(obj)
         }
       }
     }
