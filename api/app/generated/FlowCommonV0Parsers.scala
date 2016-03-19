@@ -440,7 +440,7 @@ package io.flow.common.v0.anorm.parsers {
       amount: String = "amount",
       currency: String = "currency"
     ): RowParser[io.flow.common.v0.models.Price] = {
-      SqlParser.str(amount) ~
+      SqlParser.get[Double](amount) ~
       SqlParser.str(currency) map {
         case amount ~ currency => {
           io.flow.common.v0.models.Price(

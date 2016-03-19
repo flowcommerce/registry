@@ -94,7 +94,7 @@ package io.flow.common.v0.models {
   )
 
   case class Price(
-    amount: String,
+    amount: Double,
     currency: String
   )
 
@@ -1047,14 +1047,14 @@ package io.flow.common.v0.models {
 
     implicit def jsonReadsCommonPrice: play.api.libs.json.Reads[Price] = {
       (
-        (__ \ "amount").read[String] and
+        (__ \ "amount").read[Double] and
         (__ \ "currency").read[String]
       )(Price.apply _)
     }
 
     def jsObjectPrice(obj: io.flow.common.v0.models.Price) = {
       play.api.libs.json.Json.obj(
-        "amount" -> play.api.libs.json.JsString(obj.amount),
+        "amount" -> play.api.libs.json.JsNumber(obj.amount),
         "currency" -> play.api.libs.json.JsString(obj.currency)
       )
     }
