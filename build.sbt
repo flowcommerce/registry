@@ -11,6 +11,7 @@ parallelExecution in Test in ThisBuild := true
 lazy val api = project
   .in(file("api"))
   .enablePlugins(PlayScala)
+  .enablePlugins(NewRelic)
   .settings(commonSettings: _*)
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
