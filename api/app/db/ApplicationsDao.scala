@@ -11,7 +11,8 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
-import io.flow.registry.v0.anorm.conversions.Json._
+import io.flow.registry.v0.anorm.conversions.Standard._
+import io.flow.registry.v0.anorm.conversions.Types._
 
 object ApplicationsDao {
 
