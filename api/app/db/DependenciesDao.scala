@@ -62,6 +62,22 @@ object DependenciesDao {
     id
   }
 
+  private[db] def deleteApplicationDependency(
+    implicit c: java.sql.Connection,
+    user: UserReference,
+    applicationId: String,
+    dependencyId: String
+  ) {
+    findAll(
+      Authorization.All,
+      applications = Some(Seq(applicationId)),
+      dependencies = Some(Seq(dependencyId)),
+      limit = 1
+    ).map { dep =>
+      delete(c, user, dep)
+    }
+  }
+
   def delete(implicit c: java.sql.Connection, deletedBy: UserReference, dependency: InternalDependency) {
     dbHelpers.delete(c, deletedBy, dependency.id)
   }

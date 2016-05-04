@@ -119,7 +119,26 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val app2 = createApplication(createApplicationForm().copy(dependency = Some(Seq(app.id))))
 
     ApplicationsDao.delete(testUser, app2)
-    ApplicationsDao.findById(Authorization.All, app2.id) must be(None)
+    ApplicationsDao.findById(Authorization.All, app2.id) must be(None)    
+  }
+
+  "update does not modify dependencies if not provided" in {
+    val app = createApplication()
+    val app2 = createApplication(createApplicationForm().copy(dependency = Some(Seq(app.id))))
+
+    val updated = rightOrErrors(ApplicationsDao.update(testUser, app2, ApplicationPutForm()))
+    updated.id must be(app2.id)
+    updated.dependencies must be(Seq(app.id))
+  }
+
+  "update replaces dependencies if provided" in {
+    val app1 = createApplication()
+    val app2 = createApplication()
+
+    val myApp = createApplication(createApplicationForm().copy(dependency = Some(Seq(app1.id))))
+
+    val updated = rightOrErrors(ApplicationsDao.update(testUser, myApp, ApplicationPutForm(dependency = Some(Seq(app2.id)))))
+    updated.dependencies must be(Seq(app2.id))
   }
 
   "update allocates new ports" in {
