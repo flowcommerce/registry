@@ -220,9 +220,14 @@ object ApplicationsDao {
   def update(createdBy: UserReference, app: Application, form: ApplicationPutForm): Either[Seq[String], Application] = {
     validate(app.id, form, Some(app)) match {
       case Nil => {
-        val newDependencies = form.dependency match {
+        val dependenciesToAdd = form.dependency match {
           case None => Nil
           case Some(deps) => deps.filter { !app.dependencies.contains(_) }
+        }
+
+        val dependenciesToDelete = form.dependency match {
+          case None => Nil
+          case Some(deps) => app.dependencies.filter { !deps.contains(_) }
         }
 
         DB.withTransaction { implicit c =>
@@ -239,7 +244,8 @@ object ApplicationsDao {
             }
           }
 
-          newDependencies.foreach { dep => createDependency(c, createdBy, app.id, dep) }
+          dependenciesToDelete.foreach { dep => DependenciesDao.deleteApplicationDependency(c, createdBy, app.id, dep) }
+          dependenciesToAdd.foreach { dep => createDependency(c, createdBy, app.id, dep) }
 
           // Update the applications table to trigger the journal
           // write.
