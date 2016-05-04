@@ -3,7 +3,7 @@
   "base_url": "https://registry.api.flow.io",   
 
   "imports": [
-    { "uri": "http://www.apidoc.me/flow/common/0.0.9/service.json" }
+    { "uri": "http://www.apidoc.me/flow/common/0.0.12/service.json" }
   ],
   
   "models": {
@@ -91,19 +91,6 @@
   },
 
   "resources": {
-    "io.flow.common.v0.models.healthcheck": {
-      "path": "/_internal_",
-      "operations": [
-        {
-          "method": "GET",
-          "path": "/healthcheck",
-          "responses": {
-            "200": { "type": "io.flow.common.v0.models.healthcheck" }
-          }
-        }
-      ]
-    },
-
     "service": {
       "operations": [
         {

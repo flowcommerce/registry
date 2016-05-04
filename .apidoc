@@ -4,10 +4,11 @@ code:
       version: latest
       generators:
         anorm_2_x_parsers: api/app/generated
-        play_2_x_json: api/app/generated
+        play_2_4_client: api/app/generated
+        play_2_x_routes: api/conf/common.routes        
     registry:
       version: latest
       generators:
         anorm_2_x_parsers: api/app/generated
         play_2_4_client: api/app/generated
-        play_2_x_routes: api/conf/routes
+        play_2_x_routes: api/conf/registry.routes
