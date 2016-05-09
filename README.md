@@ -15,7 +15,7 @@ The design of the system includes:
 
   - services which have names (e.g. postgresql) and default ports
     (e.g. 5432). This enables identifying consistently the internal
-    ports an application users
+    ports an application users.
 
   - applications which are services w/ a list of assigned ports. These
     ports map the internal port numbers to a globally unique external
