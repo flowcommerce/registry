@@ -86,14 +86,7 @@
         { "name": "external", "type": "long", "description": "The port on which clients access this service. If running in a container, this is the host port." },
         { "name": "internal", "type": "long", "description": "The port on which this service is running internally. If running in a container, this is the port inside the container." }
       ]
-    },
-
-    "yml": {
-      "fields": [
-        { "name": "yml", "type": "string", "description": "YML representation of applications."  }
-      ]
     }
-
   },
 
   "resources": {
@@ -220,10 +213,10 @@
 
         {
           "method": "GET",
-          "description": "Returns YML representation of applications.",
-          "path": "/yml",
+          "description": "Returns YAML representation of applications.",
+          "path": "/yaml",
           "responses": {
-            "200": { "type": "yml" },
+            "200": { "type": "string" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
           }
