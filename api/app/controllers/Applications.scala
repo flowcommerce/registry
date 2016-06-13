@@ -97,13 +97,13 @@ class Applications @javax.inject.Inject() (
       val portYaml = YamlArray(ports.toVector)
 
       //build dependencies
-      val dependencies = YamlArray(YamlString(a.dependencies.mkString(", ")))
+      val dependencies = a.dependencies.mkString(", ")
 
       //merge together with id for main application object
       YamlObject(
         YamlString("id") -> YamlString(a.id),
         YamlString("ports") -> portYaml,
-        YamlString("dependencies") -> dependencies
+        YamlString("dependencies") -> YamlString(s"[$dependencies]")
       )
     }
 
@@ -114,7 +114,8 @@ class Applications @javax.inject.Inject() (
         replaceAll("id: (nodejs)", "  id: nodejs").
         replaceAll("id: (postgresql)", "  id: postgresql").
         replaceAll("external", "  external").
-        replaceAll("internal", "  internal")
+        replaceAll("internal", "  internal").
+        replaceAll("'", "")
     )
   }
   
