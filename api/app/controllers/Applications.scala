@@ -80,32 +80,32 @@ class Applications @javax.inject.Inject() (
     }
   }
 
-  def getYml() = Identified { request =>
+  def getYaml() = Identified { request =>
 
     val apps = ApplicationsDao.findAll(
       Authorization.User(request.user.id)
     )
 
-    val yml = apps.map { a =>
+    val yaml = apps.map { a =>
       val ports = a.ports.map(p =>
         YamlObject(
           YamlString("service") -> YamlObject(YamlString("id") -> YamlString(p.service.id)),
           YamlString("external") -> YamlNumber(p.external),
           YamlString("internal") -> YamlNumber(p.internal)))
 
-      val portYml = YamlArray(ports.toVector)
+      val portYaml = YamlArray(ports.toVector)
 
       val dependencies = YamlArray(YamlString(a.dependencies.mkString(", ")))
 
       YamlObject(
         YamlString("id") -> YamlString(a.id),
-        YamlString("ports") -> portYml,
+        YamlString("ports") -> portYaml,
         YamlString("dependencies") -> dependencies
       )
     }
 
     Ok(
-      YamlArray(yml.toVector).prettyPrint
+      YamlArray(yaml.toVector).prettyPrint
     )
   }
   
