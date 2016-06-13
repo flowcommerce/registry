@@ -6,16 +6,6 @@
     { "uri": "http://www.apidoc.me/flow/common/latest/service.json" }
   ],
 
-  "enums": {
-    "change_type": {
-      "values": [
-        { "name": "insert" },
-        { "name": "update" },
-        { "name": "delete" }
-      ]
-    }
-  },
-
   "models": {
 
     "service": {
@@ -95,13 +85,6 @@
         { "name": "service", "type": "service_reference" },
         { "name": "external", "type": "long", "description": "The port on which clients access this service. If running in a container, this is the host port." },
         { "name": "internal", "type": "long", "description": "The port on which this service is running internally. If running in a container, this is the port inside the container." }
-      ]
-    },
-
-    "error": {
-      "fields": [
-        { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
-        { "name": "message", "type": "string", "description": "Description of the error" }
       ]
     }
 

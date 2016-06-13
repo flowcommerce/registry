@@ -33,11 +33,6 @@ package io.flow.registry.v0.models {
     application: io.flow.registry.v0.models.Application
   )
 
-  case class Error(
-    code: String,
-    message: String
-  )
-
   case class Port(
     service: io.flow.registry.v0.models.ServiceReference,
     external: Long,
@@ -76,41 +71,6 @@ package io.flow.registry.v0.models {
     service: io.flow.registry.v0.models.Service
   )
 
-  sealed trait ChangeType
-
-  object ChangeType {
-
-    case object Insert extends ChangeType { override def toString = "insert" }
-    case object Update extends ChangeType { override def toString = "update" }
-    case object Delete extends ChangeType { override def toString = "delete" }
-
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends ChangeType
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Insert, Update, Delete)
-
-    private[this]
-    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
-
-    def apply(value: String): ChangeType = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): _root_.scala.Option[ChangeType] = byName.get(value.toLowerCase)
-
-  }
-
 }
 
 package io.flow.registry.v0.models {
@@ -139,36 +99,6 @@ package io.flow.registry.v0.models {
         import org.joda.time.format.ISODateTimeFormat.dateTime
         val str = dateTime.print(x)
         JsString(str)
-      }
-    }
-
-    implicit val jsonReadsRegistryChangeType = new play.api.libs.json.Reads[io.flow.registry.v0.models.ChangeType] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.registry.v0.models.ChangeType] = {
-        js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.ChangeType(v.value))
-          case _ => {
-            (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.ChangeType(v))
-              case err: play.api.libs.json.JsError => err
-            }
-          }
-        }
-      }
-    }
-
-    def jsonWritesRegistryChangeType(obj: io.flow.registry.v0.models.ChangeType) = {
-      play.api.libs.json.JsString(obj.toString)
-    }
-
-    def jsObjectChangeType(obj: io.flow.registry.v0.models.ChangeType) = {
-      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
-    }
-
-    implicit def jsonWritesRegistryChangeType: play.api.libs.json.Writes[ChangeType] = {
-      new play.api.libs.json.Writes[io.flow.registry.v0.models.ChangeType] {
-        def writes(obj: io.flow.registry.v0.models.ChangeType) = {
-          jsonWritesRegistryChangeType(obj)
-        }
       }
     }
 
@@ -290,28 +220,6 @@ package io.flow.registry.v0.models {
       new play.api.libs.json.Writes[io.flow.registry.v0.models.ApplicationVersion] {
         def writes(obj: io.flow.registry.v0.models.ApplicationVersion) = {
           jsObjectApplicationVersion(obj)
-        }
-      }
-    }
-
-    implicit def jsonReadsRegistryError: play.api.libs.json.Reads[Error] = {
-      (
-        (__ \ "code").read[String] and
-        (__ \ "message").read[String]
-      )(Error.apply _)
-    }
-
-    def jsObjectError(obj: io.flow.registry.v0.models.Error) = {
-      play.api.libs.json.Json.obj(
-        "code" -> play.api.libs.json.JsString(obj.code),
-        "message" -> play.api.libs.json.JsString(obj.message)
-      )
-    }
-
-    implicit def jsonWritesRegistryError: play.api.libs.json.Writes[Error] = {
-      new play.api.libs.json.Writes[io.flow.registry.v0.models.Error] {
-        def writes(obj: io.flow.registry.v0.models.Error) = {
-          jsObjectError(obj)
         }
       }
     }
@@ -475,16 +383,7 @@ package io.flow.registry.v0 {
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
-    // Enum: ChangeType
-    private[this] val enumChangeTypeNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.registry.v0.models.ChangeType.all.mkString(", ")}"
 
-    implicit val pathBindableEnumChangeType = new PathBindable.Parsing[io.flow.registry.v0.models.ChangeType] (
-      ChangeType.fromString(_).get, _.toString, enumChangeTypeNotFound
-    )
-
-    implicit val queryStringBindableEnumChangeType = new QueryStringBindable.Parsing[io.flow.registry.v0.models.ChangeType](
-      ChangeType.fromString(_).get, _.toString, enumChangeTypeNotFound
-    )
 
   }
 
