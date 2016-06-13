@@ -2,6 +2,10 @@
   "name": "registry",
   "base_url": "https://registry.api.flow.io",
 
+  "imports": [
+    { "uri": "http://www.apidoc.me/flow/common/latest/service.json" }
+  ],
+
   "enums": {
     "change_type": {
       "values": [
@@ -45,7 +49,7 @@
       "fields": [
         { "name": "id", "type": "string" },
         { "name": "timestamp", "type": "date-time-iso8601" },
-        { "name": "type", "type": "change_type" },
+        { "name": "type", "type": "io.flow.common.v0.enums.change_type" },
         { "name": "service", "type": "service" }
       ]
     },
@@ -81,7 +85,7 @@
       "fields": [
         { "name": "id", "type": "string" },
         { "name": "timestamp", "type": "date-time-iso8601" },
-        { "name": "type", "type": "change_type" },
+        { "name": "type", "type": "io.flow.common.v0.enums.change_type" },
         { "name": "application", "type": "application" }
       ]
     },
@@ -156,7 +160,7 @@
           "responses": {
             "201": { "type": "service" },
             "401": { "type": "unit" },
-            "422": { "type": "[error]" }
+            "422": { "type": "[io.flow.common.v0.models.error]" }
           }
         },
 
@@ -169,7 +173,7 @@
             "200": { "type": "service" },
             "201": { "type": "service" },
             "401": { "type": "unit" },
-            "422": { "type": "[error]" }
+            "422": { "type": "[io.flow.common.v0.models.error]" }
           }
         },
 
@@ -181,7 +185,7 @@
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" },
-            "422": { "type": "[error]" }
+            "422": { "type": "[io.flow.common.v0.models.error]" }
           }
         }
       ]
@@ -243,7 +247,7 @@
           "responses": {
             "201": { "type": "application" },
             "401": { "type": "unit" },
-            "422": { "type": "[error]" }
+            "422": { "type": "[io.flow.common.v0.models.error]" }
           }
         },
 
@@ -256,7 +260,7 @@
             "200": { "type": "application" },
             "201": { "type": "application" },
             "401": { "type": "unit" },
-            "422": { "type": "[error]" }
+            "422": { "type": "[io.flow.common.v0.models.error]" }
           }
         },
 

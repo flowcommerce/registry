@@ -12,6 +12,18 @@ package io.flow.registry.v0.anorm.parsers {
   import io.flow.common.v0.anorm.conversions.Types._
   import io.flow.registry.v0.anorm.conversions.Types._
 
+  object ChangeType {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(s"$prefix${sep}name")
+
+    def parser(name: String = "change_type"): RowParser[io.flow.registry.v0.models.ChangeType] = {
+      SqlParser.str(name) map {
+        case value => io.flow.registry.v0.models.ChangeType(value)
+      }
+    }
+
+  }
+
   object Application {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
@@ -133,6 +145,30 @@ package io.flow.registry.v0.anorm.parsers {
             timestamp = timestamp,
             `type` = typeInstance,
             application = application
+          )
+        }
+      }
+    }
+
+  }
+
+  object Error {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      code = s"$prefix${sep}code",
+      message = s"$prefix${sep}message"
+    )
+
+    def parser(
+      code: String = "code",
+      message: String = "message"
+    ): RowParser[io.flow.registry.v0.models.Error] = {
+      SqlParser.str(code) ~
+      SqlParser.str(message) map {
+        case code ~ message => {
+          io.flow.registry.v0.models.Error(
+            code = code,
+            message = message
           )
         }
       }
