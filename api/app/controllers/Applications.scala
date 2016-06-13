@@ -7,7 +7,6 @@ import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutF
 import io.flow.registry.v0.models.json._
 import io.flow.play.util.Validation
 import io.flow.postgresql.{Authorization, OrderBy}
-import net.jcazevedo.moultingyaml
 import play.api.mvc._
 import play.api.libs.json._
 import net.jcazevedo.moultingyaml._
@@ -87,6 +86,8 @@ class Applications @javax.inject.Inject() (
     )
 
     val yaml = apps.map { a =>
+
+      //build up port array
       val ports = a.ports.map(p =>
         YamlObject(
           YamlString("service") -> YamlObject(YamlString("id") -> YamlString(p.service.id)),
@@ -95,8 +96,10 @@ class Applications @javax.inject.Inject() (
 
       val portYaml = YamlArray(ports.toVector)
 
+      //build dependencies
       val dependencies = YamlArray(YamlString(a.dependencies.mkString(", ")))
 
+      //merge together with id for main application object
       YamlObject(
         YamlString("id") -> YamlString(a.id),
         YamlString("ports") -> portYaml,
@@ -105,7 +108,13 @@ class Applications @javax.inject.Inject() (
     }
 
     Ok(
-      YamlArray(yaml.toVector).prettyPrint
+      YamlArray(yaml.toVector).prettyPrint.
+        replaceAll("- service", "  - service").
+        replaceAll("id: (play)", "  id: play").
+        replaceAll("id: (nodejs)", "  id: nodejs").
+        replaceAll("id: (postgresql)", "  id: postgresql").
+        replaceAll("external", "  external").
+        replaceAll("internal", "  internal")
     )
   }
   
