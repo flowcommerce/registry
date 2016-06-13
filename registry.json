@@ -1,11 +1,17 @@
  {
   "name": "registry",
-  "base_url": "https://registry.api.flow.io",   
+  "base_url": "https://registry.api.flow.io",
 
-  "imports": [
-    { "uri": "http://www.apidoc.me/flow/common/0.0.12/service.json" }
-  ],
-  
+  "enums": {
+    "change_type": {
+      "values": [
+        { "name": "insert" },
+        { "name": "update" },
+        { "name": "delete" }
+      ]
+    }
+  },
+
   "models": {
 
     "service": {
@@ -34,7 +40,7 @@
         { "name": "id", "type": "string", "example": "play" }
       ]
     },
-    
+
     "service_version": {
       "fields": [
         { "name": "id", "type": "string" },
@@ -70,7 +76,7 @@
         { "name": "dependency", "type": "[string]", "required": false }
       ]
     },
-    
+
     "application_version": {
       "fields": [
         { "name": "id", "type": "string" },
@@ -85,6 +91,13 @@
         { "name": "service", "type": "service_reference" },
         { "name": "external", "type": "long", "description": "The port on which clients access this service. If running in a container, this is the host port." },
         { "name": "internal", "type": "long", "description": "The port on which this service is running internally. If running in a container, this is the port inside the container." }
+      ]
+    },
+
+    "error": {
+      "fields": [
+        { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
+        { "name": "message", "type": "string", "description": "Description of the error" }
       ]
     }
 
@@ -171,7 +184,7 @@
             "422": { "type": "[io.flow.common.v0.models.error]" }
           }
         }
-      ]          
+      ]
     },
 
     "application": {
@@ -257,9 +270,8 @@
             "404": { "type": "unit" }
           }
         }
-      ]          
+      ]
     }
 
   }
 }
-
