@@ -90,7 +90,7 @@ class Applications @javax.inject.Inject() (
       //build up port array
       val ports = a.ports.map(p =>
         YamlObject(
-          YamlString("service") -> YamlObject(YamlString("id") -> YamlString(p.service.id)),
+          YamlString("healthcheck") -> YamlString(p.service.id),
           YamlString("external") -> YamlNumber(p.external),
           YamlString("internal") -> YamlNumber(p.internal)))
 
@@ -100,19 +100,15 @@ class Applications @javax.inject.Inject() (
       val dependencies = a.dependencies.mkString(", ")
 
       //merge together with id for main application object
-      YamlObject(
-        YamlString("id") -> YamlString(a.id),
+      YamlObject(YamlString(a.id) -> YamlObject(
         YamlString("ports") -> portYaml,
         YamlString("dependencies") -> YamlString(s"[$dependencies]")
-      )
+      ))
     }
 
     Ok(
       YamlArray(yaml.toVector).prettyPrint.
-        replaceAll("- service", "  - service").
-        replaceAll("id: (play)", "  id: play").
-        replaceAll("id: (nodejs)", "  id: nodejs").
-        replaceAll("id: (postgresql)", "  id: postgresql").
+        replaceAll("- healthcheck", "  - healthcheck").
         replaceAll("external", "  external").
         replaceAll("internal", "  internal").
         replaceAll("'", "")
