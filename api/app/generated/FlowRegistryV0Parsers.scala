@@ -195,25 +195,25 @@ package io.flow.registry.v0.anorm.parsers {
   object Postgresql {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
-      dbName = s"$prefix${sep}db_name",
+      dbname = s"$prefix${sep}dbname",
       host = s"$prefix${sep}host",
       port = s"$prefix${sep}port",
       user = s"$prefix${sep}user"
     )
 
     def parser(
-      dbName: String = "db_name",
+      dbname: String = "dbname",
       host: String = "host",
       port: String = "port",
       user: String = "user"
     ): RowParser[io.flow.registry.v0.models.Postgresql] = {
-      SqlParser.str(dbName) ~
+      SqlParser.str(dbname) ~
       SqlParser.str(host) ~
       SqlParser.long(port) ~
       SqlParser.str(user) map {
-        case dbName ~ host ~ port ~ user => {
+        case dbname ~ host ~ port ~ user => {
           io.flow.registry.v0.models.Postgresql(
-            dbName = dbName,
+            dbname = dbname,
             host = host,
             port = port,
             user = user

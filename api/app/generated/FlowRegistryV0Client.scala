@@ -47,7 +47,7 @@ package io.flow.registry.v0.models {
   )
 
   case class Postgresql(
-    dbName: String,
+    dbname: String,
     host: String,
     port: Long,
     user: String
@@ -287,7 +287,7 @@ package io.flow.registry.v0.models {
 
     implicit def jsonReadsRegistryPostgresql: play.api.libs.json.Reads[Postgresql] = {
       (
-        (__ \ "db_name").read[String] and
+        (__ \ "dbname").read[String] and
         (__ \ "host").read[String] and
         (__ \ "port").read[Long] and
         (__ \ "user").read[String]
@@ -296,7 +296,7 @@ package io.flow.registry.v0.models {
 
     def jsObjectPostgresql(obj: io.flow.registry.v0.models.Postgresql) = {
       play.api.libs.json.Json.obj(
-        "db_name" -> play.api.libs.json.JsString(obj.dbName),
+        "dbname" -> play.api.libs.json.JsString(obj.dbname),
         "host" -> play.api.libs.json.JsString(obj.host),
         "port" -> play.api.libs.json.JsNumber(obj.port),
         "user" -> play.api.libs.json.JsString(obj.user)

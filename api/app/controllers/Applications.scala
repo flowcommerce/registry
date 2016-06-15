@@ -99,7 +99,7 @@ class Applications @javax.inject.Inject() (
 
           case "postgresql" =>
             YamlObject(
-              YamlString("  db_name") -> YamlString(s"${a.id}-postgresql"),
+              YamlString("  dbname") -> YamlString(s"${a.id}-postgresql"),
               YamlString("  host") -> YamlString("vm"),
               YamlString("  port") -> YamlNumber(p.external),
               YamlString("  user") -> YamlString("api")

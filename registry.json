@@ -107,7 +107,7 @@
 
     "postgresql": {
       "fields": [
-        { "name": "db_name", "type": "string", "description": "The database name." },
+        { "name": "dbname", "type": "string", "description": "The database name." },
         { "name": "host", "type": "string" },
         { "name": "port", "type": "long", "description": "The port on which clients access this database." },
         { "name": "user", "type": "string" }
