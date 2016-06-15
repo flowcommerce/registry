@@ -5,6 +5,8 @@
  */
 package io.flow.registry.v0.models {
 
+  sealed trait Healthcheck
+
   case class Application(
     id: String,
     ports: Seq[io.flow.registry.v0.models.Port],
@@ -33,11 +35,23 @@ package io.flow.registry.v0.models {
     application: io.flow.registry.v0.models.Application
   )
 
+  case class Http(
+    host: String,
+    port: Long
+  ) extends Healthcheck
+
   case class Port(
     service: io.flow.registry.v0.models.ServiceReference,
     external: Long,
     internal: Long
   )
+
+  case class Postgresql(
+    dbName: String,
+    host: String,
+    port: Long,
+    user: String
+  ) extends Healthcheck
 
   /**
    * A service is used to identify what type of software is actually running. We use
@@ -70,6 +84,15 @@ package io.flow.registry.v0.models {
     `type`: io.flow.common.v0.models.ChangeType,
     service: io.flow.registry.v0.models.Service
   )
+
+  /**
+   * Provides future compatibility in clients - in the future, when a type is added
+   * to the union Healthcheck, it will need to be handled in the client code. This
+   * implementation will deserialize these future types as an instance of this class.
+   */
+  case class HealthcheckUndefinedType(
+    description: String
+  ) extends Healthcheck
 
 }
 
@@ -224,6 +247,20 @@ package io.flow.registry.v0.models {
       }
     }
 
+    implicit def jsonReadsRegistryHttp: play.api.libs.json.Reads[Http] = {
+      (
+        (__ \ "host").read[String] and
+        (__ \ "port").read[Long]
+      )(Http.apply _)
+    }
+
+    def jsObjectHttp(obj: io.flow.registry.v0.models.Http) = {
+      play.api.libs.json.Json.obj(
+        "host" -> play.api.libs.json.JsString(obj.host),
+        "port" -> play.api.libs.json.JsNumber(obj.port)
+      )
+    }
+
     implicit def jsonReadsRegistryPort: play.api.libs.json.Reads[Port] = {
       (
         (__ \ "service").read[io.flow.registry.v0.models.ServiceReference] and
@@ -246,6 +283,24 @@ package io.flow.registry.v0.models {
           jsObjectPort(obj)
         }
       }
+    }
+
+    implicit def jsonReadsRegistryPostgresql: play.api.libs.json.Reads[Postgresql] = {
+      (
+        (__ \ "db_name").read[String] and
+        (__ \ "host").read[String] and
+        (__ \ "port").read[Long] and
+        (__ \ "user").read[String]
+      )(Postgresql.apply _)
+    }
+
+    def jsObjectPostgresql(obj: io.flow.registry.v0.models.Postgresql) = {
+      play.api.libs.json.Json.obj(
+        "db_name" -> play.api.libs.json.JsString(obj.dbName),
+        "host" -> play.api.libs.json.JsString(obj.host),
+        "port" -> play.api.libs.json.JsNumber(obj.port),
+        "user" -> play.api.libs.json.JsString(obj.user)
+      )
     }
 
     implicit def jsonReadsRegistryService: play.api.libs.json.Reads[Service] = {
@@ -350,6 +405,39 @@ package io.flow.registry.v0.models {
       new play.api.libs.json.Writes[io.flow.registry.v0.models.ServiceVersion] {
         def writes(obj: io.flow.registry.v0.models.ServiceVersion) = {
           jsObjectServiceVersion(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsRegistryHealthcheck: play.api.libs.json.Reads[Healthcheck] = new play.api.libs.json.Reads[Healthcheck] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[Healthcheck] = {
+        (js \ "discriminator").validate[String] match {
+          case play.api.libs.json.JsError(msg) => play.api.libs.json.JsError(msg)
+          case play.api.libs.json.JsSuccess(discriminator, _) => {
+            discriminator match {
+              case "http" => js.validate[io.flow.registry.v0.models.Http]
+              case "postgresql" => js.validate[io.flow.registry.v0.models.Postgresql]
+              case other => play.api.libs.json.JsSuccess(io.flow.registry.v0.models.HealthcheckUndefinedType(other))
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectHealthcheck(obj: io.flow.registry.v0.models.Healthcheck) = {
+      obj match {
+        case x: io.flow.registry.v0.models.Http => jsObjectHttp(x) ++ play.api.libs.json.Json.obj("discriminator" -> "http")
+        case x: io.flow.registry.v0.models.Postgresql => jsObjectPostgresql(x) ++ play.api.libs.json.Json.obj("discriminator" -> "postgresql")
+        case other => {
+          sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
+        }
+      }
+    }
+
+    implicit def jsonWritesRegistryHealthcheck: play.api.libs.json.Writes[Healthcheck] = {
+      new play.api.libs.json.Writes[io.flow.registry.v0.models.Healthcheck] {
+        def writes(obj: io.flow.registry.v0.models.Healthcheck) = {
+          jsObjectHealthcheck(obj)
         }
       }
     }

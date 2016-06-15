@@ -5,7 +5,17 @@
   "imports": [
     { "uri": "http://www.apidoc.me/flow/common/0.0.12/service.json" }
   ],
-  
+
+   "unions": {
+     "healthcheck": {
+       "discriminator": "discriminator",
+       "types": [
+         { "type": "http" },
+         { "type": "postgresql" }
+       ]
+     }
+   },
+
   "models": {
 
     "service": {
@@ -34,7 +44,7 @@
         { "name": "id", "type": "string", "example": "play" }
       ]
     },
-    
+
     "service_version": {
       "fields": [
         { "name": "id", "type": "string" },
@@ -70,7 +80,7 @@
         { "name": "dependency", "type": "[string]", "required": false }
       ]
     },
-    
+
     "application_version": {
       "fields": [
         { "name": "id", "type": "string" },
@@ -80,11 +90,27 @@
       ]
     },
 
+    "http": {
+      "fields": [
+        { "name": "host", "type": "string" },
+        { "name": "port", "type": "long", "description": "The port on which clients access this service." }
+      ]
+    },
+
     "port": {
       "fields": [
         { "name": "service", "type": "service_reference" },
         { "name": "external", "type": "long", "description": "The port on which clients access this service. If running in a container, this is the host port." },
         { "name": "internal", "type": "long", "description": "The port on which this service is running internally. If running in a container, this is the port inside the container." }
+      ]
+    },
+
+    "postgresql": {
+      "fields": [
+        { "name": "db_name", "type": "string", "description": "The database name." },
+        { "name": "host", "type": "string" },
+        { "name": "port", "type": "long", "description": "The port on which clients access this database." },
+        { "name": "user", "type": "string" }
       ]
     }
   },

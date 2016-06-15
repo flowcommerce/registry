@@ -88,11 +88,28 @@ class Applications @javax.inject.Inject() (
     val yaml = apps.map { a =>
 
       //build up port array
-      val ports = a.ports.map(p =>
+      val ports = a.ports.map{p =>
+
+        val healthcheck = p.service.id match {
+          case "play" | "nodejs" =>
+            YamlObject(
+              YamlString("  host") -> YamlString("vm"),
+              YamlString("  port") -> YamlNumber(p.external)
+            )
+
+          case "postgresql" =>
+            YamlObject(
+              YamlString("  db_name") -> YamlString(s"${a.id}-postgresql"),
+              YamlString("  host") -> YamlString("vm"),
+              YamlString("  port") -> YamlNumber(p.external),
+              YamlString("  user") -> YamlString("api")
+            )
+        }
+
         YamlObject(
-          YamlString("healthcheck") -> YamlString(p.service.id),
-          YamlString("external") -> YamlNumber(p.external),
-          YamlString("internal") -> YamlNumber(p.internal)))
+          YamlString("healthcheck") -> healthcheck,
+          YamlString("  external") -> YamlNumber(p.external),
+          YamlString("  internal") -> YamlNumber(p.internal))}
 
       val portYaml = YamlArray(ports.toVector)
 
@@ -109,8 +126,6 @@ class Applications @javax.inject.Inject() (
     Ok(
       YamlArray(yaml.toVector).prettyPrint.
         replaceAll("- healthcheck", "  - healthcheck").
-        replaceAll("external", "  external").
-        replaceAll("internal", "  internal").
         replaceAll("'", "")
     )
   }
