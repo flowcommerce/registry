@@ -87,7 +87,6 @@
         { "name": "internal", "type": "long", "description": "The port on which this service is running internally. If running in a container, this is the port inside the container." }
       ]
     }
-
   },
 
   "resources": {
@@ -209,6 +208,17 @@
           "responses": {
             "200": { "type": "[application_version]" },
             "401": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "GET",
+          "description": "Returns YAML representation of applications.",
+          "path": "/yaml",
+          "responses": {
+            "200": { "type": "string" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
           }
         },
 

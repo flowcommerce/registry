@@ -471,6 +471,17 @@ package io.flow.registry.v0 {
         }
       }
 
+      override def getYaml(
+        requestHeaders: Seq[(String, String)] = Nil
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String] = {
+        _executeRequest("GET", s"/applications/yaml", requestHeaders = requestHeaders).map {
+          case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("String", r, _.validate[String])
+          case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r => throw new io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+        }
+      }
+
       override def getById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
@@ -763,6 +774,13 @@ package io.flow.registry.v0 {
       sort: String = "journal_timestamp",
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.registry.v0.models.ApplicationVersion]]
+
+    /**
+     * Returns YAML representation of applications.
+     */
+    def getYaml(
+      requestHeaders: Seq[(String, String)] = Nil
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String]
 
     /**
      * Returns information about a specific application.

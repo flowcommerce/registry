@@ -1,15 +1,15 @@
 package controllers
 
-import db.{ApplicationsDao, ApplicationVersionsDao}
+import db.{ApplicationVersionsDao, ApplicationsDao}
 import io.flow.common.v0.models.UserReference
 import io.flow.common.v0.models.json._
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Service}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
 import io.flow.registry.v0.models.json._
-import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
 import io.flow.postgresql.{Authorization, OrderBy}
 import play.api.mvc._
 import play.api.libs.json._
+import net.jcazevedo.moultingyaml._
 
 class Applications @javax.inject.Inject() (
   val tokenClient: io.flow.token.v0.interfaces.Client
@@ -77,6 +77,42 @@ class Applications @javax.inject.Inject() (
         )
       }
     }
+  }
+
+  def getYaml() = Identified { request =>
+
+    val apps = ApplicationsDao.findAll(
+      Authorization.User(request.user.id)
+    )
+
+    val yaml = apps.map { a =>
+
+      //build up port array
+      val ports = a.ports.map(p =>
+        YamlObject(
+          YamlString("healthcheck") -> YamlString(p.service.id),
+          YamlString("external") -> YamlNumber(p.external),
+          YamlString("internal") -> YamlNumber(p.internal)))
+
+      val portYaml = YamlArray(ports.toVector)
+
+      //build dependencies
+      val dependencies = a.dependencies.mkString(", ")
+
+      //merge together with id for main application object
+      YamlObject(YamlString(a.id) -> YamlObject(
+        YamlString("ports") -> portYaml,
+        YamlString("dependencies") -> YamlString(s"[$dependencies]")
+      ))
+    }
+
+    Ok(
+      YamlArray(yaml.toVector).prettyPrint.
+        replaceAll("- healthcheck", "  - healthcheck").
+        replaceAll("external", "  external").
+        replaceAll("internal", "  internal").
+        replaceAll("'", "")
+    )
   }
   
   def getById(id: String) = Identified { request =>
