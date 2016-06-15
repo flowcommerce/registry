@@ -140,6 +140,30 @@ package io.flow.registry.v0.anorm.parsers {
 
   }
 
+  object Http {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      host = s"$prefix${sep}host",
+      port = s"$prefix${sep}port"
+    )
+
+    def parser(
+      host: String = "host",
+      port: String = "port"
+    ): RowParser[io.flow.registry.v0.models.Http] = {
+      SqlParser.str(host) ~
+      SqlParser.long(port) map {
+        case host ~ port => {
+          io.flow.registry.v0.models.Http(
+            host = host,
+            port = port
+          )
+        }
+      }
+    }
+
+  }
+
   object Port {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
@@ -161,6 +185,38 @@ package io.flow.registry.v0.anorm.parsers {
             service = service,
             external = external,
             internal = internal
+          )
+        }
+      }
+    }
+
+  }
+
+  object Postgresql {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
+      dbName = s"$prefix${sep}db_name",
+      host = s"$prefix${sep}host",
+      port = s"$prefix${sep}port",
+      user = s"$prefix${sep}user"
+    )
+
+    def parser(
+      dbName: String = "db_name",
+      host: String = "host",
+      port: String = "port",
+      user: String = "user"
+    ): RowParser[io.flow.registry.v0.models.Postgresql] = {
+      SqlParser.str(dbName) ~
+      SqlParser.str(host) ~
+      SqlParser.long(port) ~
+      SqlParser.str(user) map {
+        case dbName ~ host ~ port ~ user => {
+          io.flow.registry.v0.models.Postgresql(
+            dbName = dbName,
+            host = host,
+            port = port,
+            user = user
           )
         }
       }
@@ -284,6 +340,20 @@ package io.flow.registry.v0.anorm.parsers {
           )
         }
       }
+    }
+
+  }
+
+  object Healthcheck {
+
+    def parserWithPrefix(prefix: String, sep: String = "_") = {
+      io.flow.registry.v0.anorm.parsers.Http.parserWithPrefix(prefix, sep) |
+      io.flow.registry.v0.anorm.parsers.Postgresql.parserWithPrefix(prefix, sep)
+    }
+
+    def parser() = {
+      io.flow.registry.v0.anorm.parsers.Http.parser() |
+      io.flow.registry.v0.anorm.parsers.Postgresql.parser()
     }
 
   }
