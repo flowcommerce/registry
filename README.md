@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/flowcommerce/registry.svg?token=8bzVqzHy6JVEQr9mN9hx&branch=master)](https://travis-ci.org/flowcommerce/registry)
+[![Build Status](https://travis-ci.org/flowcommerce/registry.svg?branch=master)](https://travis-ci.org/flowcommerce/registry)
 
 # Registry
 
