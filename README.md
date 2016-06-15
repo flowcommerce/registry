@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/flowcommerce/registry.svg?token=8bzVqzHy6JVEQr9mN9hx&branch=master)](https://travis-ci.com/flowcommerce/registry)
+[![Build Status](https://travis-ci.org/flowcommerce/registry.svg?token=8bzVqzHy6JVEQr9mN9hx&branch=master)](https://travis-ci.org/flowcommerce/registry)
 
 # Registry
 
@@ -29,7 +29,7 @@ The design of the system includes:
 
 # CLI
 
-    See https://github.com/flowcommerce/tools/blob/master/bin/registry
+    See https://github.com/flowcommerce/workstation/blob/master/bin/registry
 
 # API
 
