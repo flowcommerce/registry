@@ -6,7 +6,7 @@ import io.flow.common.v0.models.json._
 import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
 import io.flow.registry.v0.models.json._
 import io.flow.play.util.Validation
-import io.flow.postgresql.{Authorization, OrderBy}
+import io.flow.postgresql.{Authorization, OrderBy, Pager}
 import play.api.mvc._
 import play.api.libs.json._
 import net.jcazevedo.moultingyaml._
@@ -81,12 +81,10 @@ class Applications @javax.inject.Inject() (
 
   def getYaml() = Identified { request =>
 
-    val apps = ApplicationsDao.findAll(
-      Authorization.User(request.user.id)
-    )
-
-    val yaml = apps.map { a =>
-
+    val yaml = Pager.create{ offset => ApplicationsDao.findAll(
+      Authorization.User(request.user.id),
+      offset = offset
+    )}.map { a =>
       //build up port array
       val ports = a.ports.map{p =>
 
@@ -99,7 +97,7 @@ class Applications @javax.inject.Inject() (
 
           case "postgresql" =>
             YamlObject(
-              YamlString("  dbname") -> YamlString(s"${a.id}-postgresql"),
+              YamlString("  dbname") -> YamlString(s"${a.id}"),
               YamlString("  host") -> YamlString("vm"),
               YamlString("  port") -> YamlNumber(p.external),
               YamlString("  user") -> YamlString("api")
@@ -117,10 +115,11 @@ class Applications @javax.inject.Inject() (
       val dependencies = a.dependencies.mkString(", ")
 
       //merge together with id for main application object
-      YamlObject(YamlString(a.id) -> YamlObject(
+      YamlObject(
+        YamlString("id") -> YamlString(a.id),
         YamlString("ports") -> portYaml,
         YamlString("dependencies") -> YamlString(s"[$dependencies]")
-      ))
+      )
     }
 
     Ok(
