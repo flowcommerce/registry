@@ -7,7 +7,8 @@ This is the central registry of applications we build. The main use cases:
   - assign unique ports to each application
 
   - manage port numbers so there is some logic to their assignment to
-    minimize human friction long term
+    minimize human friction long term and help humans understand what
+    type of application is running based on port number
 
   - support docker for development environments
 
