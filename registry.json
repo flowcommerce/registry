@@ -128,8 +128,7 @@
             { "name": "sort", "type": "string", "default": "-created_at" }
           ],
           "responses": {
-            "200": { "type": "[service]" },
-            "401": { "type": "unit" }
+            "200": { "type": "[service]" }
           }
         },
 
@@ -145,8 +144,7 @@
             { "name": "sort", "type": "string", "default": "journal_timestamp" }
           ],
           "responses": {
-            "200": { "type": "[service_version]" },
-            "401": { "type": "unit" }
+            "200": { "type": "[service_version]" }
           }
         },
 
@@ -155,9 +153,7 @@
           "description": "Returns information about a specific service.",
           "path": "/:id",
           "responses": {
-            "200": { "type": "service" },
-            "401": { "type": "unit" },
-            "404": { "type": "unit" }
+            "200": { "type": "service" }
           }
         },
 
@@ -215,8 +211,7 @@
             { "name": "sort", "type": "string", "default": "-created_at" }
           ],
           "responses": {
-            "200": { "type": "[application]" },
-            "401": { "type": "unit" }
+            "200": { "type": "[application]" }
           }
         },
 
@@ -232,8 +227,7 @@
             { "name": "sort", "type": "string", "default": "journal_timestamp" }
           ],
           "responses": {
-            "200": { "type": "[application_version]" },
-            "401": { "type": "unit" }
+            "200": { "type": "[application_version]" }
           }
         },
 
@@ -243,8 +237,7 @@
           "path": "/yaml",
           "responses": {
             "200": { "type": "string" },
-            "401": { "type": "unit" },
-            "404": { "type": "unit" }
+            "401": { "type": "unit" }
           }
         },
 
@@ -254,8 +247,7 @@
           "path": "/:id",
           "responses": {
             "200": { "type": "application" },
-            "401": { "type": "unit" },
-            "404": { "type": "unit" }
+            "401": { "type": "unit" }
           }
         },
 
