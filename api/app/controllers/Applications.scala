@@ -10,12 +10,15 @@ import io.flow.postgresql.{Authorization, OrderBy, Pager}
 import play.api.mvc._
 import play.api.libs.json._
 import net.jcazevedo.moultingyaml._
+import scala.concurrent.Future
 
 class Applications @javax.inject.Inject() (
   val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller
      with io.flow.play.controllers.IdentifiedRestController
 {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   def get(
     id: Option[Seq[String]],
@@ -26,27 +29,29 @@ class Applications @javax.inject.Inject() (
     limit: Long = 25,
     offset: Long = 0,
     sort: String
-  ) = Identified { request =>
+  ) = Anonymous.async { request =>
     OrderBy.parse(sort) match {
-      case Left(errors) => {
+      case Left(errors) => Future {
         UnprocessableEntity(Json.toJson(Validation.invalidSort(errors)))
       }
       case Right(orderBy) => {
-        Ok(
-          Json.toJson(
-            ApplicationsDao.findAll(
-              Authorization.User(request.user.id),
-              ids = optionals(id),
-              services = optionals(service),
-              portNumbers = optionals(port),
-              prefix = prefix,
-              q = q,
-              limit = limit,
-              offset = offset,
-              orderBy = orderBy
+        request.user.map { user =>
+          Ok(
+            Json.toJson(
+              ApplicationsDao.findAll(
+                Authorization.fromUser(user.map(_.id)),
+                ids = optionals(id),
+                services = optionals(service),
+                portNumbers = optionals(port),
+                prefix = prefix,
+                q = q,
+                limit = limit,
+                offset = offset,
+                orderBy = orderBy
+              )
             )
           )
-        )
+        }
       }
     }
   }
@@ -57,133 +62,143 @@ class Applications @javax.inject.Inject() (
     limit: Long = 25,
     offset: Long = 0,
     sort: String
-  ) = Identified { request =>
+  ) = Anonymous.async { request =>
     OrderBy.parse(sort) match {
-      case Left(errors) => {
+      case Left(errors) => Future {
         UnprocessableEntity(Json.toJson(Validation.invalidSort(errors)))
       }
       case Right(orderBy) => {
-        Ok(
-          Json.toJson(
-            ApplicationVersionsDao.findAll(
-              Authorization.User(request.user.id),
-              ids = optionals(id),
-              applications = optionals(application),
-              limit = limit,
-              offset = offset,
-              orderBy = orderBy
+        request.user.map { user =>
+          Ok(
+            Json.toJson(
+              ApplicationVersionsDao.findAll(
+                Authorization.fromUser(user.map(_.id)),
+                ids = optionals(id),
+                applications = optionals(application),
+                limit = limit,
+                offset = offset,
+                orderBy = orderBy
+              )
             )
           )
-        )
+        }
       }
     }
   }
 
-  def getYaml() = Identified { request =>
+  def getYaml() = Anonymous.async { request =>
+    request.user.map { user =>
+      val yaml = Pager.create{ offset => ApplicationsDao.findAll(
+        Authorization.fromUser(user.map(_.id)),
+        limit = 100,
+        offset = offset
+      )}.map { a =>
+        //build up port array
+        val ports = a.ports.map{p =>
 
-    val yaml = Pager.create{ offset => ApplicationsDao.findAll(
-      Authorization.User(request.user.id),
-      offset = offset
-    )}.map { a =>
-      //build up port array
-      val ports = a.ports.map{p =>
+          val healthcheck = p.service.id match {
+            case "play" | "nodejs" =>
+              YamlObject(
+                YamlString("  host") -> YamlString("vm"),
+                YamlString("  port") -> YamlNumber(p.external)
+              )
 
-        val healthcheck = p.service.id match {
-          case "play" | "nodejs" =>
-            YamlObject(
-              YamlString("  host") -> YamlString("vm"),
-              YamlString("  port") -> YamlNumber(p.external)
-            )
+            case "postgresql" =>
+              YamlObject(
+                YamlString("  dbname") -> YamlString(s"${a.id}"),
+                YamlString("  host") -> YamlString("vm"),
+                YamlString("  port") -> YamlNumber(p.external),
+                YamlString("  user") -> YamlString("api")
+              )
+          }
 
-          case "postgresql" =>
-            YamlObject(
-              YamlString("  dbname") -> YamlString(s"${a.id}"),
-              YamlString("  host") -> YamlString("vm"),
-              YamlString("  port") -> YamlNumber(p.external),
-              YamlString("  user") -> YamlString("api")
-            )
-        }
+          YamlObject(
+            YamlString("healthcheck") -> healthcheck,
+            YamlString("  external") -> YamlNumber(p.external),
+            YamlString("  internal") -> YamlNumber(p.internal))}
 
+        val portYaml = YamlArray(ports.toVector)
+
+        //build dependencies
+        val dependencies = a.dependencies.mkString(", ")
+
+        //merge together with id for main application object
         YamlObject(
-          YamlString("healthcheck") -> healthcheck,
-          YamlString("  external") -> YamlNumber(p.external),
-          YamlString("  internal") -> YamlNumber(p.internal))}
-
-      val portYaml = YamlArray(ports.toVector)
-
-      //build dependencies
-      val dependencies = a.dependencies.mkString(", ")
-
-      //merge together with id for main application object
-      YamlObject(
-        YamlString("id") -> YamlString(a.id),
-        YamlString("ports") -> portYaml,
-        YamlString("dependencies") -> YamlString(s"[$dependencies]")
+          YamlString("id") -> YamlString(a.id),
+          YamlString("ports") -> portYaml,
+          YamlString("dependencies") -> YamlString(s"[$dependencies]")
+        )
+      }
+    
+      Ok(
+        YamlArray(yaml.toVector).prettyPrint.
+          replaceAll("- healthcheck", "  - healthcheck").
+          replaceAll("'", "")
       )
     }
-
-    Ok(
-      YamlArray(yaml.toVector).prettyPrint.
-        replaceAll("- healthcheck", "  - healthcheck").
-        replaceAll("'", "")
-    )
   }
   
-  def getById(id: String) = Identified { request =>
-    withApplication(request.user, id) { app =>
-      Ok(Json.toJson(app))
+  def getById(id: String) = Anonymous.async { request =>
+    request.user.map { user =>
+      withApplication(user, id) { app =>
+        Ok(Json.toJson(app))
+      }
     }
   }
 
-  def post() = Identified { request =>
-    JsValue.sync(request.contentType, request.body) { js =>
-      js.validate[ApplicationForm] match {
-        case e: JsError => {
-          UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
-        }
-        case s: JsSuccess[ApplicationForm] => {
-          ApplicationsDao.create(request.user, s.get) match {
-            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-            case Right(app) => Created(Json.toJson(app))
+  def post() = Identified.async { request =>
+    Future {
+      JsValue.sync(request.contentType, request.body) { js =>
+        js.validate[ApplicationForm] match {
+          case e: JsError => {
+            UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
+          }
+          case s: JsSuccess[ApplicationForm] => {
+            ApplicationsDao.create(request.user, s.get) match {
+              case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+              case Right(app) => Created(Json.toJson(app))
+            }
           }
         }
       }
     }
   }
 
-  def putById(id: String) = Identified { request =>
-    JsValue.sync(request.contentType, request.body) { js =>
-      js.validate[ApplicationPutForm] match {
-        case e: JsError => {
-          UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
-        }
-        case s: JsSuccess[ApplicationPutForm] => {
-          val putForm = s.get
-          ApplicationsDao.findById(Authorization.User(request.user.id), id) match {
-            case None => {
-              putForm.service match {
-                case None => {
-                  UnprocessableEntity(Json.toJson(Validation.error("Must specify service when creating application")))
-                }
-                case Some(service) => {
-                  val form = ApplicationForm(
-                    id = id,
-                    service = service,
-                    external = putForm.external,
-                    internal = putForm.internal,
-                    dependency = putForm.dependency
-                  )
-                  ApplicationsDao.create(request.user, form) match {
-                    case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-                    case Right(application) => Created(Json.toJson(application))
+  def putById(id: String) = Identified.async { request =>
+    Future {
+      JsValue.sync(request.contentType, request.body) { js =>
+        js.validate[ApplicationPutForm] match {
+          case e: JsError => {
+            UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
+          }
+          case s: JsSuccess[ApplicationPutForm] => {
+            val putForm = s.get
+            ApplicationsDao.findById(Authorization.User(request.user.id), id) match {
+              case None => {
+                putForm.service match {
+                  case None => {
+                    UnprocessableEntity(Json.toJson(Validation.error("Must specify service when creating application")))
+                  }
+                  case Some(service) => {
+                    val form = ApplicationForm(
+                      id = id,
+                      service = service,
+                      external = putForm.external,
+                      internal = putForm.internal,
+                      dependency = putForm.dependency
+                    )
+                    ApplicationsDao.create(request.user, form) match {
+                      case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+                      case Right(application) => Created(Json.toJson(application))
+                    }
                   }
                 }
               }
-            }
-            case Some(application) => {
-              ApplicationsDao.update(request.user, application, putForm) match {
-                case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-                case Right(application) => Ok(Json.toJson(application))
+              case Some(application) => {
+                ApplicationsDao.update(request.user, application, putForm) match {
+                  case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+                  case Right(application) => Ok(Json.toJson(application))
+                }
               }
             }
           }
@@ -192,17 +207,19 @@ class Applications @javax.inject.Inject() (
     }
   }
 
-  def deleteById(id: String) = Identified { request =>
-    withApplication(request.user, id) { app =>
-      ApplicationsDao.delete(request.user, app)
-      NoContent
+  def deleteById(id: String) = Identified.async { request =>
+    Future {
+      withApplication(Some(request.user), id) { app =>
+        ApplicationsDao.delete(request.user, app)
+        NoContent
+      }
     }
   }
 
-  def withApplication(user: UserReference, id: String)(
+  def withApplication(user: Option[UserReference], id: String)(
     f: Application => Result
   ) = {
-    ApplicationsDao.findById(Authorization.User(user.id), id) match {
+    ApplicationsDao.findById(Authorization.fromUser(user.map(_.id)), id) match {
       case None => {
         Results.NotFound
       }
