@@ -1,14 +1,17 @@
 package controllers
 
-import io.flow.registry.v0.{Authorization, Client}
-import io.flow.registry.v0.errors.{ErrorsResponse, UnitResponse}
-import io.flow.play.clients.MockTokenClient
-import io.flow.token.v0.models.Token
+import authentikat.jwt.{JsonWebToken, JwtClaimsSet, JwtHeader}
 import io.flow.common.v0.models.UserReference
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.Duration
-import scala.util.{Failure, Success, Try}
+import io.flow.play.clients.{MockConfig, MockTokenClient}
+import io.flow.play.util.Config
+import io.flow.token.v0.models.Token
+import io.flow.registry.v0.errors.{ErrorsResponse, UnitResponse}
+import io.flow.registry.v0.{Authorization, Client}
 import java.util.concurrent.TimeUnit
+import org.joda.time.DateTime
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Success, Try}
 
 trait MockClient extends db.Helpers {
 
@@ -18,22 +21,35 @@ trait MockClient extends db.Helpers {
 
   lazy val anonClient = new Client(s"http://localhost:$port")
 
-  /**
-    * Generates an instance of the client where the token has been
-    * registered with the mock token client to identify the specified
-    * user.
-    */
+  private[this] lazy val mockConfig = play.api.Play.current.injector.instanceOf[Config].asInstanceOf[MockConfig]
+
   def identifiedClient(
-    user: UserReference = UserReference(id = idGenerator.randomId()),
+    user: UserReference = testUser,
     token: String = createTestId()
   ): Client = {
     val mockClient = play.api.Play.current.injector.instanceOf[MockTokenClient]
-    mockClient.data.add(token, Token(user = user))
+    mockClient.data.add(token, Token(id = createTestId, user = user, createdAt = new DateTime))
 
     new Client(
       s"http://localhost:$port",
-      auth = Some(Authorization.Basic(token))
+      auth = Some(Authorization.Basic(mockClient.tokens.data.tokens.head.key))
     )
+  }
+
+  def jwtClient(user: UserReference = testUser): Client = {
+    val header = "Authorization" -> createJWTHeader(user.id)
+
+    new Client(
+      s"http://localhost:$port",
+      defaultHeaders = Seq(header)
+    )
+  }
+
+  def createJWTHeader(userId: String, salt: String = mockConfig.requiredString("JWT_SALT")): String = {
+    val header = JwtHeader("HS256")
+    val claimsSet = JwtClaimsSet(Map("id" -> userId))
+    val token = JsonWebToken(header, claimsSet, salt)
+    s"Bearer $token"
   }
 
   def expectErrors[T](
@@ -82,14 +98,14 @@ trait MockClient extends db.Helpers {
       f
     ) match {
       case Success(response) => {
-        _root_.org.specs2.execute.Failure(s"Expected HTTP[$code] but got HTTP 2xx")
+        org.specs2.execute.Failure(s"Expected HTTP[$code] but got HTTP 2xx")
       }
       case Failure(ex) => ex match {
         case UnitResponse(code) => {
-          _root_.org.specs2.execute.Success()
+          org.specs2.execute.Success()
         }
         case e => {
-          _root_.org.specs2.execute.Failure(s"Unexpected error: $e")
+          org.specs2.execute.Failure(s"Unexpected error: $e")
         }
       }
     }

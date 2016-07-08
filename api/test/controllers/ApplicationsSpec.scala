@@ -13,20 +13,20 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val id = application.id
 
     await(
-      identifiedClient().applications.deleteById(id)
+      jwtClient().applications.deleteById(id)
     )
 
     expectNotFound(
-      identifiedClient().applications.getById(id)
+      jwtClient().applications.getById(id)
     )
   }
 
   "PUT /applications/:id updates application" in new WithServer(port=port) {
     val application = createApplication(createApplicationForm().copy(service = "play"))
-    await(identifiedClient().applications.putById(application.id, createApplicationPutForm().copy(service = Some("nodejs"))))
+    await(jwtClient().applications.putById(application.id, createApplicationPutForm().copy(service = Some("nodejs"))))
 
     val updated = await(
-      identifiedClient().applications.getById(application.id)
+      jwtClient().applications.getById(application.id)
     )
     updated.id must beEqualTo(application.id)
     updated.ports.map(_.service.id) must beEqualTo(Seq("nodejs", "play"))
@@ -36,7 +36,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val id = createTestId()
 
     expectErrors(
-      identifiedClient().applications.putById(id, createApplicationPutForm())
+      jwtClient().applications.putById(id, createApplicationPutForm())
     ).errors.map(_.message) must beEqualTo(
       Seq("Must specify service when creating application")
     )
@@ -44,10 +44,10 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
   "PUT /applications/:id creates application" in new WithServer(port=port) {
     val id = createTestId()
-    await(identifiedClient().applications.putById(id, createApplicationPutForm().copy(service = Some("play"))))
+    await(jwtClient().applications.putById(id, createApplicationPutForm().copy(service = Some("play"))))
 
     val updated = await(
-      identifiedClient().applications.getById(id)
+      jwtClient().applications.getById(id)
     )
     updated.id must beEqualTo(id)
     updated.ports.map(_.service.id) must beEqualTo(Seq("play"))
@@ -56,7 +56,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
   "POST /applications" in new WithServer(port=port) {
     val form = createApplicationForm()
 
-    val application = await(identifiedClient().applications.post(form))
+    val application = await(jwtClient().applications.post(form))
     application.id must beEqualTo(form.id)
     application.dependencies must be(Nil)
   }
@@ -66,7 +66,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val form = createApplicationForm().copy(id = application.id)
 
     expectErrors(
-      identifiedClient().applications.post(form)
+      jwtClient().applications.post(form)
     ).errors.map(_.message) must beEqualTo(
       Seq("Application with this id already exists")
     )
@@ -89,7 +89,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val form = createApplicationForm().copy(external = Some(200))
 
     expectErrors(
-      identifiedClient().applications.post(form)
+      jwtClient().applications.post(form)
     ).errors.map(_.message) must beEqualTo(
       Seq("External port must be > 1024")
     )
@@ -100,7 +100,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val form = createApplicationForm().copy(internal = Some(-200))
 
     expectErrors(
-      identifiedClient().applications.post(form)
+      jwtClient().applications.post(form)
     ).errors.map(_.message) must beEqualTo(
       Seq("Internal port must be > 0")
     )
@@ -110,7 +110,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val form = createApplicationForm().copy(id = " a bad id ")
 
     expectErrors(
-      identifiedClient().applications.post(form)
+      jwtClient().applications.post(form)
     ).errors.map(_.message) must beEqualTo(
       Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-id")
     )
@@ -120,7 +120,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val form = createApplicationForm().copy(service = createUrlKey())
 
     expectErrors(
-      identifiedClient().applications.post(form)
+      jwtClient().applications.post(form)
     ).errors.map(_.message) must beEqualTo(
       Seq("Service not found")
     )
@@ -131,7 +131,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val dep2 = createApplication()
     val form = createApplicationForm().copy(dependency = Some(Seq(dep1.id, dep2.id)))
 
-    val application = await(identifiedClient().applications.post(form))
+    val application = await(jwtClient().applications.post(form))
     application.id must beEqualTo(form.id)
     application.dependencies must beEqualTo(Seq(dep1.id, dep2.id).sorted)
   }
@@ -141,7 +141,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val form = createApplicationForm().copy(dependency = Some(Seq(dependencyId)))
 
     expectErrors(
-      identifiedClient().applications.post(form)
+      jwtClient().applications.post(form)
     ).errors.map(_.message) must beEqualTo(
       Seq(s"Dependency[$dependencyId] references a non existing application")
     )
@@ -152,7 +152,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val form = createApplicationForm().copy(id = id, dependency = Some(Seq(id)))
 
     expectErrors(
-      identifiedClient().applications.post(form)
+      jwtClient().applications.post(form)
     ).errors.map(_.message) must beEqualTo(
       Seq(s"Cannot declare dependency[$id] on self")
     )
@@ -161,11 +161,11 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
   "GET /applications/:id" in new WithServer(port=port) {
     val application = createApplication()
     await(
-      identifiedClient().applications.getById(application.id)
+      jwtClient().applications.getById(application.id)
     ) must beEqualTo(application)
 
     expectNotFound(
-      identifiedClient().applications.getById(createTestId())
+      jwtClient().applications.getById(createTestId())
     )
   }
 
@@ -197,11 +197,11 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val application2 = createApplication()
 
     await(
-      identifiedClient().applications.get(id = Some(Seq(application1.id, application2.id)))
+      jwtClient().applications.get(id = Some(Seq(application1.id, application2.id)))
     ).map(_.id).sorted must beEqualTo(Seq(application1.id, application2.id).sorted)
 
     await(
-      identifiedClient().applications.get(id = Some(Seq(createTestId())))
+      jwtClient().applications.get(id = Some(Seq(createTestId())))
     ) must be(Nil)
   }
 
@@ -211,11 +211,11 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val application2 = createApplication(createApplicationForm().copy(id = prefix + "-2"))
 
     await(
-      identifiedClient().applications.get(prefix = Some(prefix))
+      jwtClient().applications.get(prefix = Some(prefix))
     ).map(_.id) must beEqualTo(Seq(application2.id, application1.id))
 
     await(
-      identifiedClient().applications.get(prefix = Some(createTestId()))
+      jwtClient().applications.get(prefix = Some(createTestId()))
     ) must be(Nil)
   }
 
@@ -226,19 +226,19 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val ids = Seq(application1.id, application2.id)
 
     await(
-      identifiedClient().applications.get(id = Some(ids), q = Some("foo"))
+      jwtClient().applications.get(id = Some(ids), q = Some("foo"))
     ).map(_.id) must beEqualTo(ids.reverse)
 
     await(
-      identifiedClient().applications.get(id = Some(ids), q = Some("foo-1"))
+      jwtClient().applications.get(id = Some(ids), q = Some("foo-1"))
     ).map(_.id) must beEqualTo(Seq(application1.id))
 
     await(
-      identifiedClient().applications.get(id = Some(ids), q = Some("foo-2"))
+      jwtClient().applications.get(id = Some(ids), q = Some("foo-2"))
     ).map(_.id) must beEqualTo(Seq(application2.id))
 
     await(
-      identifiedClient().applications.get(q = Some(createUrlKey()))
+      jwtClient().applications.get(q = Some(createUrlKey()))
     ) must beEqualTo(Nil)
   }
 
@@ -247,11 +247,11 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val application2 = createApplication()
 
     await(
-      identifiedClient().applications.get(port = Some(Seq(application1.ports.map(_.external).head, application2.ports.map(_.external).head)))
+      jwtClient().applications.get(port = Some(Seq(application1.ports.map(_.external).head, application2.ports.map(_.external).head)))
     ).map(_.id).sorted must beEqualTo(Seq(application1.id, application2.id).sorted)
 
     await(
-      identifiedClient().applications.get(port = Some(Seq(-100)))
+      jwtClient().applications.get(port = Some(Seq(-100)))
     ) must be(Nil)
   }
 
@@ -264,15 +264,15 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val ids = Seq(application1.id, application2.id)
 
     await(
-      identifiedClient().applications.get(id =  Some(ids), service = Some(Seq(service1.id, service2.id)))
+      jwtClient().applications.get(id =  Some(ids), service = Some(Seq(service1.id, service2.id)))
     ).map(_.id).sorted must beEqualTo(Seq(application1.id, application2.id).sorted)
 
     await(
-      identifiedClient().applications.get(id =  Some(ids), service = Some(Seq(service1.id)))
+      jwtClient().applications.get(id =  Some(ids), service = Some(Seq(service1.id)))
     ).map(_.id) must beEqualTo(Seq(application1.id))
 
     await(
-      identifiedClient().applications.get(id =  Some(ids), service = Some(Seq(testService.id)))
+      jwtClient().applications.get(id =  Some(ids), service = Some(Seq(testService.id)))
     ) must be(Nil)
   }
 
@@ -283,11 +283,11 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val ids = Seq(application1.id, application2.id, application3.id)
 
     await(
-      identifiedClient().applications.get(id = Some(ids), sort = "created_at", limit = 2)
+      jwtClient().applications.get(id = Some(ids), sort = "created_at", limit = 2)
     ).map(_.id) must beEqualTo(Seq(application1.id, application2.id))
 
     await(
-      identifiedClient().applications.get(id = Some(ids), sort = "created_at", limit = 2, offset = 2)
+      jwtClient().applications.get(id = Some(ids), sort = "created_at", limit = 2, offset = 2)
     ).map(_.id) must beEqualTo(Seq(application3.id))
   }
 
@@ -297,11 +297,11 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val ids = Seq(application1.id, application2.id)
 
     await(
-      identifiedClient().applications.get(id = Some(ids), sort = "created_at")
+      jwtClient().applications.get(id = Some(ids), sort = "created_at")
     ).map(_.id) must beEqualTo(ids)
 
     await(
-      identifiedClient().applications.get(id = Some(ids), sort = "-created_at")
+      jwtClient().applications.get(id = Some(ids), sort = "-created_at")
     ).map(_.id) must beEqualTo(ids.reverse)
   }
 
@@ -311,11 +311,11 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val ids = Seq(application1.id, application2.id)
 
     await(
-      identifiedClient().applications.get(id = Some(ids), sort = "port")
+      jwtClient().applications.get(id = Some(ids), sort = "port")
     ).map(_.id) must beEqualTo(ids)
 
     await(
-      identifiedClient().applications.get(id = Some(ids), sort = "-port")
+      jwtClient().applications.get(id = Some(ids), sort = "-port")
     ).map(_.id) must beEqualTo(ids.reverse)
   }
 

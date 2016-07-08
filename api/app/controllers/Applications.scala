@@ -5,7 +5,7 @@ import io.flow.common.v0.models.UserReference
 import io.flow.common.v0.models.json._
 import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
 import io.flow.registry.v0.models.json._
-import io.flow.play.util.Validation
+import io.flow.play.util.{Config, Validation}
 import io.flow.postgresql.{Authorization, OrderBy, Pager}
 import play.api.mvc._
 import play.api.libs.json._
@@ -13,7 +13,8 @@ import net.jcazevedo.moultingyaml._
 import scala.concurrent.Future
 
 class Applications @javax.inject.Inject() (
-  val tokenClient: io.flow.token.v0.interfaces.Client
+  override val config: Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller
      with io.flow.play.controllers.IdentifiedRestController
 {
