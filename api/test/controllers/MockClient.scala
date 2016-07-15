@@ -12,6 +12,7 @@ import org.joda.time.DateTime
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
+import io.flow.token.v0.interfaces.{Client => TokenClient}
 
 trait MockClient extends db.Helpers {
 
@@ -27,8 +28,8 @@ trait MockClient extends db.Helpers {
     user: UserReference = testUser,
     token: String = createTestId()
   ): Client = {
-    val mockClient = play.api.Play.current.injector.instanceOf[MockTokenClient]
-    mockClient.data.add(token, Token(id = createTestId, user = user, createdAt = new DateTime))
+    val mockClient = play.api.Play.current.injector.instanceOf[TokenClient].asInstanceOf[MockTokenClient]
+    mockClient.data.add(token, Token(id = token, user = user, partial = "tok-test", createdAt = new DateTime))
 
     new Client(
       s"http://localhost:$port",
