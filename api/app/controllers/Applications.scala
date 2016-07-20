@@ -31,16 +31,16 @@ class Applications @javax.inject.Inject() (
     offset: Long = 0,
     sort: String
   ) = Anonymous.async { request =>
-    OrderBy.parse(sort) match {
-      case Left(errors) => Future {
-        UnprocessableEntity(Json.toJson(Validation.invalidSort(errors)))
-      }
-      case Right(orderBy) => {
-        request.user.map { user =>
+    Future {
+      OrderBy.parse(sort) match {
+        case Left(errors) => {
+          UnprocessableEntity(Json.toJson(Validation.invalidSort(errors)))
+        }
+        case Right(orderBy) => {
           Ok(
             Json.toJson(
               ApplicationsDao.findAll(
-                Authorization.fromUser(user.map(_.id)),
+                Authorization.fromUser(request.user.map(_.id)),
                 ids = optionals(id),
                 services = optionals(service),
                 portNumbers = optionals(port),
@@ -64,16 +64,16 @@ class Applications @javax.inject.Inject() (
     offset: Long = 0,
     sort: String
   ) = Anonymous.async { request =>
-    OrderBy.parse(sort) match {
-      case Left(errors) => Future {
-        UnprocessableEntity(Json.toJson(Validation.invalidSort(errors)))
-      }
-      case Right(orderBy) => {
-        request.user.map { user =>
+    Future {
+      OrderBy.parse(sort) match {
+        case Left(errors) => {
+          UnprocessableEntity(Json.toJson(Validation.invalidSort(errors)))
+        }
+        case Right(orderBy) => {
           Ok(
             Json.toJson(
               ApplicationVersionsDao.findAll(
-                Authorization.fromUser(user.map(_.id)),
+                Authorization.fromUser(request.user.map(_.id)),
                 ids = optionals(id),
                 applications = optionals(application),
                 limit = limit,
@@ -88,9 +88,9 @@ class Applications @javax.inject.Inject() (
   }
 
   def getYaml() = Anonymous.async { request =>
-    request.user.map { user =>
+    Future {
       val yaml = Pager.create{ offset => ApplicationsDao.findAll(
-        Authorization.fromUser(user.map(_.id)),
+        Authorization.fromUser(request.user.map(_.id)),
         limit = 100,
         offset = offset
       )}.map { a =>
@@ -140,10 +140,8 @@ class Applications @javax.inject.Inject() (
   }
   
   def getById(id: String) = Anonymous.async { request =>
-    request.user.map { user =>
-      withApplication(user, id) { app =>
-        Ok(Json.toJson(app))
-      }
+    withApplication(request.user, id) { app =>
+      Ok(Json.toJson(app))
     }
   }
 
@@ -209,23 +207,23 @@ class Applications @javax.inject.Inject() (
   }
 
   def deleteById(id: String) = Identified.async { request =>
-    Future {
-      withApplication(Some(request.user), id) { app =>
-        ApplicationsDao.delete(request.user, app)
-        NoContent
-      }
+    withApplication(Some(request.user), id) { app =>
+      ApplicationsDao.delete(request.user, app)
+      NoContent
     }
   }
 
   def withApplication(user: Option[UserReference], id: String)(
     f: Application => Result
   ) = {
-    ApplicationsDao.findById(Authorization.fromUser(user.map(_.id)), id) match {
-      case None => {
-        Results.NotFound
-      }
-      case Some(application) => {
-        f(application)
+    Future {
+      ApplicationsDao.findById(Authorization.fromUser(user.map(_.id)), id) match {
+        case None => {
+          Results.NotFound
+        }
+        case Some(application) => {
+          f(application)
+        }
       }
     }
   }
