@@ -100,14 +100,14 @@ class Applications @javax.inject.Inject() (
           val healthcheck = p.service.id match {
             case "play" | "nodejs" =>
               YamlObject(
-                YamlString("  host") -> YamlString("vm"),
+                YamlString("  host") -> YamlString("ws"),
                 YamlString("  port") -> YamlNumber(p.external)
               )
 
             case "postgresql" =>
               YamlObject(
                 YamlString("  dbname") -> YamlString(s"${a.id}"),
-                YamlString("  host") -> YamlString("vm"),
+                YamlString("  host") -> YamlString("ws"),
                 YamlString("  port") -> YamlNumber(p.external),
                 YamlString("  user") -> YamlString("api")
               )
