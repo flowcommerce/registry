@@ -12,9 +12,31 @@ import play.api.inject.Module
   * database (instead of an HTTP call to ourselves).
   */
 @javax.inject.Singleton
-class LocalRegistry @javax.inject.Inject() (
+class DevelopmentRegistry @javax.inject.Inject() (
   app: play.api.Application
-) extends Registry {
+) extends LocalRegistry {
+
+  override def host(applicationId: String, port: Long): String = {
+    RegistryConstants.developmentHost(applicationId, port)
+  }
+
+}
+
+/**
+  * Since we are the registry, we can look up app info from our local
+  * database (instead of an HTTP call to ourselves).
+  */
+@javax.inject.Singleton
+class WorkstationRegistry @javax.inject.Inject() (
+  app: play.api.Application
+) extends LocalRegistry {
+
+  override def host(applicationId: String, port: Long): String = {
+    RegistryConstants.workstationHost(applicationId, port)
+  }
+}
+
+trait LocalRegistry extends Registry {
 
   override def host(applicationId: String): String = {
     val app = ApplicationsDao.findById(Authorization.All, applicationId).getOrElse {
@@ -25,12 +47,14 @@ class LocalRegistry @javax.inject.Inject() (
       sys.error(s"application[$applicationId] does not have any ports in registry")
     }
 
-    RegistryConstants.developmentHost(applicationId, port.external)
+    host(applicationId, port.external)
   }
+
+  def host(applicationId: String, port: Long): String
 
 }
 
-class LocalRegistryModule extends Module {
+class RegistryModule extends Module {
 
   def bindings(env: Environment, conf: Configuration) = {
 
@@ -41,7 +65,10 @@ class LocalRegistryModule extends Module {
             bind[Registry].to[ProductionRegistry]
           )
           case FlowEnvironment.Development => Seq(
-            bind[Registry].to[LocalRegistry]
+            bind[Registry].to[DevelopmentRegistry]
+          )
+          case FlowEnvironment.Workstation => Seq(
+            bind[Registry].to[WorkstationRegistry]
           )
         }
       }

@@ -27,16 +27,16 @@ class Services @javax.inject.Inject() (
     offset: Long = 0,
     sort: String
   ) = Anonymous.async { request =>
-    OrderBy.parse(sort) match {
-      case Left(errors) => Future {
-        UnprocessableEntity(Json.toJson(Validation.invalidSort(errors)))
-      }
-      case Right(orderBy) => {
-        request.user.map { user =>
+    Future {
+      OrderBy.parse(sort) match {
+        case Left(errors) => {
+          UnprocessableEntity(Json.toJson(Validation.invalidSort(errors)))
+        }
+        case Right(orderBy) => {
           Ok(
             Json.toJson(
               ServicesDao.findAll(
-                Authorization.fromUser(user.map(_.id)),
+                Authorization.fromUser(request.user.map(_.id)),
                 ids = optionals(id),
                 limit = limit,
                 offset = offset,
@@ -56,16 +56,16 @@ class Services @javax.inject.Inject() (
     offset: Long = 0,
     sort: String
   ) = Anonymous.async { request =>
-    OrderBy.parse(sort) match {
-      case Left(errors) => Future {
-        UnprocessableEntity(Json.toJson(Validation.invalidSort(errors)))
-      }
-      case Right(orderBy) => {
-        request.user.map { user =>
+    Future {
+      OrderBy.parse(sort) match {
+        case Left(errors) => {
+          UnprocessableEntity(Json.toJson(Validation.invalidSort(errors)))
+        }
+        case Right(orderBy) => {
           Ok(
             Json.toJson(
               ServiceVersionsDao.findAll(
-                Authorization.fromUser(user.map(_.id)),
+                Authorization.fromUser(request.user.map(_.id)),
                 ids = optionals(id),
                 services = optionals(service),
                 limit = limit,
@@ -80,10 +80,8 @@ class Services @javax.inject.Inject() (
   }
   
   def getById(id: String) = Anonymous.async { request =>
-    request.user.map { user =>
-      withService(user, id) { service =>
-        Ok(Json.toJson(service))
-      }
+    withService(request.user, id) { service =>
+      Ok(Json.toJson(service))
     }
   }
 
@@ -136,16 +134,14 @@ class Services @javax.inject.Inject() (
   }
 
   def deleteById(id: String) = Identified.async { request =>
-    Future {
-      withService(Some(request.user), id) { service =>
-        ApplicationsDao.findAll(Authorization.All, services = Some(Seq(service.id)), limit = 1) match {
-          case Nil => {
-            ServicesDao.delete(request.user, service)
+    withService(Some(request.user), id) { service =>
+      ApplicationsDao.findAll(Authorization.All, services = Some(Seq(service.id)), limit = 1) match {
+        case Nil => {
+          ServicesDao.delete(request.user, service)
             NoContent
-          }
-          case apps => {
-            UnprocessableEntity(Json.toJson(Validation.error("1 or more applications is using this service")))
-          }
+        }
+        case apps => {
+          UnprocessableEntity(Json.toJson(Validation.error("1 or more applications is using this service")))
         }
       }
     }
@@ -154,12 +150,14 @@ class Services @javax.inject.Inject() (
   def withService(user: Option[UserReference], id: String)(
     f: Service => Result
   ) = {
-    ServicesDao.findById(Authorization.fromUser(user.map(_.id)), id) match {
-      case None => {
-        Results.NotFound
-      }
-      case Some(service) => {
-        f(service)
+    Future {
+      ServicesDao.findById(Authorization.fromUser(user.map(_.id)), id) match {
+        case None => {
+          Results.NotFound
+        }
+        case Some(service) => {
+          f(service)
+        }
       }
     }
   }
