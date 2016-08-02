@@ -1,12 +1,8 @@
 import play.PlayImport.PlayKeys._
-import scoverage.ScoverageSbtPlugin.ScoverageKeys._
 
 name := "registry"
 
 scalaVersion in ThisBuild := "2.11.8"
-
-// required because of issue between scoverage & sbt
-parallelExecution in Test in ThisBuild := true
 
 lazy val api = project
   .in(file("api"))
@@ -19,7 +15,7 @@ lazy val api = project
     libraryDependencies ++= Seq(
       ws,
       jdbc,
-      "io.flow" %% "lib-play" % "0.1.45",
+      "io.flow" %% "lib-play" % "0.1.47",
       "io.flow" %% "lib-postgresql" % "0.0.34",
       "org.postgresql" % "postgresql" % "9.4.1209",
       "org.scalatestplus" %% "play" % "1.4.0" % "test",
@@ -36,7 +32,6 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   sources in (Compile,doc) := Seq.empty,
   publishArtifact in (Compile, packageDoc) := false,
   scalacOptions += "-feature",
-  coverageHighlighting := true,
   resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
   resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
   resolvers += "Artifactory" at "https://flow.artifactoryonline.com/flow/libs-release/",
