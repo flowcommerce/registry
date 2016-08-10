@@ -42,7 +42,7 @@ package io.flow.common.v0.models {
    * link up transactions for this customer making customer service easier.
    */
   case class Customer(
-    name: String,
+    name: io.flow.common.v0.models.Name,
     number: _root_.scala.Option[String] = None,
     phone: _root_.scala.Option[String] = None,
     email: _root_.scala.Option[String] = None
@@ -1604,7 +1604,7 @@ package io.flow.common.v0.models {
 
     implicit def jsonReadsCommonCustomer: play.api.libs.json.Reads[Customer] = {
       (
-        (__ \ "name").read[String] and
+        (__ \ "name").read[io.flow.common.v0.models.Name] and
         (__ \ "number").readNullable[String] and
         (__ \ "phone").readNullable[String] and
         (__ \ "email").readNullable[String]
@@ -1613,7 +1613,7 @@ package io.flow.common.v0.models {
 
     def jsObjectCustomer(obj: io.flow.common.v0.models.Customer) = {
       play.api.libs.json.Json.obj(
-        "name" -> play.api.libs.json.JsString(obj.name)
+        "name" -> jsObjectName(obj.name)
       ) ++ (obj.number match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("number" -> play.api.libs.json.JsString(x))
