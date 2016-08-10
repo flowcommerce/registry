@@ -306,19 +306,19 @@ package io.flow.common.v0.anorm.parsers {
   object Customer {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
-      name = s"$prefix${sep}name",
+      namePrefix = s"$prefix${sep}name",
       number = s"$prefix${sep}number",
       phone = s"$prefix${sep}phone",
       email = s"$prefix${sep}email"
     )
 
     def parser(
-      name: String = "name",
+      namePrefix: String = "name",
       number: String = "number",
       phone: String = "phone",
       email: String = "email"
     ): RowParser[io.flow.common.v0.models.Customer] = {
-      SqlParser.str(name) ~
+      io.flow.common.v0.anorm.parsers.Name.parserWithPrefix(namePrefix) ~
       SqlParser.str(number).? ~
       SqlParser.str(phone).? ~
       SqlParser.str(email).? map {
