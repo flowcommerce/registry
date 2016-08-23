@@ -26,8 +26,7 @@ lazy val api = project
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("registry-" + _),
   libraryDependencies ++= Seq(
-    specs2 % Test,
-    "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+    specs2 % Test
   ),
   sources in (Compile,doc) := Seq.empty,
   publishArtifact in (Compile, packageDoc) := false,
