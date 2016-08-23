@@ -16,7 +16,7 @@ import io.flow.registry.v0.anorm.conversions.Types._
 
 object ApplicationsDao {
 
-  private[this] val urlKey = UrlKey(minKeyLength = 3)
+  private[this] val urlKey = UrlKey(minKeyLength = 2)
   private[this] val SortByPort = "(select min(external) from ports where application_id = applications.id)"
 
   private[this] val BaseQuery = Query(s"""
