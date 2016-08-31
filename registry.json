@@ -284,7 +284,32 @@
             "401": { "type": "unit" },
             "404": { "type": "unit" }
           }
+        },
+
+        {
+          "method": "PUT",
+          "path": "/:id/dependencies/:name",
+          "description": "Ensure that name is a dependencies for this project, adding if necessary.",
+          "responses": {
+            "200": { "type": "application" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" },
+            "422": { "type": "[io.flow.common.v0.models.error]" }
+          }
+        },
+
+        {
+          "method": "DELETE",
+          "path": "/:id/dependencies/:name",
+          "description": "Remove name as a dependencies for this project",
+          "responses": {
+            "200": { "type": "application" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" },
+            "422": { "type": "[io.flow.common.v0.models.error]" }
+          }
         }
+        
       ]          
     }
 

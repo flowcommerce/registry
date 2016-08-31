@@ -213,6 +213,32 @@ class Applications @javax.inject.Inject() (
     }
   }
 
+  def putDependenciesByIdAndName(id: String, name: String) = Identified.async { request =>
+    withApplication(Some(request.user), id) { app =>
+      app.dependencies.contains(name) match {
+        case true => {
+          Ok(Json.toJson(app))
+        }
+
+        case false => {
+          ApplicationsDao.upsertDependency(request.user, app, name) match {
+            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+            case Right(application) => Ok(Json.toJson(application))
+          }
+        }
+      }
+    }
+  }
+
+  def deleteDependenciesByIdAndName(id: String, name: String) = Identified.async { request =>
+    withApplication(Some(request.user), id) { app =>
+      ApplicationsDao.removeDependency(request.user, app, name) match {
+        case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+        case Right(application) => Ok(Json.toJson(application))
+      }
+    }
+  }
+  
   def withApplication(user: Option[UserReference], id: String)(
     f: Application => Result
   ) = {
