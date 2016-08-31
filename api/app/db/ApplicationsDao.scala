@@ -218,6 +218,43 @@ object ApplicationsDao {
     }
   }
 
+  def upsertDependency(createdBy: UserReference, app: Application, dependency: String): Either[Seq[String], Application] = {
+    findById(Authorization.User(createdBy.id), dependency) match {
+      case None => {
+        Left(Seq(s"Application named[$dependency] not found"))
+      }
+
+      case Some(dep) => {
+        val putForm = ApplicationPutForm(
+          dependency = Some(app.dependencies ++ Seq(dep.id))
+        )
+        update(createdBy, app, putForm) match {
+          case Left(errors) => sys.error(s"Invalid error when updating dependencies: $errors")
+          case Right(updated) => Right(updated)
+        }
+      }
+    }
+  }
+
+  def removeDependency(createdBy: UserReference, app: Application, dependency: String): Either[Seq[String], Application] = {
+    findById(Authorization.User(createdBy.id), dependency) match {
+      case None => {
+        Left(Seq(s"Application named[$dependency] not found"))
+      }
+
+      case Some(dep) => {
+        val putForm = ApplicationPutForm(
+          dependency = Some(app.dependencies.filter(_ != dependency))
+        )
+
+        update(createdBy, app, putForm) match {
+          case Left(errors) => sys.error(s"Invalid error when updating dependencies: $errors")
+          case Right(updated) => Right(updated)
+        }
+      }
+    }
+  }
+
   def update(createdBy: UserReference, app: Application, form: ApplicationPutForm): Either[Seq[String], Application] = {
     validate(app.id, form, Some(app)) match {
       case Nil => {
