@@ -319,16 +319,16 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     ).map(_.id) must beEqualTo(ids.reverse)
   }
 
-  "PUT /applications/:id/dependencies/:name" in new WithServer(port=port) {
+  "PUT /applications/:id/dependencies/:dependency" in new WithServer(port=port) {
     val dep1 = createApplication()
     val dep2 = createApplication()
     val application = createApplication()
 
-    await(jwtClient().applications.putDependenciesByIdAndName(application.id, dep1.id)).dependencies must beEqualTo(
+    await(jwtClient().applications.putDependenciesByIdAndDependency(application.id, dep1.id)).dependencies must beEqualTo(
       Seq(dep1.id)
     )
 
-    val finalApp = await(jwtClient().applications.putDependenciesByIdAndName(application.id, dep2.id))
+    val finalApp = await(jwtClient().applications.putDependenciesByIdAndDependency(application.id, dep2.id))
     finalApp.id must beEqualTo(application.id)
     finalApp.ports must beEqualTo(application.ports)
     finalApp.dependencies.sorted must beEqualTo(
@@ -336,34 +336,34 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     )
 
     expectErrors(
-      jwtClient().applications.putDependenciesByIdAndName(application.id, "other")
+      jwtClient().applications.putDependenciesByIdAndDependency(application.id, "other")
     ).errors.map(_.message) must beEqualTo(
       Seq("Application named[other] not found")
     )
   }
 
-  "DELETE /applications/:id/dependencies/:name" in new WithServer(port=port) {
+  "DELETE /applications/:id/dependencies/:dependency" in new WithServer(port=port) {
     val dep1 = createApplication()
     val dep2 = createApplication()
     val form = createApplicationForm().copy(dependency = Some(Seq(dep1.id, dep2.id)))
     val application = createApplication(form)
 
-    await(jwtClient().applications.deleteDependenciesByIdAndName(application.id, dep2.id)).dependencies must beEqualTo(
+    await(jwtClient().applications.deleteDependenciesByIdAndDependency(application.id, dep2.id)).dependencies must beEqualTo(
       Seq(dep1.id)
     )
 
     // Duplicate okay
-    await(jwtClient().applications.deleteDependenciesByIdAndName(application.id, dep2.id)).dependencies must beEqualTo(
+    await(jwtClient().applications.deleteDependenciesByIdAndDependency(application.id, dep2.id)).dependencies must beEqualTo(
       Seq(dep1.id)
     )
 
-    val finalApp = await(jwtClient().applications.deleteDependenciesByIdAndName(application.id, dep1.id))
+    val finalApp = await(jwtClient().applications.deleteDependenciesByIdAndDependency(application.id, dep1.id))
     finalApp.id must beEqualTo(application.id)
     finalApp.ports must beEqualTo(application.ports)
     finalApp.dependencies must be(Nil)
 
     expectErrors(
-      jwtClient().applications.deleteDependenciesByIdAndName(application.id, "other")
+      jwtClient().applications.deleteDependenciesByIdAndDependency(application.id, "other")
     ).errors.map(_.message) must beEqualTo(
       Seq("Application named[other] not found")
     )

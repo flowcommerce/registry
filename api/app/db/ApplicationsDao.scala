@@ -218,10 +218,10 @@ object ApplicationsDao {
     }
   }
 
-  def upsertDependency(createdBy: UserReference, app: Application, name: String): Either[Seq[String], Application] = {
-    findById(Authorization.User(createdBy.id), name) match {
+  def upsertDependency(createdBy: UserReference, app: Application, dependency: String): Either[Seq[String], Application] = {
+    findById(Authorization.User(createdBy.id), dependency) match {
       case None => {
-        Left(Seq(s"Application named[$name] not found"))
+        Left(Seq(s"Application named[$dependency] not found"))
       }
 
       case Some(dep) => {
@@ -236,15 +236,15 @@ object ApplicationsDao {
     }
   }
 
-  def removeDependency(createdBy: UserReference, app: Application, name: String): Either[Seq[String], Application] = {
-    findById(Authorization.User(createdBy.id), name) match {
+  def removeDependency(createdBy: UserReference, app: Application, dependency: String): Either[Seq[String], Application] = {
+    findById(Authorization.User(createdBy.id), dependency) match {
       case None => {
-        Left(Seq(s"Application named[$name] not found"))
+        Left(Seq(s"Application named[$dependency] not found"))
       }
 
       case Some(dep) => {
         val putForm = ApplicationPutForm(
-          dependency = Some(app.dependencies.filter(_ != name))
+          dependency = Some(app.dependencies.filter(_ != dependency))
         )
 
         update(createdBy, app, putForm) match {

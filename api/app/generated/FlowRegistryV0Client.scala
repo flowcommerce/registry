@@ -620,12 +620,12 @@ package io.flow.registry.v0 {
         }
       }
 
-      override def putDependenciesByIdAndName(
+      override def putDependenciesByIdAndDependency(
         id: String,
-        name: String,
+        dependency: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Application] = {
-        _executeRequest("PUT", s"/applications/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}/dependencies/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}", requestHeaders = requestHeaders).map {
+        _executeRequest("PUT", s"/applications/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}/dependencies/${play.utils.UriEncoding.encodePathSegment(dependency, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Application", r, _.validate[io.flow.registry.v0.models.Application])
           case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
@@ -634,12 +634,12 @@ package io.flow.registry.v0 {
         }
       }
 
-      override def deleteDependenciesByIdAndName(
+      override def deleteDependenciesByIdAndDependency(
         id: String,
-        name: String,
+        dependency: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Application] = {
-        _executeRequest("DELETE", s"/applications/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}/dependencies/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}", requestHeaders = requestHeaders).map {
+        _executeRequest("DELETE", s"/applications/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}/dependencies/${play.utils.UriEncoding.encodePathSegment(dependency, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Application", r, _.validate[io.flow.registry.v0.models.Application])
           case r if r.status == 401 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new io.flow.registry.v0.errors.UnitResponse(r.status)
@@ -926,18 +926,18 @@ package io.flow.registry.v0 {
     /**
      * Ensure that name is a dependencies for this project, adding if necessary.
      */
-    def putDependenciesByIdAndName(
+    def putDependenciesByIdAndDependency(
       id: String,
-      name: String,
+      dependency: String,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Application]
 
     /**
      * Remove name as a dependencies for this project
      */
-    def deleteDependenciesByIdAndName(
+    def deleteDependenciesByIdAndDependency(
       id: String,
-      name: String,
+      dependency: String,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Application]
   }

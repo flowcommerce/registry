@@ -213,15 +213,15 @@ class Applications @javax.inject.Inject() (
     }
   }
 
-  def putDependenciesByIdAndName(id: String, name: String) = Identified.async { request =>
+  def putDependenciesByIdAndDependency(id: String, dependency: String) = Identified.async { request =>
     withApplication(Some(request.user), id) { app =>
-      app.dependencies.contains(name) match {
+      app.dependencies.contains(dependency) match {
         case true => {
           Ok(Json.toJson(app))
         }
 
         case false => {
-          ApplicationsDao.upsertDependency(request.user, app, name) match {
+          ApplicationsDao.upsertDependency(request.user, app, dependency) match {
             case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
             case Right(application) => Ok(Json.toJson(application))
           }
@@ -230,9 +230,9 @@ class Applications @javax.inject.Inject() (
     }
   }
 
-  def deleteDependenciesByIdAndName(id: String, name: String) = Identified.async { request =>
+  def deleteDependenciesByIdAndDependency(id: String, dependency: String) = Identified.async { request =>
     withApplication(Some(request.user), id) { app =>
-      ApplicationsDao.removeDependency(request.user, app, name) match {
+      ApplicationsDao.removeDependency(request.user, app, dependency) match {
         case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
         case Right(application) => Ok(Json.toJson(application))
       }
