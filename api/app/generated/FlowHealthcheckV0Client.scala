@@ -125,7 +125,7 @@ package io.flow.healthcheck.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.healthcheck.v0.models.Healthcheck] = {
         _executeRequest("GET", s"/_internal_/healthcheck", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.flow.healthcheck.v0.Client.parseJson("io.flow.healthcheck.v0.models.Healthcheck", r, _.validate[io.flow.healthcheck.v0.models.Healthcheck])
-          case r if r.status == 422 => throw new io.flow.healthcheck.v0.errors.ValidationErrorsResponse(r)
+          case r if r.status == 422 => throw new io.flow.healthcheck.v0.errors.ValidationErrorResponse(r)
           case r => throw new io.flow.healthcheck.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 422")
         }
       }
@@ -250,11 +250,11 @@ package io.flow.healthcheck.v0 {
     import io.flow.error.v0.models.json._
     import io.flow.healthcheck.v0.models.json._
 
-    case class ValidationErrorsResponse(
+    case class ValidationErrorResponse(
       response: play.api.libs.ws.WSResponse,
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
-      lazy val validationErrors = _root_.io.flow.healthcheck.v0.Client.parseJson("Seq[io.flow.error.v0.models.ValidationError]", response, _.validate[Seq[io.flow.error.v0.models.ValidationError]])
+      lazy val validationError = _root_.io.flow.healthcheck.v0.Client.parseJson("io.flow.error.v0.models.ValidationError", response, _.validate[io.flow.error.v0.models.ValidationError])
     }
 
     case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
