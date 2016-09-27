@@ -3,7 +3,8 @@
   "base_url": "https://registry.api.flow.io",   
 
   "imports": [
-    { "uri": "http://www.apidoc.me/flow/common/0.0.12/service.json" }
+    { "uri": "http://www.apidoc.me/flow/common/latest/service.json" },
+    { "uri": "http://www.apidoc.me/flow/error/latest/service.json" }
   ],
 
    "unions": {
@@ -164,7 +165,7 @@
           "responses": {
             "201": { "type": "service" },
             "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[io.flow.error.v0.models.validation_error]" }
           }
         },
 
@@ -177,7 +178,7 @@
             "200": { "type": "service" },
             "201": { "type": "service" },
             "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[io.flow.error.v0.models.validation_error]" }
           }
         },
 
@@ -189,7 +190,7 @@
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[io.flow.error.v0.models.validation_error]" }
           }
         }
       ]          
@@ -258,7 +259,7 @@
           "responses": {
             "201": { "type": "application" },
             "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[io.flow.error.v0.models.validation_error]" }
           }
         },
 
@@ -271,7 +272,7 @@
             "200": { "type": "application" },
             "201": { "type": "application" },
             "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[io.flow.error.v0.models.validation_error]" }
           }
         },
 
@@ -294,7 +295,7 @@
             "200": { "type": "application" },
             "401": { "type": "unit" },
             "404": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[io.flow.error.v0.models.validation_error]" }
           }
         },
 
@@ -306,7 +307,7 @@
             "200": { "type": "application" },
             "401": { "type": "unit" },
             "404": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[io.flow.error.v0.models.validation_error]" }
           }
         }
         
