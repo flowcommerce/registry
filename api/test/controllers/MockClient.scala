@@ -5,7 +5,7 @@ import io.flow.common.v0.models.UserReference
 import io.flow.play.clients.{MockConfig, MockTokenClient}
 import io.flow.play.util.Config
 import io.flow.token.v0.models.Token
-import io.flow.registry.v0.errors.{ValidationErrorsResponse, UnitResponse}
+import io.flow.registry.v0.errors.{ValidationErrorResponse, UnitResponse}
 import io.flow.registry.v0.{Authorization, Client}
 import java.util.concurrent.TimeUnit
 import org.joda.time.DateTime
@@ -56,7 +56,7 @@ trait MockClient extends db.Helpers {
   def expectErrors[T](
     f: => Future[T],
     duration: Duration = DefaultDuration
-  ): ValidationErrorsResponse = {
+  ): ValidationErrorResponse = {
     Try(
       Await.result(f, duration)
     ) match {
@@ -64,11 +64,11 @@ trait MockClient extends db.Helpers {
         sys.error("Expected function to fail but it succeeded with: " + response)
       }
       case Failure(ex) =>  ex match {
-        case e: ValidationErrorsResponse => {
+        case e: ValidationErrorResponse => {
           e
         }
         case e => {
-          sys.error(s"Expected an exception of type[ValidationErrorsResponse] but got[$e]")
+          sys.error(s"Expected an exception of type[ValidationErrorResponse] but got[$e]")
         }
       }
     }
