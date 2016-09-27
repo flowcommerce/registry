@@ -50,7 +50,7 @@ class ServicesSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().services.post(form)
-    ).errors.map(_.message) must beEqualTo(
+    ).validationError.messages must beEqualTo(
       Seq("Service with this id already exists")
     )
   }
@@ -61,7 +61,7 @@ class ServicesSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().services.post(form)
-    ).errors.map(_.message) must beEqualTo(
+    ).validationError.messages must beEqualTo(
       Seq("Default port must be > 1024")
     )
   }
@@ -71,7 +71,7 @@ class ServicesSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().services.post(form)
-    ).errors.map(_.message) must beEqualTo(
+    ).validationError.messages must beEqualTo(
       Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-id")
     )
   }

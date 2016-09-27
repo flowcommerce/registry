@@ -2,7 +2,7 @@ package controllers
 
 import db.{ApplicationsDao, ServicesDao, ServiceVersionsDao}
 import io.flow.common.v0.models.UserReference
-import io.flow.common.v0.models.json._
+import io.flow.error.v0.models.json._
 import io.flow.registry.v0.models.{Service, ServiceForm, ServicePutForm}
 import io.flow.registry.v0.models.json._
 import io.flow.play.controllers.IdentifiedRestController

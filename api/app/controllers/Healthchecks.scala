@@ -1,8 +1,9 @@
 package controllers
 
 import db.HealthchecksDao
-import io.flow.common.v0.models.Healthcheck
-import io.flow.common.v0.models.json._
+import io.flow.healthcheck.v0.models.Healthcheck
+import io.flow.healthcheck.v0.models.json._
+import io.flow.error.v0.models.json._
 import io.flow.play.util.Validation
 
 import play.api._
