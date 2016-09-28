@@ -37,7 +37,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().applications.putById(id, createApplicationPutForm())
-    ).validationError.messages must beEqualTo(
+    ).genericError.messages must beEqualTo(
       Seq("Must specify service when creating application")
     )
   }
@@ -67,7 +67,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().applications.post(form)
-    ).validationError.messages must beEqualTo(
+    ).genericError.messages must beEqualTo(
       Seq("Application with this id already exists")
     )
   }
@@ -90,7 +90,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().applications.post(form)
-    ).validationError.messages must beEqualTo(
+    ).genericError.messages must beEqualTo(
       Seq("External port must be > 1024")
     )
   }
@@ -101,7 +101,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().applications.post(form)
-    ).validationError.messages must beEqualTo(
+    ).genericError.messages must beEqualTo(
       Seq("Internal port must be > 0")
     )
   }
@@ -111,7 +111,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().applications.post(form)
-    ).validationError.messages must beEqualTo(
+    ).genericError.messages must beEqualTo(
       Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-id")
     )
   }
@@ -121,7 +121,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().applications.post(form)
-    ).validationError.messages must beEqualTo(
+    ).genericError.messages must beEqualTo(
       Seq("Service not found")
     )
   }
@@ -142,7 +142,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().applications.post(form)
-    ).validationError.messages must beEqualTo(
+    ).genericError.messages must beEqualTo(
       Seq(s"Dependency[$dependencyId] references a non existing application")
     )
   }
@@ -153,7 +153,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().applications.post(form)
-    ).validationError.messages must beEqualTo(
+    ).genericError.messages must beEqualTo(
       Seq(s"Cannot declare dependency[$id] on self")
     )
   }
@@ -337,7 +337,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().applications.putDependenciesByIdAndDependency(application.id, "other")
-    ).validationError.messages must beEqualTo(
+    ).genericError.messages must beEqualTo(
       Seq("Application named[other] not found")
     )
   }
@@ -364,7 +364,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     expectErrors(
       jwtClient().applications.deleteDependenciesByIdAndDependency(application.id, "other")
-    ).validationError.messages must beEqualTo(
+    ).genericError.messages must beEqualTo(
       Seq("Application named[other] not found")
     )
   }
