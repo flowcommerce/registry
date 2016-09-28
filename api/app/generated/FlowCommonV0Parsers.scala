@@ -423,30 +423,6 @@ package io.flow.common.v0.anorm.parsers {
 
   }
 
-  object Error {
-
-    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
-      code = s"$prefix${sep}code",
-      message = s"$prefix${sep}message"
-    )
-
-    def parser(
-      code: String = "code",
-      message: String = "message"
-    ): RowParser[io.flow.common.v0.models.Error] = {
-      SqlParser.str(code) ~
-      SqlParser.str(message) map {
-        case code ~ message => {
-          io.flow.common.v0.models.Error(
-            code = code,
-            message = message
-          )
-        }
-      }
-    }
-
-  }
-
   object Exception {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(
@@ -492,26 +468,6 @@ package io.flow.common.v0.anorm.parsers {
             id = id,
             key = key,
             name = name
-          )
-        }
-      }
-    }
-
-  }
-
-  object Healthcheck {
-
-    def parserWithPrefix(prefix: String, sep: String = "_") = parser(
-      status = s"$prefix${sep}status"
-    )
-
-    def parser(
-      status: String = "status"
-    ): RowParser[io.flow.common.v0.models.Healthcheck] = {
-      SqlParser.str(status) map {
-        case status => {
-          io.flow.common.v0.models.Healthcheck(
-            status = status
           )
         }
       }

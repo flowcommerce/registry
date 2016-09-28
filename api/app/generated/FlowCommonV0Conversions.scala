@@ -100,14 +100,10 @@ package io.flow.common.v0.anorm.conversions {
     implicit val columnToMapCommonDimension: Column[Map[String, _root_.io.flow.common.v0.models.Dimension]] = Util.parser { _.as[Map[String, _root_.io.flow.common.v0.models.Dimension]] }
     implicit val columnToSeqCommonDimensions: Column[Seq[_root_.io.flow.common.v0.models.Dimensions]] = Util.parser { _.as[Seq[_root_.io.flow.common.v0.models.Dimensions]] }
     implicit val columnToMapCommonDimensions: Column[Map[String, _root_.io.flow.common.v0.models.Dimensions]] = Util.parser { _.as[Map[String, _root_.io.flow.common.v0.models.Dimensions]] }
-    implicit val columnToSeqCommonError: Column[Seq[_root_.io.flow.common.v0.models.Error]] = Util.parser { _.as[Seq[_root_.io.flow.common.v0.models.Error]] }
-    implicit val columnToMapCommonError: Column[Map[String, _root_.io.flow.common.v0.models.Error]] = Util.parser { _.as[Map[String, _root_.io.flow.common.v0.models.Error]] }
     implicit val columnToSeqCommonException: Column[Seq[_root_.io.flow.common.v0.models.Exception]] = Util.parser { _.as[Seq[_root_.io.flow.common.v0.models.Exception]] }
     implicit val columnToMapCommonException: Column[Map[String, _root_.io.flow.common.v0.models.Exception]] = Util.parser { _.as[Map[String, _root_.io.flow.common.v0.models.Exception]] }
     implicit val columnToSeqCommonExperienceSummary: Column[Seq[_root_.io.flow.common.v0.models.ExperienceSummary]] = Util.parser { _.as[Seq[_root_.io.flow.common.v0.models.ExperienceSummary]] }
     implicit val columnToMapCommonExperienceSummary: Column[Map[String, _root_.io.flow.common.v0.models.ExperienceSummary]] = Util.parser { _.as[Map[String, _root_.io.flow.common.v0.models.ExperienceSummary]] }
-    implicit val columnToSeqCommonHealthcheck: Column[Seq[_root_.io.flow.common.v0.models.Healthcheck]] = Util.parser { _.as[Seq[_root_.io.flow.common.v0.models.Healthcheck]] }
-    implicit val columnToMapCommonHealthcheck: Column[Map[String, _root_.io.flow.common.v0.models.Healthcheck]] = Util.parser { _.as[Map[String, _root_.io.flow.common.v0.models.Healthcheck]] }
     implicit val columnToSeqCommonLineItem: Column[Seq[_root_.io.flow.common.v0.models.LineItem]] = Util.parser { _.as[Seq[_root_.io.flow.common.v0.models.LineItem]] }
     implicit val columnToMapCommonLineItem: Column[Map[String, _root_.io.flow.common.v0.models.LineItem]] = Util.parser { _.as[Map[String, _root_.io.flow.common.v0.models.LineItem]] }
     implicit val columnToSeqCommonLineItemForm: Column[Seq[_root_.io.flow.common.v0.models.LineItemForm]] = Util.parser { _.as[Seq[_root_.io.flow.common.v0.models.LineItemForm]] }
