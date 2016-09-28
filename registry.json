@@ -165,7 +165,7 @@
           "responses": {
             "201": { "type": "service" },
             "401": { "type": "unit" },
-            "422": { "type": "io.flow.error.v0.models.validation_error" }
+            "422": { "type": "io.flow.error.v0.models.generic_error" }
           }
         },
 
@@ -178,7 +178,7 @@
             "200": { "type": "service" },
             "201": { "type": "service" },
             "401": { "type": "unit" },
-            "422": { "type": "io.flow.error.v0.models.validation_error" }
+            "422": { "type": "io.flow.error.v0.models.generic_error" }
           }
         },
 
@@ -190,7 +190,7 @@
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" },
-            "422": { "type": "io.flow.error.v0.models.validation_error" }
+            "422": { "type": "io.flow.error.v0.models.generic_error" }
           }
         }
       ]          
@@ -259,7 +259,7 @@
           "responses": {
             "201": { "type": "application" },
             "401": { "type": "unit" },
-            "422": { "type": "io.flow.error.v0.models.validation_error" }
+            "422": { "type": "io.flow.error.v0.models.generic_error" }
           }
         },
 
@@ -272,7 +272,7 @@
             "200": { "type": "application" },
             "201": { "type": "application" },
             "401": { "type": "unit" },
-            "422": { "type": "io.flow.error.v0.models.validation_error" }
+            "422": { "type": "io.flow.error.v0.models.generic_error" }
           }
         },
 
@@ -295,7 +295,7 @@
             "200": { "type": "application" },
             "401": { "type": "unit" },
             "404": { "type": "unit" },
-            "422": { "type": "io.flow.error.v0.models.validation_error" }
+            "422": { "type": "io.flow.error.v0.models.generic_error" }
           }
         },
 
@@ -307,7 +307,7 @@
             "200": { "type": "application" },
             "401": { "type": "unit" },
             "404": { "type": "unit" },
-            "422": { "type": "io.flow.error.v0.models.validation_error" }
+            "422": { "type": "io.flow.error.v0.models.generic_error" }
           }
         }
         
