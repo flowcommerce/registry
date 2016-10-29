@@ -7,4 +7,4 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 // Use the Play sbt plugin for Play projects
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.8")
 
-addSbtPlugin("com.gilt.sbt" % "sbt-newrelic" % "0.1.8")
+addSbtPlugin("com.gilt.sbt" % "sbt-newrelic" % "0.1.12")
