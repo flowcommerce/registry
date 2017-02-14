@@ -71,18 +71,6 @@ package io.flow.common.v0.anorm.parsers {
 
   }
 
-  object Direction {
-
-    def parserWithPrefix(prefix: String, sep: String = "_") = parser(s"$prefix${sep}name")
-
-    def parser(name: String = "direction"): RowParser[io.flow.common.v0.models.Direction] = {
-      SqlParser.str(name) map {
-        case value => io.flow.common.v0.models.Direction(value)
-      }
-    }
-
-  }
-
   object Environment {
 
     def parserWithPrefix(prefix: String, sep: String = "_") = parser(s"$prefix${sep}name")

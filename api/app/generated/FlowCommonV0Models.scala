@@ -436,46 +436,6 @@ package io.flow.common.v0.models {
 
   }
 
-  sealed trait Direction
-
-  object Direction {
-
-    /**
-     * Outbound shipment to typically fulfill a customer order
-     */
-    case object Outbound extends Direction { override def toString = "outbound" }
-    /**
-     * Inbound or return shipment
-     */
-    case object Return extends Direction { override def toString = "return" }
-
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends Direction
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Outbound, Return)
-
-    private[this]
-    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
-
-    def apply(value: String): Direction = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): _root_.scala.Option[Direction] = byName.get(value.toLowerCase)
-
-  }
-
   sealed trait Environment
 
   object Environment {
@@ -1284,36 +1244,6 @@ package io.flow.common.v0.models {
       new play.api.libs.json.Writes[io.flow.common.v0.models.DeliveredDuty] {
         def writes(obj: io.flow.common.v0.models.DeliveredDuty) = {
           jsonWritesCommonDeliveredDuty(obj)
-        }
-      }
-    }
-
-    implicit val jsonReadsCommonDirection = new play.api.libs.json.Reads[io.flow.common.v0.models.Direction] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.Direction] = {
-        js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.common.v0.models.Direction(v.value))
-          case _ => {
-            (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.common.v0.models.Direction(v))
-              case err: play.api.libs.json.JsError => err
-            }
-          }
-        }
-      }
-    }
-
-    def jsonWritesCommonDirection(obj: io.flow.common.v0.models.Direction) = {
-      play.api.libs.json.JsString(obj.toString)
-    }
-
-    def jsObjectDirection(obj: io.flow.common.v0.models.Direction) = {
-      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
-    }
-
-    implicit def jsonWritesCommonDirection: play.api.libs.json.Writes[Direction] = {
-      new play.api.libs.json.Writes[io.flow.common.v0.models.Direction] {
-        def writes(obj: io.flow.common.v0.models.Direction) = {
-          jsonWritesCommonDirection(obj)
         }
       }
     }
@@ -2612,17 +2542,6 @@ package io.flow.common.v0 {
 
     implicit val queryStringBindableEnumDeliveredDuty = new QueryStringBindable.Parsing[io.flow.common.v0.models.DeliveredDuty](
       DeliveredDuty.fromString(_).get, _.toString, enumDeliveredDutyNotFound
-    )
-
-    // Enum: Direction
-    private[this] val enumDirectionNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.Direction.all.mkString(", ")}"
-
-    implicit val pathBindableEnumDirection = new PathBindable.Parsing[io.flow.common.v0.models.Direction] (
-      Direction.fromString(_).get, _.toString, enumDirectionNotFound
-    )
-
-    implicit val queryStringBindableEnumDirection = new QueryStringBindable.Parsing[io.flow.common.v0.models.Direction](
-      Direction.fromString(_).get, _.toString, enumDirectionNotFound
     )
 
     // Enum: Environment
