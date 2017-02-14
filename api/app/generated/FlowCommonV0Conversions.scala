@@ -62,8 +62,6 @@ package io.flow.common.v0.anorm.conversions {
     implicit val columnToMapCommonDayOfWeek: Column[Map[String, _root_.io.flow.common.v0.models.DayOfWeek]] = Util.parser { _.as[Map[String, _root_.io.flow.common.v0.models.DayOfWeek]] }
     implicit val columnToSeqCommonDeliveredDuty: Column[Seq[_root_.io.flow.common.v0.models.DeliveredDuty]] = Util.parser { _.as[Seq[_root_.io.flow.common.v0.models.DeliveredDuty]] }
     implicit val columnToMapCommonDeliveredDuty: Column[Map[String, _root_.io.flow.common.v0.models.DeliveredDuty]] = Util.parser { _.as[Map[String, _root_.io.flow.common.v0.models.DeliveredDuty]] }
-    implicit val columnToSeqCommonDirection: Column[Seq[_root_.io.flow.common.v0.models.Direction]] = Util.parser { _.as[Seq[_root_.io.flow.common.v0.models.Direction]] }
-    implicit val columnToMapCommonDirection: Column[Map[String, _root_.io.flow.common.v0.models.Direction]] = Util.parser { _.as[Map[String, _root_.io.flow.common.v0.models.Direction]] }
     implicit val columnToSeqCommonEnvironment: Column[Seq[_root_.io.flow.common.v0.models.Environment]] = Util.parser { _.as[Seq[_root_.io.flow.common.v0.models.Environment]] }
     implicit val columnToMapCommonEnvironment: Column[Map[String, _root_.io.flow.common.v0.models.Environment]] = Util.parser { _.as[Map[String, _root_.io.flow.common.v0.models.Environment]] }
     implicit val columnToSeqCommonExceptionType: Column[Seq[_root_.io.flow.common.v0.models.ExceptionType]] = Util.parser { _.as[Seq[_root_.io.flow.common.v0.models.ExceptionType]] }
