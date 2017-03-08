@@ -22,7 +22,7 @@ trait MockClient extends db.Helpers {
   def identifiedClient(user: UserReference = createUser()): Client = {
     new Client(
       s"http://localhost:$port",
-      defaultHeaders = authHeaders.headers(AuthData.user(user))
+      defaultHeaders = authHeaders.headers(AuthHeaders.user(user))
     )
   }
 
