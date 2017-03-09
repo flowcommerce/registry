@@ -1,7 +1,7 @@
 package controllers
 
 import io.flow.common.v0.models.UserReference
-import io.flow.play.util.{AuthData, AuthHeaders, Config}
+import io.flow.play.util.{AuthHeaders, Config}
 import io.flow.registry.v0.errors.{GenericErrorResponse, UnitResponse}
 import io.flow.registry.v0.{Authorization, Client}
 import java.util.concurrent.TimeUnit

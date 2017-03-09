@@ -13,10 +13,9 @@ import net.jcazevedo.moultingyaml._
 import scala.concurrent.Future
 
 class Applications @javax.inject.Inject() (
-  override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client
+  override val config: Config
 ) extends Controller
-     with io.flow.play.controllers.IdentifiedRestController
+     with io.flow.play.controllers.FlowController
 {
 
   import scala.concurrent.ExecutionContext.Implicits.global
