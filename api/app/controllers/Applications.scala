@@ -13,7 +13,7 @@ import net.jcazevedo.moultingyaml._
 import scala.concurrent.Future
 
 class Applications @javax.inject.Inject() (
-  override val config: Config,
+  override val config: Config
 ) extends Controller
      with io.flow.play.controllers.FlowController
 {

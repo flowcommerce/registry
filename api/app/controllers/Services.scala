@@ -13,7 +13,7 @@ import play.api.libs.json._
 import scala.concurrent.Future
 
 class Services @javax.inject.Inject() (
-  override val config: Config,
+  override val config: Config
 ) extends Controller
     with io.flow.play.controllers.FlowController
 {
