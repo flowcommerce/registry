@@ -5,7 +5,7 @@ import io.flow.common.v0.models.UserReference
 import io.flow.error.v0.models.json._
 import io.flow.registry.v0.models.{Service, ServiceForm, ServicePutForm}
 import io.flow.registry.v0.models.json._
-import io.flow.play.controllers.IdentifiedRestController
+import io.flow.play.controllers.FlowController
 import io.flow.play.util.{Config, Validation}
 import io.flow.postgresql.{Authorization, OrderBy}
 import play.api.mvc._
@@ -14,9 +14,8 @@ import scala.concurrent.Future
 
 class Services @javax.inject.Inject() (
   override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller
-    with io.flow.play.controllers.IdentifiedRestController
+    with io.flow.play.controllers.FlowController
 {
 
   import scala.concurrent.ExecutionContext.Implicits.global
