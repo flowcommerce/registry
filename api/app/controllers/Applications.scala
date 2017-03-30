@@ -144,7 +144,7 @@ class Applications @javax.inject.Inject() (
     }
   }
 
-  def post() = Identified.async { request =>
+  def post() = Action.async { request =>
     Future {
       JsValue.sync(request.contentType, request.body) { js =>
         js.validate[ApplicationForm] match {
@@ -152,7 +152,7 @@ class Applications @javax.inject.Inject() (
             UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
           }
           case s: JsSuccess[ApplicationForm] => {
-            ApplicationsDao.create(request.user, s.get) match {
+            ApplicationsDao.create(io.flow.play.util.Constants.AnonymousUser, s.get) match {
               case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
               case Right(app) => Created(Json.toJson(app))
             }
