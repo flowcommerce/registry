@@ -51,7 +51,7 @@ package io.flow.error.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[GenericErrorCode] = List(GenericError, ClientError, ServerError)
+    val all: scala.List[GenericErrorCode] = scala.List(GenericError, ClientError, ServerError)
 
     private[this]
     val byName: Map[String, GenericErrorCode] = all.map(x => x.toString.toLowerCase -> x).toMap
