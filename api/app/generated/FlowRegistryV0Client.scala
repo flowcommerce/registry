@@ -19,7 +19,7 @@ package io.flow.registry.v0.models {
 
     case class UNDEFINED(override val toString: String) extends HealthcheckDiscriminator
 
-    val all: List[HealthcheckDiscriminator] = List(Http, Postgresql)
+    val all: scala.List[HealthcheckDiscriminator] = scala.List(Http, Postgresql)
 
     private[this] val byName: Map[String, HealthcheckDiscriminator] = all.map(x => x.toString.toLowerCase -> x).toMap
 

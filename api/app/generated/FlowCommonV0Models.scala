@@ -19,7 +19,7 @@ package io.flow.common.v0.models {
 
     case class UNDEFINED(override val toString: String) extends ExpandableOrganizationDiscriminator
 
-    val all: List[ExpandableOrganizationDiscriminator] = List(Organization, OrganizationReference)
+    val all: scala.List[ExpandableOrganizationDiscriminator] = scala.List(Organization, OrganizationReference)
 
     private[this] val byName: Map[String, ExpandableOrganizationDiscriminator] = all.map(x => x.toString.toLowerCase -> x).toMap
 
@@ -43,7 +43,7 @@ package io.flow.common.v0.models {
 
     case class UNDEFINED(override val toString: String) extends ExpandableUserDiscriminator
 
-    val all: List[ExpandableUserDiscriminator] = List(User, UserReference)
+    val all: scala.List[ExpandableUserDiscriminator] = scala.List(User, UserReference)
 
     private[this] val byName: Map[String, ExpandableUserDiscriminator] = all.map(x => x.toString.toLowerCase -> x).toMap
 
@@ -431,7 +431,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[Calendar] = List(Weekdays, Everyday)
+    val all: scala.List[Calendar] = scala.List(Weekdays, Everyday)
 
     private[this]
     val byName: Map[String, Calendar] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -464,7 +464,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[Capability] = List(Crossdock)
+    val all: scala.List[Capability] = scala.List(Crossdock)
 
     private[this]
     val byName: Map[String, Capability] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -499,7 +499,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[ChangeType] = List(Insert, Update, Delete)
+    val all: scala.List[ChangeType] = scala.List(Insert, Update, Delete)
 
     private[this]
     val byName: Map[String, ChangeType] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -538,7 +538,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[DayOfWeek] = List(Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday)
+    val all: scala.List[DayOfWeek] = scala.List(Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday)
 
     private[this]
     val byName: Map[String, DayOfWeek] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -580,7 +580,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[DeliveredDuty] = List(Paid, Unpaid)
+    val all: scala.List[DeliveredDuty] = scala.List(Paid, Unpaid)
 
     private[this]
     val byName: Map[String, DeliveredDuty] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -622,7 +622,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[Environment] = List(Sandbox, Production)
+    val all: scala.List[Environment] = scala.List(Sandbox, Production)
 
     private[this]
     val byName: Map[String, Environment] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -656,7 +656,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[ExceptionType] = List(Open, Closed)
+    val all: scala.List[ExceptionType] = scala.List(Open, Closed)
 
     private[this]
     val byName: Map[String, ExceptionType] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -690,7 +690,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[HolidayCalendar] = List(UsBankHolidays, JewishHolidays)
+    val all: scala.List[HolidayCalendar] = scala.List(UsBankHolidays, JewishHolidays)
 
     private[this]
     val byName: Map[String, HolidayCalendar] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -734,7 +734,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[MarginType] = List(Fixed, Percent)
+    val all: scala.List[MarginType] = scala.List(Fixed, Percent)
 
     private[this]
     val byName: Map[String, MarginType] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -768,7 +768,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[MeasurementSystem] = List(Imperial, Metric)
+    val all: scala.List[MeasurementSystem] = scala.List(Imperial, Metric)
 
     private[this]
     val byName: Map[String, MeasurementSystem] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -805,7 +805,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[Role] = List(Admin, Member)
+    val all: scala.List[Role] = scala.List(Admin, Member)
 
     private[this]
     val byName: Map[String, Role] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -852,7 +852,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[RoundingMethod] = List(Up, Down, Nearest)
+    val all: scala.List[RoundingMethod] = scala.List(Up, Down, Nearest)
 
     private[this]
     val byName: Map[String, RoundingMethod] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -899,7 +899,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[RoundingType] = List(Pattern, Multiple)
+    val all: scala.List[RoundingType] = scala.List(Pattern, Multiple)
 
     private[this]
     val byName: Map[String, RoundingType] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -936,7 +936,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[ScheduleExceptionStatus] = List(Open, Closed)
+    val all: scala.List[ScheduleExceptionStatus] = scala.List(Open, Closed)
 
     private[this]
     val byName: Map[String, ScheduleExceptionStatus] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -970,7 +970,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[SortDirection] = List(Ascending, Descending)
+    val all: scala.List[SortDirection] = scala.List(Ascending, Descending)
 
     private[this]
     val byName: Map[String, SortDirection] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -1052,7 +1052,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[UnitOfMeasurement] = List(Millimeter, Centimeter, Inch, Foot, CubicInch, CubicMeter, Gram, Kilogram, Meter, Ounce, Pound)
+    val all: scala.List[UnitOfMeasurement] = scala.List(Millimeter, Centimeter, Inch, Foot, CubicInch, CubicMeter, Gram, Kilogram, Meter, Ounce, Pound)
 
     private[this]
     val byName: Map[String, UnitOfMeasurement] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -1093,7 +1093,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[UnitOfTime] = List(Year, Month, Week, Day, Hour, Minute)
+    val all: scala.List[UnitOfTime] = scala.List(Year, Month, Week, Day, Hour, Minute)
 
     private[this]
     val byName: Map[String, UnitOfTime] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -1142,7 +1142,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[UserStatus] = List(Pending, Active, Inactive)
+    val all: scala.List[UserStatus] = scala.List(Pending, Active, Inactive)
 
     private[this]
     val byName: Map[String, UserStatus] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -1178,7 +1178,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[ValueAddedService] = List(HazardousMaterial)
+    val all: scala.List[ValueAddedService] = scala.List(HazardousMaterial)
 
     private[this]
     val byName: Map[String, ValueAddedService] = all.map(x => x.toString.toLowerCase -> x).toMap
@@ -1212,7 +1212,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: List[Visibility] = List(Public, Private)
+    val all: scala.List[Visibility] = scala.List(Public, Private)
 
     private[this]
     val byName: Map[String, Visibility] = all.map(x => x.toString.toLowerCase -> x).toMap
