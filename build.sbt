@@ -23,7 +23,7 @@ lazy val api = project
   )
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
-  name <<= name("registry-" + _),
+  name ~= ("registry-" + _),
   libraryDependencies ++= Seq(
     specs2 % Test
   ),
