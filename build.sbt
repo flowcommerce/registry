@@ -1,4 +1,4 @@
-import play.PlayImport.PlayKeys._
+import play.sbt.PlayScala._
 
 name := "registry"
 
@@ -14,10 +14,11 @@ lazy val api = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       ws,
+      guice,
       jdbc,
-      "io.flow" %% "lib-postgresql-play" % "0.1.41",
+      "io.flow" %% "lib-postgresql-play" % "0.1.43-play26",
       "org.postgresql" % "postgresql" % "42.1.4",
-      "org.scalatestplus" %% "play" % "1.4.0" % "test",
+      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % "test",
       "net.jcazevedo" %% "moultingyaml" % "0.4.0"
     )
   )
