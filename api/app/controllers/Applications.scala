@@ -3,6 +3,7 @@ package controllers
 import db.{ApplicationVersionsDao, ApplicationsDao}
 import io.flow.common.v0.models.UserReference
 import io.flow.error.v0.models.json._
+import io.flow.play.controllers.{FlowController, FlowControllerComponents}
 import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
 import io.flow.registry.v0.models.json._
 import io.flow.play.util.{Config, Validation}
@@ -10,12 +11,16 @@ import io.flow.postgresql.{Authorization, OrderBy, Pager}
 import play.api.mvc._
 import play.api.libs.json._
 import net.jcazevedo.moultingyaml._
+
 import scala.concurrent.Future
 
 class Applications @javax.inject.Inject() (
-  override val config: Config
-) extends Controller
-     with io.flow.play.controllers.FlowController
+  applicationsDao: ApplicationsDao,
+  applicationVersionsDao: ApplicationVersionsDao,
+  val config: Config,
+  val controllerComponents: ControllerComponents,
+  val flowControllerComponents: FlowControllerComponents
+) extends FlowController
 {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -38,7 +43,7 @@ class Applications @javax.inject.Inject() (
         case Right(orderBy) => {
           Ok(
             Json.toJson(
-              ApplicationsDao.findAll(
+              applicationsDao.findAll(
                 Authorization.fromUser(request.user.map(_.id)),
                 ids = optionals(id),
                 services = optionals(service),
@@ -71,7 +76,7 @@ class Applications @javax.inject.Inject() (
         case Right(orderBy) => {
           Ok(
             Json.toJson(
-              ApplicationVersionsDao.findAll(
+              applicationVersionsDao.findAll(
                 Authorization.fromUser(request.user.map(_.id)),
                 ids = optionals(id),
                 applications = optionals(application),
@@ -88,7 +93,7 @@ class Applications @javax.inject.Inject() (
 
   def getYaml() = Anonymous.async { request =>
     Future {
-      val yaml = Pager.create{ offset => ApplicationsDao.findAll(
+      val yaml = Pager.create{ offset => applicationsDao.findAll(
         Authorization.fromUser(request.user.map(_.id)),
         limit = 100,
         offset = offset
@@ -152,7 +157,7 @@ class Applications @javax.inject.Inject() (
             UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
           }
           case s: JsSuccess[ApplicationForm] => {
-            ApplicationsDao.create(io.flow.play.util.Constants.AnonymousUser, s.get) match {
+            applicationsDao.create(io.flow.play.util.Constants.AnonymousUser, s.get) match {
               case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
               case Right(app) => Created(Json.toJson(app))
             }
@@ -171,7 +176,7 @@ class Applications @javax.inject.Inject() (
           }
           case s: JsSuccess[ApplicationPutForm] => {
             val putForm = s.get
-            ApplicationsDao.findById(Authorization.User(request.user.id), id) match {
+            applicationsDao.findById(Authorization.User(request.user.id), id) match {
               case None => {
                 putForm.service match {
                   case None => {
@@ -185,7 +190,7 @@ class Applications @javax.inject.Inject() (
                       internal = putForm.internal,
                       dependency = putForm.dependency
                     )
-                    ApplicationsDao.create(request.user, form) match {
+                    applicationsDao.create(request.user, form) match {
                       case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
                       case Right(application) => Created(Json.toJson(application))
                     }
@@ -193,7 +198,7 @@ class Applications @javax.inject.Inject() (
                 }
               }
               case Some(application) => {
-                ApplicationsDao.update(request.user, application, putForm) match {
+                applicationsDao.update(request.user, application, putForm) match {
                   case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
                   case Right(application) => Ok(Json.toJson(application))
                 }
@@ -207,7 +212,7 @@ class Applications @javax.inject.Inject() (
 
   def deleteById(id: String) = Identified.async { request =>
     withApplication(Some(request.user), id) { app =>
-      ApplicationsDao.delete(request.user, app)
+      applicationsDao.delete(request.user, app)
       NoContent
     }
   }
@@ -220,7 +225,7 @@ class Applications @javax.inject.Inject() (
         }
 
         case false => {
-          ApplicationsDao.upsertDependency(request.user, app, dependency) match {
+          applicationsDao.upsertDependency(request.user, app, dependency) match {
             case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
             case Right(application) => Ok(Json.toJson(application))
           }
@@ -231,7 +236,7 @@ class Applications @javax.inject.Inject() (
 
   def deleteDependenciesByIdAndDependency(id: String, dependency: String) = Identified.async { request =>
     withApplication(Some(request.user), id) { app =>
-      ApplicationsDao.removeDependency(request.user, app, dependency) match {
+      applicationsDao.removeDependency(request.user, app, dependency) match {
         case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
         case Right(application) => Ok(Json.toJson(application))
       }
@@ -242,7 +247,7 @@ class Applications @javax.inject.Inject() (
     f: Application => Result
   ) = {
     Future {
-      ApplicationsDao.findById(Authorization.fromUser(user.map(_.id)), id) match {
+      applicationsDao.findById(Authorization.fromUser(user.map(_.id)), id) match {
         case None => {
           Results.NotFound
         }

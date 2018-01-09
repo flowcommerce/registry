@@ -1,11 +1,12 @@
 package db
 
+import javax.inject.{Inject, Singleton}
+
 import io.flow.common.v0.models.UserReference
 import io.flow.play.util.IdGenerator
-import io.flow.postgresql.{Authorization, Query, OrderBy}
+import io.flow.postgresql.{Authorization, OrderBy, Query}
 import anorm._
 import play.api.db._
-import play.api.Play.current
 import play.api.libs.json._
 
 case class DependencyForm(
@@ -19,7 +20,11 @@ private[db] case class InternalDependency(
   dependencyId: String
 )
 
-object DependenciesDao {
+@Singleton
+class DependenciesDao @Inject() (
+    db: Database,
+    dbHelpers: DbHelpers
+  ){
 
   private[this] val BaseQuery = Query(s"""
     select dependencies.id,
@@ -35,11 +40,10 @@ object DependenciesDao {
     ({id}, {application_id}, {dependency_id}, {updated_by_user_id})
   """
 
-  private[this] val dbHelpers = DbHelpers("dependencies")
   private[this] val idGenerator = IdGenerator("dep")
 
   def create(createdBy: UserReference, form: DependencyForm): InternalDependency = {
-    val id = DB.withConnection { implicit c =>
+    val id = db.withConnection { implicit c =>
       create(c, createdBy, form)
     }
     findById(Authorization.All, id).getOrElse {
@@ -79,7 +83,7 @@ object DependenciesDao {
   }
 
   def delete(implicit c: java.sql.Connection, deletedBy: UserReference, dependency: InternalDependency) {
-    dbHelpers.delete(c, deletedBy, dependency.id)
+    dbHelpers.delete("dependencies")(c, deletedBy, dependency.id)
   }
 
   def findById(auth: Authorization, id: String): Option[InternalDependency] = {
@@ -95,7 +99,7 @@ object DependenciesDao {
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("dependencies.application_id, dependencies.dependency_id")
   ): Seq[InternalDependency] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       findAllWithConnection(c, auth, ids, applications, dependencies, limit, offset, orderBy)
     }
   }

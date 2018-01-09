@@ -7,6 +7,7 @@ package io.flow.common.v0.anorm.conversions {
 
   import anorm.{Column, MetaDataItem, TypeDoesNotMatch}
   import play.api.libs.json.{JsArray, JsObject, JsValue}
+  import play.api.libs.json.JodaReads._
   import scala.util.{Failure, Success, Try}
 
   /**
@@ -182,6 +183,8 @@ package io.flow.common.v0.anorm.conversions {
     implicit val columnToMapBigDecimal: Column[Map[String, BigDecimal]] = Util.parser { _.as[Map[String, BigDecimal]] }
     implicit val columnToSeqJsObject: Column[Seq[_root_.play.api.libs.json.JsObject]] = Util.parser { _.as[Seq[_root_.play.api.libs.json.JsObject]] }
     implicit val columnToMapJsObject: Column[Map[String, _root_.play.api.libs.json.JsObject]] = Util.parser { _.as[Map[String, _root_.play.api.libs.json.JsObject]] }
+    implicit val columnToSeqJsValue: Column[Seq[_root_.play.api.libs.json.JsValue]] = Util.parser { _.as[Seq[_root_.play.api.libs.json.JsValue]] }
+    implicit val columnToMapJsValue: Column[Map[String, _root_.play.api.libs.json.JsValue]] = Util.parser { _.as[Map[String, _root_.play.api.libs.json.JsValue]] }
     implicit val columnToSeqString: Column[Seq[String]] = Util.parser { _.as[Seq[String]] }
     implicit val columnToMapString: Column[Map[String, String]] = Util.parser { _.as[Map[String, String]] }
     implicit val columnToSeqUUID: Column[Seq[_root_.java.util.UUID]] = Util.parser { _.as[Seq[_root_.java.util.UUID]] }

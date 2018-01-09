@@ -13,8 +13,22 @@ import play.api.inject.Module
   */
 @javax.inject.Singleton
 class DevelopmentRegistry @javax.inject.Inject() (
-  app: play.api.Application
+  app: play.api.Application,
+  applicationsDao: ApplicationsDao
 ) extends LocalRegistry {
+
+  //TODO: refactor duplicate code
+  override def host(applicationId: String): String = {
+    val app = applicationsDao.findById(Authorization.All, applicationId).getOrElse {
+      sys.error("application[$applicationId] not found in registrydb")
+    }
+
+    val port = app.ports.headOption.getOrElse {
+      sys.error(s"application[$applicationId] does not have any ports in registry")
+    }
+
+    host(applicationId, port.external)
+  }
 
   override def host(applicationId: String, port: Long): String = {
     RegistryConstants.developmentHost(applicationId, port)
@@ -28,18 +42,13 @@ class DevelopmentRegistry @javax.inject.Inject() (
   */
 @javax.inject.Singleton
 class WorkstationRegistry @javax.inject.Inject() (
-  app: play.api.Application
+  app: play.api.Application,
+  applicationsDao: ApplicationsDao
 ) extends LocalRegistry {
 
-  override def host(applicationId: String, port: Long): String = {
-    RegistryConstants.workstationHost(applicationId, port)
-  }
-}
-
-trait LocalRegistry extends Registry {
-
+  //TODO: refactor duplicate code
   override def host(applicationId: String): String = {
-    val app = ApplicationsDao.findById(Authorization.All, applicationId).getOrElse {
+    val app = applicationsDao.findById(Authorization.All, applicationId).getOrElse {
       sys.error("application[$applicationId] not found in registrydb")
     }
 
@@ -49,6 +58,13 @@ trait LocalRegistry extends Registry {
 
     host(applicationId, port.external)
   }
+
+  override def host(applicationId: String, port: Long): String = {
+    RegistryConstants.workstationHost(applicationId, port)
+  }
+}
+
+trait LocalRegistry extends Registry {
 
   def host(applicationId: String, port: Long): String
 
