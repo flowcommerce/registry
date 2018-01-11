@@ -14,7 +14,7 @@ case class DependencyForm(
   dependencyId: String
 )
 
-private[db] case class InternalDependency(
+case class InternalDependency(
   id: String,
   applicationId: String,
   dependencyId: String

@@ -17,7 +17,7 @@ case class PortForm(
   external: Long
 )
 
-private[db] case class InternalPort(
+case class InternalPort(
   id: String,
   applicationId: String,
   serviceId: String,

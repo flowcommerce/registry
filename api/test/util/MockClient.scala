@@ -1,28 +1,39 @@
-package controllers
+package util
+
+import java.util.concurrent.TimeUnit
 
 import io.flow.common.v0.models.UserReference
-import io.flow.play.util.{AuthHeaders, Config}
+import io.flow.play.util.{AuthHeaders, FlowSession}
+import io.flow.registry.v0.Client
 import io.flow.registry.v0.errors.{GenericErrorResponse, UnitResponse}
-import io.flow.registry.v0.{Authorization, Client}
-import java.util.concurrent.TimeUnit
-import org.joda.time.DateTime
+import play.api.Application
+
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
 
-trait MockClient extends db.Helpers {
+trait MockClient extends FlowPlaySpec {
 
   val DefaultDuration = Duration(5, TimeUnit.SECONDS)
 
-  val port = 9010
+  override lazy val port = 9010
 
-  lazy val anonClient = new Client(s"http://localhost:$port")
-  lazy val authHeaders = play.api.Play.current.injector.instanceOf[AuthHeaders]
+  lazy val anonClient = new io.flow.registry.v0.Client(wsClient, s"http://localhost:$port")
 
-  def identifiedClient(user: UserReference = createUser()): Client = {
+  def identifiedClient(
+                        user: UserReference = testUser,
+                        org: Option[String] = None,
+                        session: Option[FlowSession] = None
+                      )(implicit app: Application): Client = {
+    val auth = org match {
+      case None => AuthHeaders.user(user, session = session)
+      case Some(o) => AuthHeaders.organization(user, o, session = session)
+    }
+
     new Client(
+      wsClient,
       s"http://localhost:$port",
-      defaultHeaders = authHeaders.headers(AuthHeaders.user(user))
+      defaultHeaders = authHeaders.headers(auth)
     )
   }
 

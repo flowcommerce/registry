@@ -1,5 +1,7 @@
 package io.flow.registry.api.lib
 
+import javax.inject.{Inject, Singleton}
+
 import db.{ApplicationsDao, PortsDao}
 import io.flow.postgresql.Authorization
 import io.flow.registry.v0.models.Service
@@ -25,8 +27,8 @@ import io.flow.registry.v0.models.Service
  * and repeat the process.
  *
  */
-
-class DefaultPortAllocator (
+@Singleton
+class DefaultPortAllocator @Inject() (
      applicationsDao: ApplicationsDao,
      portsDao: PortsDao
    ) {
@@ -123,11 +125,11 @@ class DefaultPortAllocator (
     * Given a port number (e.g. 8201) returns the base port number
     * (e.g. 8200)
     */
-  private def toBase(number: Long): Long = {
+  protected[lib] def toBase(number: Long): Long = {
     number - (number % Blocksize)
   }
 
-  private def isPortAvailable(number: Long): Boolean = {
+  protected[lib] def isPortAvailable(number: Long): Boolean = {
     if (Blacklist.contains(number)) {
       false
     } else {
@@ -135,7 +137,7 @@ class DefaultPortAllocator (
     }
   }
 
-  private def isBlockAvailable(number: Long): Boolean = {
+  protected[lib] def isBlockAvailable(number: Long): Boolean = {
     if (Blacklist.contains(number)) {
       false
     } else if (number % 100 == 0) {
