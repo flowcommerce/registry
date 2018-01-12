@@ -2,9 +2,7 @@ import play.sbt.PlayScala._
 
 name := "registry"
 
-scalaVersion in ThisBuild := "2.11.12"
-
-crossScalaVersions := Seq("2.11.12", "2.12.4")
+scalaVersion in ThisBuild := "2.12.4"
 
 lazy val api = project
   .in(file("api"))
