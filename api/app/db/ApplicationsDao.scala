@@ -17,31 +17,34 @@ import io.flow.registry.v0.anorm.conversions.Types._
 
 @Singleton
 class ApplicationsDao @Inject()(
-                                 servicesDao: ServicesDao,
-                                 dependenciesDao: DependenciesDao,
-                                 portsDao: PortsDao,
-                                 dbHelpers: DbHelpers,
-                                 db: Database
-   ) {
+  servicesDao: ServicesDao,
+  dependenciesDao: DependenciesDao,
+  portsDao: PortsDao,
+  dbHelpers: DbHelpers,
+  db: Database
+) {
 
   private[this] val urlKey = UrlKey(minKeyLength = 2)
   private[this] val SortByPort = "(select min(external) from ports where application_id = applications.id)"
 
-  private[this] val BaseQuery = Query(s"""
+  private[this] val BaseQuery = Query(
+    s"""
     select applications.id,
            applications.ports,
            applications.dependencies
       from applications
   """)
 
-  private[this] val InsertQuery = """
+  private[this] val InsertQuery =
+    """
     insert into applications
     (id, ports, dependencies, updated_by_user_id)
     values
     ({id}, {ports}::json, {dependencies}::json, {updated_by_user_id})
   """
 
-  private[this] val UpdateQuery = """
+  private[this] val UpdateQuery =
+    """
     update applications
        set ports = {ports}::json,
            dependencies = {dependencies}::json,
@@ -266,12 +269,16 @@ class ApplicationsDao @Inject()(
       case Nil => {
         val dependenciesToAdd = form.dependency match {
           case None => Nil
-          case Some(deps) => deps.filter { !app.dependencies.contains(_) }
+          case Some(deps) => deps.filter {
+            !app.dependencies.contains(_)
+          }
         }
 
         val dependenciesToDelete = form.dependency match {
           case None => Nil
-          case Some(deps) => app.dependencies.filter { !deps.contains(_) }
+          case Some(deps) => app.dependencies.filter {
+            !deps.contains(_)
+          }
         }
 
         db.withTransaction { implicit c =>
@@ -475,13 +482,17 @@ class ApplicationsDao @Inject()(
     dependencies: String = "dependencies"
   ): RowParser[io.flow.registry.v0.models.Application] = {
     SqlParser.str(id) ~
-    SqlParser.get[Seq[JsObject]](ports).? ~
-    SqlParser.get[Seq[JsObject]](dependencies).? map {
+      SqlParser.get[Seq[JsObject]](ports).? ~
+      SqlParser.get[Seq[JsObject]](dependencies).? map {
       case id ~ ports ~ dependencies => {
         io.flow.registry.v0.models.Application(
           id = id,
-          ports = ports.getOrElse(Nil).map { _.as[Port] },
-          dependencies = dependencies.getOrElse(Nil).map { _.as[String] }
+          ports = ports.getOrElse(Nil).map {
+            _.as[Port]
+          },
+          dependencies = dependencies.getOrElse(Nil).map {
+            _.as[String]
+          }
         )
       }
     }

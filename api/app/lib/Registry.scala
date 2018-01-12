@@ -2,10 +2,10 @@ package io.flow.registry.api.lib
 
 import db.ApplicationsDao
 import io.flow.play.clients.{MockRegistry, ProductionRegistry, Registry, RegistryConstants}
+import io.flow.play.util.FlowEnvironment
 import io.flow.postgresql.Authorization
-import io.flow.play.util.{Config, FlowEnvironment}
-import play.api.{Environment, Configuration, Mode}
 import play.api.inject.Module
+import play.api.{Configuration, Environment, Mode}
 
 /**
   * Since we are the registry, we can look up app info from our local
@@ -17,22 +17,11 @@ class DevelopmentRegistry @javax.inject.Inject() (
   applicationsDao: ApplicationsDao
 ) extends LocalRegistry {
 
-  //TODO: refactor duplicate code
-  override def host(applicationId: String): String = {
-    val app = applicationsDao.findById(Authorization.All, applicationId).getOrElse {
-      sys.error("application[$applicationId] not found in registrydb")
-    }
+  override def host(applicationId: String): String =
+     host(applicationId, applicationsDao)
 
-    val port = app.ports.headOption.getOrElse {
-      sys.error(s"application[$applicationId] does not have any ports in registry")
-    }
-
-    host(applicationId, port.external)
-  }
-
-  override def host(applicationId: String, port: Long): String = {
+  override def host(applicationId: String, port: Long): String =
     RegistryConstants.developmentHost(applicationId, port)
-  }
 
 }
 
@@ -46,8 +35,18 @@ class WorkstationRegistry @javax.inject.Inject() (
   applicationsDao: ApplicationsDao
 ) extends LocalRegistry {
 
-  //TODO: refactor duplicate code
-  override def host(applicationId: String): String = {
+  override def host(applicationId: String): String =
+    host(applicationId, applicationsDao)
+
+  override def host(applicationId: String, port: Long): String =
+    RegistryConstants.workstationHost(applicationId, port)
+}
+
+trait LocalRegistry extends Registry {
+
+  def host(applicationId: String, port: Long): String
+
+  def host(applicationId: String, applicationsDao: ApplicationsDao): String = {
     val app = applicationsDao.findById(Authorization.All, applicationId).getOrElse {
       sys.error("application[$applicationId] not found in registrydb")
     }
@@ -58,15 +57,6 @@ class WorkstationRegistry @javax.inject.Inject() (
 
     host(applicationId, port.external)
   }
-
-  override def host(applicationId: String, port: Long): String = {
-    RegistryConstants.workstationHost(applicationId, port)
-  }
-}
-
-trait LocalRegistry extends Registry {
-
-  def host(applicationId: String, port: Long): String
 
 }
 
