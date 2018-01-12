@@ -1,19 +1,23 @@
 package db
 
+import javax.inject.{Inject, Singleton}
+
 import io.flow.play.util.{IdGenerator, UrlKey}
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Service, ServiceForm, Port}
+import io.flow.registry.v0.models.{Port, Service, ServiceForm}
 import io.flow.registry.v0.models.json._
-import io.flow.postgresql.{Authorization, Query, OrderBy, Pager}
+import io.flow.postgresql.{Authorization, OrderBy, Pager, Query}
 import io.flow.common.v0.models.UserReference
 import anorm._
 import play.api.db._
-import play.api.Play.current
 import play.api.libs.json._
-
 import io.flow.registry.v0.anorm.conversions.Types._
 
-object ServicesDao {
+@Singleton
+class ServicesDao @Inject() (
+     db: Database,
+     dbHelpers: DbHelpers
+   ){
 
   private[this] val urlKey = UrlKey(minKeyLength = 3)
   private[this] val BaseQuery = Query(s"""
@@ -36,8 +40,6 @@ object ServicesDao {
      where id = {id}
   """
 
-  private[this] val dbHelpers = DbHelpers("services")
-
   private[db] def validate(
     form: ServiceForm,
     existing: Option[Service] = None
@@ -45,7 +47,7 @@ object ServicesDao {
     val idErrors = if (form.id.trim.isEmpty) {
       Seq("Id cannot be empty")
     } else {
-      ServicesDao.findById(Authorization.All, form.id) match {
+      findById(Authorization.All, form.id) match {
         case None => {
           urlKey.validate(form.id)
         }
@@ -72,7 +74,7 @@ object ServicesDao {
   def create(createdBy: UserReference, form: ServiceForm): Either[Seq[String], Service] = {
     validate(form) match {
       case Nil => {
-        DB.withConnection { implicit c =>
+        db.withConnection { implicit c =>
           val id = form.id.trim
 
           SQL(InsertQuery).on(
@@ -95,7 +97,7 @@ object ServicesDao {
   def update(createdBy: UserReference, existing: Service, form: ServiceForm): Either[Seq[String], Service] = {
     validate(form, existing = Some(existing)) match {
       case Nil => {
-        DB.withConnection { implicit c =>
+        db.withConnection { implicit c =>
           SQL(UpdateQuery).on(
             'id -> existing.id,
             'default_port -> form.defaultPort,
@@ -114,7 +116,7 @@ object ServicesDao {
   }
 
   def delete(deletedBy: UserReference, service: Service) {
-    dbHelpers.delete(deletedBy, service.id)
+    dbHelpers.delete("services", deletedBy, service.id)
   }
 
   def findById(auth: Authorization, id: String): Option[Service] = {
@@ -131,7 +133,7 @@ object ServicesDao {
   ): Seq[Service] = {
     // TODO: Auth
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         optionalIn("services.id", ids).
         optionalIn("services.default_port", defaultPortNumbers).

@@ -1,15 +1,17 @@
 package db
 
+import javax.inject.{Inject, Singleton}
+
 import io.flow.common.v0.models.ChangeType
-import io.flow.postgresql.{Authorization, Query, OrderBy}
+import io.flow.postgresql.{Authorization, OrderBy, Query}
 import io.flow.registry.v0.models.ApplicationVersion
 import org.joda.time.DateTime
 import anorm._
 import play.api.db._
-import play.api.Play.current
 import play.api.libs.json._
 
-object ApplicationVersionsDao {
+@Singleton
+class ApplicationVersionsDao @Inject() (db: Database) {
 
   private[this] val BaseQuery = Query("""
     select applications.*
@@ -24,7 +26,7 @@ object ApplicationVersionsDao {
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("journal_timestamp", Some("applications"))
   ): Seq[ApplicationVersion] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         optionalIn("applications.journal_id", ids.map(_.map(_.toLong))).
         optionalIn("applications.id", applications).

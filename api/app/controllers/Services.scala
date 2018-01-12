@@ -1,22 +1,26 @@
 package controllers
 
-import db.{ApplicationsDao, ServicesDao, ServiceVersionsDao}
+import db.{ApplicationsDao, ServiceVersionsDao, ServicesDao}
 import io.flow.common.v0.models.UserReference
 import io.flow.error.v0.models.json._
 import io.flow.registry.v0.models.{Service, ServiceForm, ServicePutForm}
 import io.flow.registry.v0.models.json._
-import io.flow.play.controllers.FlowController
+import io.flow.play.controllers.{FlowController, FlowControllerComponents}
 import io.flow.play.util.{Config, Validation}
 import io.flow.postgresql.{Authorization, OrderBy}
 import play.api.mvc._
 import play.api.libs.json._
+
 import scala.concurrent.Future
 
 class Services @javax.inject.Inject() (
-  override val config: Config
-) extends Controller
-    with io.flow.play.controllers.FlowController
-{
+      servicesDao: ServicesDao,
+      serviceVersionsDao: ServiceVersionsDao,
+      applicationsDao: ApplicationsDao,
+      val config: Config,
+      val controllerComponents: ControllerComponents,
+      val flowControllerComponents: FlowControllerComponents
+  ) extends FlowController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -34,7 +38,7 @@ class Services @javax.inject.Inject() (
         case Right(orderBy) => {
           Ok(
             Json.toJson(
-              ServicesDao.findAll(
+              servicesDao.findAll(
                 Authorization.fromUser(request.user.map(_.id)),
                 ids = optionals(id),
                 limit = limit,
@@ -63,7 +67,7 @@ class Services @javax.inject.Inject() (
         case Right(orderBy) => {
           Ok(
             Json.toJson(
-              ServiceVersionsDao.findAll(
+              serviceVersionsDao.findAll(
                 Authorization.fromUser(request.user.map(_.id)),
                 ids = optionals(id),
                 services = optionals(service),
@@ -77,55 +81,36 @@ class Services @javax.inject.Inject() (
       }
     }
   }
-  
+
   def getById(id: String) = Anonymous.async { request =>
     withService(request.user, id) { service =>
       Ok(Json.toJson(service))
     }
   }
 
-  def post() = Identified.async { request =>
+  def post() = Identified.async(parse.json) { request =>
     Future {
-      JsValue.sync(request.contentType, request.body) { js =>
-        js.validate[ServiceForm] match {
-          case e: JsError => {
-            UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
-          }
-          case s: JsSuccess[ServiceForm] => {
-            ServicesDao.create(request.user, s.get) match {
-              case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-              case Right(service) => Created(Json.toJson(service))
-            }
-          }
-        }
+      servicesDao.create(request.user, request.body.as[ServiceForm]) match {
+        case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+        case Right(service) => Created(Json.toJson(service))
       }
     }
   }
 
-  def putById(id: String) = Identified.async { request =>
+  def putById(id: String) = Identified.async(parse.json) { request =>
     Future {
-      JsValue.sync(request.contentType, request.body) { js =>
-        js.validate[ServicePutForm] match {
-          case e: JsError => {
-            UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
+      val form = ServiceForm(id = id, defaultPort = request.body.as[ServicePutForm].defaultPort)
+      servicesDao.findById(Authorization.User(request.user.id), id) match {
+        case None => {
+          servicesDao.create(request.user, form) match {
+            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+            case Right(service) => Created(Json.toJson(service))
           }
-          case s: JsSuccess[ServicePutForm] => {
-            val putForm = s.get
-            val form = ServiceForm(id = id, defaultPort = putForm.defaultPort)
-            ServicesDao.findById(Authorization.User(request.user.id), id) match {
-              case None => {
-                ServicesDao.create(request.user, form) match {
-                  case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-                  case Right(service) => Created(Json.toJson(service))
-                }
-              }
-              case Some(service) => {
-                ServicesDao.update(request.user, service, form) match {
-                  case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-                  case Right(service) => Ok(Json.toJson(service))
-                }
-              }
-            }
+        }
+        case Some(service) => {
+          servicesDao.update(request.user, service, form) match {
+            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+            case Right(service) => Ok(Json.toJson(service))
           }
         }
       }
@@ -134,9 +119,9 @@ class Services @javax.inject.Inject() (
 
   def deleteById(id: String) = Identified.async { request =>
     withService(Some(request.user), id) { service =>
-      ApplicationsDao.findAll(Authorization.All, services = Some(Seq(service.id)), limit = 1) match {
+      applicationsDao.findAll(Authorization.All, services = Some(Seq(service.id)), limit = 1) match {
         case Nil => {
-          ServicesDao.delete(request.user, service)
+          servicesDao.delete(request.user, service)
             NoContent
         }
         case apps => {
@@ -150,7 +135,7 @@ class Services @javax.inject.Inject() (
     f: Service => Result
   ) = {
     Future {
-      ServicesDao.findById(Authorization.fromUser(user.map(_.id)), id) match {
+      servicesDao.findById(Authorization.fromUser(user.map(_.id)), id) match {
         case None => {
           Results.NotFound
         }
