@@ -2,8 +2,8 @@ package controllers
 
 import io.flow.healthcheck.v0.Client
 import io.flow.healthcheck.v0.models.Healthcheck
+import io.flow.test.utils.FlowPlaySpec
 import play.api.test._
-import util.FlowPlaySpec
 
 class HealthchecksSpec extends FlowPlaySpec {
 

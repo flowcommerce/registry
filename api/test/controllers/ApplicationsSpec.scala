@@ -1,8 +1,8 @@
 package controllers
 
-import util.{MockClient, RegistrySpec}
+import util.{MockRegistryClient, RegistrySpec}
 
-class ApplicationsSpec extends RegistrySpec with MockClient {
+class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

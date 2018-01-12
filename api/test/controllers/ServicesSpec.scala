@@ -1,9 +1,9 @@
 package controllers
 
 import io.flow.common.v0.models.ChangeType
-import util.{MockClient, RegistrySpec}
+import util.{MockRegistryClient, RegistrySpec}
 
-class ServicesSpec extends RegistrySpec with MockClient {
+class ServicesSpec extends RegistrySpec with MockRegistryClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

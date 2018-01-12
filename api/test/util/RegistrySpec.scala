@@ -5,6 +5,7 @@ import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.Authorization
 import io.flow.registry.api.lib.DefaultPortAllocator
 import io.flow.registry.v0.models._
+import io.flow.test.utils.FlowPlaySpec
 
 trait RegistrySpec extends FlowPlaySpec {
   lazy val portsDao: PortsDao = init[PortsDao]

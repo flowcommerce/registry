@@ -18,11 +18,12 @@ lazy val api = project
       ws,
       guice,
       jdbc,
-      "io.flow" %% "lib-postgresql-play" % "0.1.44-play26",
+      "io.flow" %% "lib-postgresql-play" % "0.1.46-play26",
       "com.typesafe.play" %% "play-json-joda" % "2.6.8",
       "org.postgresql" % "postgresql" % "42.1.4",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % "test",
-      "net.jcazevedo" %% "moultingyaml" % "0.4.0"
+      "net.jcazevedo" %% "moultingyaml" % "0.4.0",
+      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
+      "io.flow" %% "lib-test-utils" % "0.0.1" % Test
     )
   )
 
@@ -31,8 +32,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     specs2 % Test
   ),
-  sources in (Compile,doc) := Seq.empty,
-  publishArtifact in (Compile, packageDoc) := false,
+  sources in(Compile, doc) := Seq.empty,
+  publishArtifact in(Compile, packageDoc) := false,
   scalacOptions += "-feature",
   resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
   resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
