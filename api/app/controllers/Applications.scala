@@ -162,43 +162,34 @@ class Applications @javax.inject.Inject()(
     }
   }
 
-  def putById(id: String) = Identified.async { request =>
+  def putById(id: String) = Identified.async(parse.json) { request =>
     Future {
-      JsValue.sync(request.contentType, request.body) { js =>
-        js.validate[ApplicationPutForm] match {
-          case e: JsError => {
-            UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
-          }
-          case s: JsSuccess[ApplicationPutForm] => {
-            val putForm = s.get
-            applicationsDao.findById(Authorization.User(request.user.id), id) match {
-              case None => {
-                putForm.service match {
-                  case None => {
-                    UnprocessableEntity(Json.toJson(Validation.error("Must specify service when creating application")))
-                  }
-                  case Some(service) => {
-                    val form = ApplicationForm(
-                      id = id,
-                      service = service,
-                      external = putForm.external,
-                      internal = putForm.internal,
-                      dependency = putForm.dependency
-                    )
-                    applicationsDao.create(request.user, form) match {
-                      case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-                      case Right(application) => Created(Json.toJson(application))
-                    }
-                  }
-                }
-              }
-              case Some(application) => {
-                applicationsDao.update(request.user, application, putForm) match {
-                  case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-                  case Right(application) => Ok(Json.toJson(application))
-                }
+      val putForm = request.body.as[ApplicationPutForm]
+      applicationsDao.findById(Authorization.User(request.user.id), id) match {
+        case None => {
+          putForm.service match {
+            case None => {
+              UnprocessableEntity(Json.toJson(Validation.error("Must specify service when creating application")))
+            }
+            case Some(service) => {
+              val form = ApplicationForm(
+                id = id,
+                service = service,
+                external = putForm.external,
+                internal = putForm.internal,
+                dependency = putForm.dependency
+              )
+              applicationsDao.create(request.user, form) match {
+                case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+                case Right(application) => Created(Json.toJson(application))
               }
             }
+          }
+        }
+        case Some(application) => {
+          applicationsDao.update(request.user, application, putForm) match {
+            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+            case Right(application) => Ok(Json.toJson(application))
           }
         }
       }

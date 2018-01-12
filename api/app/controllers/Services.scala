@@ -88,48 +88,29 @@ class Services @javax.inject.Inject() (
     }
   }
 
-  def post() = Identified.async { request =>
+  def post() = Identified.async(parse.json) { request =>
     Future {
-      JsValue.sync(request.contentType, request.body) { js =>
-        js.validate[ServiceForm] match {
-          case e: JsError => {
-            UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
-          }
-          case s: JsSuccess[ServiceForm] => {
-            servicesDao.create(request.user, s.get) match {
-              case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-              case Right(service) => Created(Json.toJson(service))
-            }
-          }
-        }
+      servicesDao.create(request.user, request.body.as[ServiceForm]) match {
+        case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+        case Right(service) => Created(Json.toJson(service))
       }
     }
   }
 
-  def putById(id: String) = Identified.async { request =>
+  def putById(id: String) = Identified.async(parse.json) { request =>
     Future {
-      JsValue.sync(request.contentType, request.body) { js =>
-        js.validate[ServicePutForm] match {
-          case e: JsError => {
-            UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
+      val form = ServiceForm(id = id, defaultPort = request.body.as[ServicePutForm].defaultPort)
+      servicesDao.findById(Authorization.User(request.user.id), id) match {
+        case None => {
+          servicesDao.create(request.user, form) match {
+            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+            case Right(service) => Created(Json.toJson(service))
           }
-          case s: JsSuccess[ServicePutForm] => {
-            val putForm = s.get
-            val form = ServiceForm(id = id, defaultPort = putForm.defaultPort)
-            servicesDao.findById(Authorization.User(request.user.id), id) match {
-              case None => {
-                servicesDao.create(request.user, form) match {
-                  case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-                  case Right(service) => Created(Json.toJson(service))
-                }
-              }
-              case Some(service) => {
-                servicesDao.update(request.user, service, form) match {
-                  case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-                  case Right(service) => Ok(Json.toJson(service))
-                }
-              }
-            }
+        }
+        case Some(service) => {
+          servicesDao.update(request.user, service, form) match {
+            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+            case Right(service) => Ok(Json.toJson(service))
           }
         }
       }
