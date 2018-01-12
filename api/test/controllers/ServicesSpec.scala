@@ -12,10 +12,10 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
     val id = service.id
 
     await(
-      identifiedClient(testUser).services.deleteById(id, testHeaders)
+      identifiedClient().services.deleteById(id)
     )
     expectNotFound(
-      identifiedClient(testUser).services.getById(id, testHeaders)
+      identifiedClient().services.getById(id)
     )
   }
 
@@ -23,13 +23,13 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
     val service = createService(createServiceForm().copy(defaultPort = 5000))
     service.defaultPort must be(5000)
 
-    val updated = await(identifiedClient().services.putById(service.id, createServicePutForm().copy(defaultPort = 5001), testHeaders))
+    val updated = await(identifiedClient(user = testUser).services.putById(service.id, createServicePutForm().copy(defaultPort = 5001)))
     updated.defaultPort must be(5001)
   }
 
   "PUT /services/:id creates service" in  {
     val id = createTestId()
-    val updated = await(identifiedClient().services.putById(id, createServicePutForm(), testHeaders))
+    val updated = await(identifiedClient().services.putById(id, createServicePutForm()))
     await(
       identifiedClient().services.getById(id)
     ).id must be(id)
@@ -38,7 +38,7 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
   "POST /services" in  {
     val form = createServiceForm()
 
-    val service = await(identifiedClient().services.post(form, testHeaders))
+    val service = await(identifiedClient().services.post(form))
     service.id must be(form.id)
   }
 
@@ -47,7 +47,7 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
     val form = createServiceForm().copy(id = service.id)
 
     expectErrors(
-      identifiedClient().services.post(form, testHeaders)
+      identifiedClient().services.post(form)
     ).genericError.messages must contain theSameElementsAs Seq("Service with this id already exists")
   }
 
@@ -56,7 +56,7 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
     val form = createServiceForm().copy(defaultPort = 200)
 
     expectErrors(
-      identifiedClient().services.post(form, testHeaders)
+      identifiedClient().services.post(form)
     ).genericError.messages must contain theSameElementsAs Seq("Default port must be > 1024")
   }
 
@@ -64,18 +64,18 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
     val form = createServiceForm().copy(id = " a bad id ")
 
     expectErrors(
-      identifiedClient().services.post(form, testHeaders)
+      identifiedClient().services.post(form)
     ).genericError.messages must contain theSameElementsAs Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-id")
   }
 
   "GET /services/:id" in  {
     val service = createService()
     await(
-      identifiedClient().services.getById(service.id, testHeaders)
+      identifiedClient().services.getById(service.id)
     ) must be(service)
 
     expectNotFound(
-      identifiedClient().services.getById(createTestId(), testHeaders)
+      identifiedClient().services.getById(createTestId())
     )
   }
 
@@ -85,7 +85,7 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
     )
 
     expectNotAuthorized(
-      anonClient.services.getById(createTestId(), testHeaders)
+      anonClient.services.getById(createTestId())
     )
 
     val form = createServiceForm()
@@ -94,11 +94,11 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
     )
 
     expectNotAuthorized(
-      anonClient.services.putById(createTestId(), createServicePutForm(), testHeaders)
+      anonClient.services.putById(createTestId(), createServicePutForm())
     )
 
     expectNotAuthorized(
-      anonClient.services.deleteById(createTestId(), testHeaders)
+      anonClient.services.deleteById(createTestId())
     )
   }
 
@@ -147,8 +147,8 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
 
   "GET /services/versions" in  {
     val service = createService(createServiceForm().copy(defaultPort = 5000))
-    await(identifiedClient().services.putById(service.id, createServicePutForm().copy(defaultPort = 5001), testHeaders))
-    await(identifiedClient().services.deleteById(service.id, testHeaders))
+    await(identifiedClient().services.putById(service.id, createServicePutForm().copy(defaultPort = 5001)))
+    await(identifiedClient().services.deleteById(service.id))
 
     val versions = await(
       identifiedClient().services.getVersions(service = Some(Seq(service.id)), requestHeaders = testHeaders)

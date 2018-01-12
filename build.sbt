@@ -23,7 +23,7 @@ lazy val api = project
       "org.postgresql" % "postgresql" % "42.1.4",
       "net.jcazevedo" %% "moultingyaml" % "0.4.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
-      "io.flow" %% "lib-test-utils" % "0.0.1" % Test
+      "io.flow" %% "lib-test-utils" % "0.0.2" % Test
     )
   )
 

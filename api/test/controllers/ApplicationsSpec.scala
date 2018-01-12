@@ -11,24 +11,24 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     val id = application.id
 
     await(
-      identifiedClient().applications.deleteById(id, testHeaders)
+      identifiedClient().applications.deleteById(id)
     )
 
     expectNotFound(
-      identifiedClient().applications.getById(id, testHeaders)
+      identifiedClient().applications.getById(id)
     )
   }
 
   "PUT /applications/:id updates application" in  {
     val application = createApplication(createApplicationForm().copy(service = "play"))
-    await(identifiedClient(testUser).applications.putById(
+    await(identifiedClient().applications.putById(
       application.id,
       createApplicationPutForm().copy(service = Some("nodejs")),
       testHeaders
     ))
 
     val updated = await(
-      identifiedClient(testUser).applications.getById(application.id, testHeaders)
+      identifiedClient().applications.getById(application.id)
     )
     updated.id must be (application.id)
     updated.ports.map(_.service.id) must contain theSameElementsAs Seq("nodejs", "play")
@@ -38,14 +38,14 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     val id = createTestId()
 
     expectErrors(
-      identifiedClient().applications.putById(id, createApplicationPutForm(), testHeaders)
+      identifiedClient().applications.putById(id, createApplicationPutForm())
     ).genericError.messages must contain theSameElementsAs Seq("Must specify service when creating application")
 
   }
 
   "PUT /applications/:id creates application" in  {
     val id = createTestId()
-    await(identifiedClient().applications.putById(id, createApplicationPutForm().copy(service = Some("play")), testHeaders))
+    await(identifiedClient().applications.putById(id, createApplicationPutForm().copy(service = Some("play"))))
 
     val updated = await(
       identifiedClient().applications.getById(id)
@@ -311,15 +311,15 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     val dep2 = createApplication()
     val application = createApplication()
 
-    await(identifiedClient().applications.putDependenciesByIdAndDependency(application.id, dep1.id, testHeaders)).dependencies must contain theSameElementsAs Seq(dep1.id)
+    await(identifiedClient().applications.putDependenciesByIdAndDependency(application.id, dep1.id)).dependencies must contain theSameElementsAs Seq(dep1.id)
 
-    val finalApp = await(identifiedClient().applications.putDependenciesByIdAndDependency(application.id, dep2.id, testHeaders))
+    val finalApp = await(identifiedClient().applications.putDependenciesByIdAndDependency(application.id, dep2.id))
     finalApp.id must be(application.id)
     finalApp.ports must contain theSameElementsAs application.ports
     finalApp.dependencies.sorted must contain theSameElementsAs Seq(dep1.id, dep2.id).sorted
 
     expectErrors(
-      identifiedClient().applications.putDependenciesByIdAndDependency(application.id, "other", testHeaders)
+      identifiedClient().applications.putDependenciesByIdAndDependency(application.id, "other")
     ).genericError.messages must contain theSameElementsAs Seq("Application named[other] not found")
   }
 
@@ -329,18 +329,18 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     val form = createApplicationForm().copy(dependency = Some(Seq(dep1.id, dep2.id)))
     val application = createApplication(form)
 
-    await(identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, dep2.id, testHeaders)).dependencies must contain theSameElementsAs Seq(dep1.id)
+    await(identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, dep2.id)).dependencies must contain theSameElementsAs Seq(dep1.id)
 
     // Duplicate okay
-    await(identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, dep2.id, testHeaders)).dependencies must contain theSameElementsAs Seq(dep1.id)
+    await(identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, dep2.id)).dependencies must contain theSameElementsAs Seq(dep1.id)
 
-    val finalApp = await(identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, dep1.id, testHeaders))
+    val finalApp = await(identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, dep1.id))
     finalApp.id must be(application.id)
     finalApp.ports must contain theSameElementsAs application.ports
     finalApp.dependencies must be(Nil)
 
     expectErrors(
-      identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, "other", testHeaders)
+      identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, "other")
     ).genericError.messages must contain theSameElementsAs Seq("Application named[other] not found")
   }
 

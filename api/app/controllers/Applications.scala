@@ -14,14 +14,13 @@ import net.jcazevedo.moultingyaml._
 
 import scala.concurrent.Future
 
-class Applications @javax.inject.Inject() (
+class Applications @javax.inject.Inject()(
   applicationsDao: ApplicationsDao,
   applicationVersionsDao: ApplicationVersionsDao,
   val config: Config,
   val controllerComponents: ControllerComponents,
   val flowControllerComponents: FlowControllerComponents
-) extends FlowController
-{
+) extends FlowController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -93,13 +92,15 @@ class Applications @javax.inject.Inject() (
 
   def getYaml() = Anonymous.async { request =>
     Future {
-      val yaml = Pager.create{ offset => applicationsDao.findAll(
-        Authorization.fromUser(request.user.map(_.id)),
-        limit = 100,
-        offset = offset
-      )}.map { a =>
+      val yaml = Pager.create { offset =>
+        applicationsDao.findAll(
+          Authorization.fromUser(request.user.map(_.id)),
+          limit = 100,
+          offset = offset
+        )
+      }.map { a =>
         //build up port array
-        val ports = a.ports.map{p =>
+        val ports = a.ports.map { p =>
 
           val healthcheck = p.service.id match {
             case "play" | "nodejs" =>
@@ -120,7 +121,8 @@ class Applications @javax.inject.Inject() (
           YamlObject(
             YamlString("healthcheck") -> healthcheck,
             YamlString("  external") -> YamlNumber(p.external),
-            YamlString("  internal") -> YamlNumber(p.internal))}
+            YamlString("  internal") -> YamlNumber(p.internal))
+        }
 
         val portYaml = YamlArray(ports.toVector)
 
@@ -134,7 +136,7 @@ class Applications @javax.inject.Inject() (
           YamlString("dependencies") -> YamlString(s"[$dependencies]")
         )
       }
-    
+
       Ok(
         YamlArray(yaml.toVector).prettyPrint.
           replaceAll("- healthcheck", "  - healthcheck").
@@ -142,27 +144,20 @@ class Applications @javax.inject.Inject() (
       )
     }
   }
-  
+
   def getById(id: String) = Anonymous.async { request =>
     withApplication(request.user, id) { app =>
       Ok(Json.toJson(app))
     }
   }
 
-  def post() = Action.async { request =>
+  def post() = Action.async(parse.json) { request =>
     Future {
-      JsValue.sync(request.contentType, request.body) { js =>
-        js.validate[ApplicationForm] match {
-          case e: JsError => {
-            UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
-          }
-          case s: JsSuccess[ApplicationForm] => {
-            applicationsDao.create(io.flow.play.util.Constants.AnonymousUser, s.get) match {
-              case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
-              case Right(app) => Created(Json.toJson(app))
-            }
-          }
-        }
+      applicationsDao.create(
+        io.flow.play.util.Constants.AnonymousUser,
+        request.body.as[ApplicationForm]) match {
+          case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
+          case Right(app) => Created(Json.toJson(app))
       }
     }
   }
@@ -242,7 +237,7 @@ class Applications @javax.inject.Inject() (
       }
     }
   }
-  
+
   def withApplication(user: Option[UserReference], id: String)(
     f: Application => Result
   ) = {
