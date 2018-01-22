@@ -16,7 +16,7 @@ lazy val api = project
       ws,
       guice,
       jdbc,
-      "io.flow" %% "lib-postgresql-play" % "0.1.50-play26",
+      "io.flow" %% "lib-postgresql-play-play26" % "0.1.52",
       "com.typesafe.play" %% "play-json-joda" % "2.6.8",
       "org.postgresql" % "postgresql" % "42.1.4",
       "net.jcazevedo" %% "moultingyaml" % "0.4.0",
