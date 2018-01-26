@@ -1,13 +1,14 @@
 package db
 
+import javax.inject.{Inject, Singleton}
+
+import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.play.util.IdGenerator
-import io.flow.postgresql.{Authorization, Query, OrderBy}
-import io.flow.registry.v0.models.{ServiceReference, Port}
-import anorm._
+import io.flow.postgresql.play.db.DbHelpers
+import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.registry.v0.models.{Port, ServiceReference}
 import play.api.db._
-import play.api.Play.current
-import play.api.libs.json._
 
 case class PortForm(
   applicationId: String,
@@ -16,7 +17,7 @@ case class PortForm(
   external: Long
 )
 
-private[db] case class InternalPort(
+case class InternalPort(
   id: String,
   applicationId: String,
   serviceId: String,
@@ -32,7 +33,12 @@ private[db] case class InternalPort(
 
 }
 
-object PortsDao {
+@Singleton
+class PortsDao @Inject() (
+  @NamedDatabase("default") db: Database
+  ){
+
+  private val dbHelpers = DbHelpers(db, "ports")
 
   private[this] val BaseQuery = Query(s"""
     select ports.id,
@@ -50,11 +56,10 @@ object PortsDao {
     ({id}, {application_id}, {service_id}, {internal}, {external}, {updated_by_user_id})
   """
 
-  private[this] val dbHelpers = DbHelpers("ports")
   private[this] val idGenerator = IdGenerator("prt")
 
   def create(createdBy: UserReference, form: PortForm): InternalPort = {
-    val id = DB.withConnection { implicit c =>
+    val id = db.withConnection { implicit c =>
       create(c, createdBy, form)
     }
     findById(Authorization.All, id).getOrElse {
@@ -84,7 +89,7 @@ object PortsDao {
   }
 
   def maxExternalPortNumber(): Option[Long] = {
-    PortsDao.findAll(Authorization.All, orderBy = OrderBy("-ports.external"), limit = 1).map(_.external).headOption
+    findAll(Authorization.All, orderBy = OrderBy("-ports.external"), limit = 1).map(_.external).headOption
   }
 
   def findByExternal(auth: Authorization, external: Long): Option[InternalPort] = {
@@ -105,7 +110,7 @@ object PortsDao {
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("ports.application_id, ports.external")
   ): Seq[InternalPort] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       findAllWithConnection(c, auth, ids, applications, services, externals, limit, offset, orderBy)
     }
   }

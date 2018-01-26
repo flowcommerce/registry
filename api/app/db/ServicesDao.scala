@@ -1,19 +1,21 @@
 package db
 
-import io.flow.play.util.{IdGenerator, UrlKey}
-import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Service, ServiceForm, Port}
-import io.flow.registry.v0.models.json._
-import io.flow.postgresql.{Authorization, Query, OrderBy, Pager}
-import io.flow.common.v0.models.UserReference
+import javax.inject.{Inject, Singleton}
+
 import anorm._
+import io.flow.common.v0.models.UserReference
+import io.flow.play.util.UrlKey
+import io.flow.postgresql.play.db.DbHelpers
+import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.registry.v0.models.{Service, ServiceForm}
 import play.api.db._
-import play.api.Play.current
-import play.api.libs.json._
 
-import io.flow.registry.v0.anorm.conversions.Types._
+@Singleton
+class ServicesDao @Inject() (
+  @NamedDatabase("default") db: Database
+){
 
-object ServicesDao {
+  private val dbHelpers = DbHelpers(db, "services")
 
   private[this] val urlKey = UrlKey(minKeyLength = 3)
   private[this] val BaseQuery = Query(s"""
@@ -36,8 +38,6 @@ object ServicesDao {
      where id = {id}
   """
 
-  private[this] val dbHelpers = DbHelpers("services")
-
   private[db] def validate(
     form: ServiceForm,
     existing: Option[Service] = None
@@ -45,7 +45,7 @@ object ServicesDao {
     val idErrors = if (form.id.trim.isEmpty) {
       Seq("Id cannot be empty")
     } else {
-      ServicesDao.findById(Authorization.All, form.id) match {
+      findById(Authorization.All, form.id) match {
         case None => {
           urlKey.validate(form.id)
         }
@@ -72,7 +72,7 @@ object ServicesDao {
   def create(createdBy: UserReference, form: ServiceForm): Either[Seq[String], Service] = {
     validate(form) match {
       case Nil => {
-        DB.withConnection { implicit c =>
+        db.withConnection { implicit c =>
           val id = form.id.trim
 
           SQL(InsertQuery).on(
@@ -95,7 +95,7 @@ object ServicesDao {
   def update(createdBy: UserReference, existing: Service, form: ServiceForm): Either[Seq[String], Service] = {
     validate(form, existing = Some(existing)) match {
       case Nil => {
-        DB.withConnection { implicit c =>
+        db.withConnection { implicit c =>
           SQL(UpdateQuery).on(
             'id -> existing.id,
             'default_port -> form.defaultPort,
@@ -131,7 +131,7 @@ object ServicesDao {
   ): Seq[Service] = {
     // TODO: Auth
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         optionalIn("services.id", ids).
         optionalIn("services.default_port", defaultPortNumbers).

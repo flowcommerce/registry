@@ -1,5 +1,7 @@
 package io.flow.registry.api.lib
 
+import javax.inject.{Inject, Singleton}
+
 import db.{ApplicationsDao, PortsDao}
 import io.flow.postgresql.Authorization
 import io.flow.registry.v0.models.Service
@@ -23,13 +25,12 @@ import io.flow.registry.v0.models.Service
  * then to iterate through existing blocks of ports to find an
  * available one. If not found, allocate another block of ports
  * and repeat the process.
- * 
- * @param name The name of the application (e.g. splashpage, splashpage-postgresql) 
- * @param serviceName The name of the service (e.g. postgresql, nodejs, etc.) 
+ *
  */
-case class DefaultPortAllocator(
-  name: String,
-  serviceName: String
+@Singleton
+class DefaultPortAllocator @Inject() (
+  applicationsDao: ApplicationsDao,
+  portsDao: PortsDao
 ) {
 
   private[this] val Blacklist = Seq(8080)
@@ -44,7 +45,7 @@ case class DefaultPortAllocator(
     "postgresql" -> 9
   )
 
-  private[this] val prefix = {
+  private[this] def prefix(name: String) = {
     val idx = name.trim.lastIndexOf("-")
     if (idx < 0) {
       name.trim
@@ -60,9 +61,9 @@ case class DefaultPortAllocator(
     * number. Otherwise we just generated the next sequential port
     * number.
     */
-  val offset: Option[Int] = defaults.get(serviceName)
+  def offset(serviceName: String): Option[Int] = defaults.get(serviceName)
 
-  private[this] val applicationBasePorts = ApplicationsDao.findAll(Authorization.All, prefix = Some(prefix)).
+  private[this] def applicationBasePorts(name: String): Seq[Long] = applicationsDao.findAll(Authorization.All, prefix = Some(prefix(name))).
     flatMap(_.ports).
     map(_.external).
     map(toBase(_)).
@@ -70,11 +71,11 @@ case class DefaultPortAllocator(
     distinct
 
   private[this] var i = 0
-  private[this] var last: Long = toBase(PortsDao.maxExternalPortNumber().getOrElse(MinPortNumber - Blocksize))
+  private[this] var last: Long = toBase(portsDao.maxExternalPortNumber().getOrElse(MinPortNumber - Blocksize))
 
   @scala.annotation.tailrec
-  private[this] def nextBlock(): Long = {
-    val block = applicationBasePorts.lift(i) match {
+  private[this] def nextBlock(name: String): Long = {
+    val block = applicationBasePorts(name)lift(i) match {
       case Some(value) => {
         i += 1
         value
@@ -86,22 +87,26 @@ case class DefaultPortAllocator(
     }
     isBlockAvailable(block) match {
       case true => block
-      case false => nextBlock()
+      case false => nextBlock(name)
     }
   }
 
   /**
     * The base port number (not taking into account the offset)
+    *
+    * @param name The name of the application (e.g. splashpage, splashpage-postgresql)
+    * @param serviceName The name of the service (e.g. postgresql, nodejs, etc.)
     */
   @scala.annotation.tailrec
-  final def number(): Long = {
-    firstAvailablePort(nextBlock(), offset) match {
-      case None => number()
+  final def number(name: String,
+                   serviceName: String): Long = {
+    firstAvailablePort(nextBlock(name), offset(serviceName)) match {
+      case None => number(name, serviceName)
       case Some(v) => v
     }
   }
 
-  def firstAvailablePort(min: Long, offset: Option[Int]): Option[Long] = {
+  private def firstAvailablePort(min: Long, offset: Option[Int]): Option[Long] = {
     assert(min == toBase(min), s"Min[$min] must be start of block")
 
     offset match {
@@ -120,19 +125,19 @@ case class DefaultPortAllocator(
     * Given a port number (e.g. 8201) returns the base port number
     * (e.g. 8200)
     */
-  def toBase(number: Long): Long = {
+  protected[lib] def toBase(number: Long): Long = {
     number - (number % Blocksize)
   }
 
-  def isPortAvailable(number: Long): Boolean = {
+  protected[lib] def isPortAvailable(number: Long): Boolean = {
     if (Blacklist.contains(number)) {
       false
     } else {
-      PortsDao.findByExternal(Authorization.All, number).isEmpty
+      portsDao.findByExternal(Authorization.All, number).isEmpty
     }
   }
 
-  def isBlockAvailable(number: Long): Boolean = {
+  protected[lib] def isBlockAvailable(number: Long): Boolean = {
     if (Blacklist.contains(number)) {
       false
     } else if (number % 100 == 0) {

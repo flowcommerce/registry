@@ -1,15 +1,10 @@
 package db
 
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
 import io.flow.postgresql.Authorization
-import play.api.test._
-import play.api.test.Helpers._
-import org.scalatest._
-import org.scalatestplus.play._
+import io.flow.registry.v0.models.{Application, ApplicationPutForm}
+import util.RegistrySpec
 
-class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+class ApplicationsDaoSpec extends RegistrySpec {
 
   def validatePort(modulus: Int, app: Application) {
     app.ports.size must be(1)
@@ -105,28 +100,28 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val portNumber = app.ports.map(_.external).headOption.getOrElse {
       sys.error("No port for application")
     }
-    PortsDao.findByExternal(Authorization.All, portNumber).getOrElse {
+    portsDao.findByExternal(Authorization.All, portNumber).getOrElse {
       sys.error("Could not find port")
     }
 
-    ApplicationsDao.delete(testUser, app)
-    ApplicationsDao.findById(Authorization.All, app.id) must be(None)
-    PortsDao.findByExternal(Authorization.All, portNumber) must be(None)
+    applicationsDao.delete(testUser, app)
+    applicationsDao.findById(Authorization.All, app.id) must be(None)
+    portsDao.findByExternal(Authorization.All, portNumber) must be(None)
   }
 
   "deleting an application also deletes its dependencies" in {
     val app = createApplication()
     val app2 = createApplication(createApplicationForm().copy(dependency = Some(Seq(app.id))))
 
-    ApplicationsDao.delete(testUser, app2)
-    ApplicationsDao.findById(Authorization.All, app2.id) must be(None)    
+    applicationsDao.delete(testUser, app2)
+    applicationsDao.findById(Authorization.All, app2.id) must be(None)    
   }
 
   "update does not modify dependencies if not provided" in {
     val app = createApplication()
     val app2 = createApplication(createApplicationForm().copy(dependency = Some(Seq(app.id))))
 
-    val updated = rightOrErrors(ApplicationsDao.update(testUser, app2, ApplicationPutForm()))
+    val updated = rightOrErrors(applicationsDao.update(testUser, app2, ApplicationPutForm()))
     updated.id must be(app2.id)
     updated.dependencies must be(Seq(app.id))
   }
@@ -137,7 +132,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     val myApp = createApplication(createApplicationForm().copy(dependency = Some(Seq(app1.id))))
 
-    val updated = rightOrErrors(ApplicationsDao.update(testUser, myApp, ApplicationPutForm(dependency = Some(Seq(app2.id)))))
+    val updated = rightOrErrors(applicationsDao.update(testUser, myApp, ApplicationPutForm(dependency = Some(Seq(app2.id)))))
     updated.dependencies must be(Seq(app2.id))
   }
 
@@ -149,7 +144,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     app.ports.map(_.external) must be(Seq(portNumber))
 
     val updated = rightOrErrors(
-      ApplicationsDao.update(
+      applicationsDao.update(
         testUser,
         app,
         ApplicationPutForm(service = Some("play"))
@@ -159,7 +154,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     // Now test idempotence
     val updatedAgain = rightOrErrors(
-      ApplicationsDao.update(
+      applicationsDao.update(
         testUser,
         updated,
         ApplicationPutForm(service = Some("play"))
@@ -170,7 +165,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "can reuse ID once deleted" in {
     val app = createApplication()
-    ApplicationsDao.delete(testUser, app)
+    applicationsDao.delete(testUser, app)
     val app2 = createApplication(createApplicationForm().copy(id = app.id))
   }
 
@@ -179,7 +174,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val other = createApplication(createApplicationForm().copy(dependency = Some(Seq(base.id))))
     val form = createApplicationPutForm().copy(dependency = Some(Seq(other.id)))
 
-    ApplicationsDao.update(testUser, base, form).left.get must be(
+    applicationsDao.update(testUser, base, form).left.get must be(
       Seq(s"Application[${base.id}] Cannot declare a circular dependency on[${other.id}]")
     )
 

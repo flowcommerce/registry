@@ -1,8 +1,8 @@
-import play.PlayImport.PlayKeys._
+import play.sbt.PlayScala._
 
 name := "registry"
 
-scalaVersion in ThisBuild := "2.11.12"
+scalaVersion in ThisBuild := "2.12.4"
 
 lazy val api = project
   .in(file("api"))
@@ -19,12 +19,14 @@ lazy val api = project
     javaOptions in Test += "-Dkamon.show-aspectj-missing-warning=no",
     libraryDependencies ++= Seq(
       ws,
+      guice,
       jdbc,
-      "io.flow" %% "lib-postgresql-play" % "0.1.52",
-      "io.flow" %% "lib-play-graphite" % "0.0.7",
-      "org.postgresql" % "postgresql" % "42.2.0",
-      "org.scalatestplus" %% "play" % "1.4.0" % "test",
-      "net.jcazevedo" %% "moultingyaml" % "0.4.0"
+      "io.flow" %% "lib-postgresql-play-play26" % "0.1.55",
+      "io.flow" %% "lib-play-graphite-play26" % "0.0.8",
+      "com.typesafe.play" %% "play-json-joda" % "2.6.8",
+      "org.postgresql" % "postgresql" % "42.1.4",
+      "net.jcazevedo" %% "moultingyaml" % "0.4.0",
+      "io.flow" %% "lib-test-utils" % "0.0.4" % Test
     )
   )
 
@@ -33,8 +35,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     specs2 % Test
   ),
-  sources in (Compile,doc) := Seq.empty,
-  publishArtifact in (Compile, packageDoc) := false,
+  sources in(Compile, doc) := Seq.empty,
+  publishArtifact in(Compile, packageDoc) := false,
   scalacOptions += "-feature",
   resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
   resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
