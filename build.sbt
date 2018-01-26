@@ -8,15 +8,21 @@ lazy val api = project
   .in(file("api"))
   .enablePlugins(PlayScala)
   .enablePlugins(NewRelic)
+  .enablePlugins(JavaAppPackaging, JavaAgent)
   .settings(commonSettings: _*)
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
+    javaAgents += "org.aspectj" % "aspectjweaver" % "1.8.13",
+    javaOptions in Universal += "-Dorg.aspectj.tracing.factory=default",
+    javaOptions in Test += "-Dkamon.modules.kamon-system-metrics.auto-start=false",
+    javaOptions in Test += "-Dkamon.show-aspectj-missing-warning=no",
     libraryDependencies ++= Seq(
       ws,
       guice,
       jdbc,
       "io.flow" %% "lib-postgresql-play-play26" % "0.1.55",
+      "io.flow" %% "lib-play-graphite-play26" % "0.0.8",
       "com.typesafe.play" %% "play-json-joda" % "2.6.8",
       "org.postgresql" % "postgresql" % "42.1.4",
       "net.jcazevedo" %% "moultingyaml" % "0.4.0",
@@ -42,4 +48,4 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     System.getenv("ARTIFACTORY_PASSWORD")
   )
 )
-version := "0.2.43"
+version := "0.2.47"
