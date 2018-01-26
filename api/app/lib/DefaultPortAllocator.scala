@@ -29,9 +29,9 @@ import io.flow.registry.v0.models.Service
  */
 @Singleton
 class DefaultPortAllocator @Inject() (
-     applicationsDao: ApplicationsDao,
-     portsDao: PortsDao
-   ) {
+  applicationsDao: ApplicationsDao,
+  portsDao: PortsDao
+) {
 
   private[this] val Blacklist = Seq(8080)
 

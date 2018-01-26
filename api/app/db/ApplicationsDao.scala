@@ -2,27 +2,27 @@ package db
 
 import javax.inject.{Inject, Singleton}
 
-import io.flow.play.util.{IdGenerator, UrlKey}
-import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Port, Service}
-import io.flow.registry.v0.models.json._
-import io.flow.postgresql.{Authorization, OrderBy, Pager, Query}
-import io.flow.common.v0.models.UserReference
 import anorm._
-import play.api.db._
-
-import play.api.libs.json._
+import io.flow.common.v0.models.UserReference
+import io.flow.play.util.UrlKey
+import io.flow.postgresql.play.db.DbHelpers
+import io.flow.postgresql.{Authorization, OrderBy, Pager, Query}
+import io.flow.registry.api.lib.DefaultPortAllocator
 import io.flow.registry.v0.anorm.conversions.Standard._
-import io.flow.registry.v0.anorm.conversions.Types._
+import io.flow.registry.v0.models.json._
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Port}
+import play.api.db._
+import play.api.libs.json._
 
 @Singleton
 class ApplicationsDao @Inject()(
   servicesDao: ServicesDao,
   dependenciesDao: DependenciesDao,
   portsDao: PortsDao,
-  dbHelpers: DbHelpers,
-  db: Database
+  @NamedDatabase("default") db: Database
 ) {
+
+  private val dbHelpers = DbHelpers(db, "applications")
 
   private[this] val urlKey = UrlKey(minKeyLength = 2)
   private[this] val SortByPort = "(select min(external) from ports where application_id = applications.id)"
@@ -404,7 +404,7 @@ class ApplicationsDao @Inject()(
         }
       }.toSeq
 
-      dbHelpers.delete("applications")(c, deletedBy, application.id)
+      dbHelpers.delete(c, deletedBy, application.id)
     }
   }
 

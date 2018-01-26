@@ -6,6 +6,7 @@ import io.flow.common.v0.models.UserReference
 import io.flow.play.util.IdGenerator
 import io.flow.postgresql.{Authorization, OrderBy, Query}
 import anorm._
+import io.flow.postgresql.play.db.DbHelpers
 import play.api.db._
 import play.api.libs.json._
 
@@ -22,9 +23,10 @@ case class InternalDependency(
 
 @Singleton
 class DependenciesDao @Inject() (
-    db: Database,
-    dbHelpers: DbHelpers
-  ){
+    @NamedDatabase("default") db: Database
+){
+
+  private val dbHelpers = DbHelpers(db, "dependencies")
 
   private[this] val BaseQuery = Query(s"""
     select dependencies.id,
@@ -83,7 +85,7 @@ class DependenciesDao @Inject() (
   }
 
   def delete(implicit c: java.sql.Connection, deletedBy: UserReference, dependency: InternalDependency) {
-    dbHelpers.delete("dependencies")(c, deletedBy, dependency.id)
+    dbHelpers.delete(c, deletedBy, dependency.id)
   }
 
   def findById(auth: Authorization, id: String): Option[InternalDependency] = {

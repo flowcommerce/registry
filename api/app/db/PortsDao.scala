@@ -2,13 +2,13 @@ package db
 
 import javax.inject.{Inject, Singleton}
 
+import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.play.util.IdGenerator
+import io.flow.postgresql.play.db.DbHelpers
 import io.flow.postgresql.{Authorization, OrderBy, Query}
 import io.flow.registry.v0.models.{Port, ServiceReference}
-import anorm._
 import play.api.db._
-import play.api.libs.json._
 
 case class PortForm(
   applicationId: String,
@@ -35,9 +35,10 @@ case class InternalPort(
 
 @Singleton
 class PortsDao @Inject() (
-    db: Database,
-    dbHelpers: DbHelpers
+  @NamedDatabase("default") db: Database
   ){
+
+  private val dbHelpers = DbHelpers(db, "ports")
 
   private[this] val BaseQuery = Query(s"""
     select ports.id,
@@ -84,7 +85,7 @@ class PortsDao @Inject() (
   }
 
   def delete(implicit c: java.sql.Connection, deletedBy: UserReference, port: InternalPort) {
-    dbHelpers.delete("ports")(c, deletedBy, port.id)
+    dbHelpers.delete(c, deletedBy, port.id)
   }
 
   def maxExternalPortNumber(): Option[Long] = {

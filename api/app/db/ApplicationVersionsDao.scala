@@ -2,16 +2,15 @@ package db
 
 import javax.inject.{Inject, Singleton}
 
+import anorm._
 import io.flow.common.v0.models.ChangeType
 import io.flow.postgresql.{Authorization, OrderBy, Query}
 import io.flow.registry.v0.models.ApplicationVersion
 import org.joda.time.DateTime
-import anorm._
 import play.api.db._
-import play.api.libs.json._
 
 @Singleton
-class ApplicationVersionsDao @Inject() (db: Database) {
+class ApplicationVersionsDao @Inject() (@NamedDatabase("default") db: Database) {
 
   private[this] val BaseQuery = Query("""
     select applications.*

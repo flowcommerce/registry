@@ -11,7 +11,7 @@ import io.flow.postgresql.{Authorization, OrderBy}
 import play.api.mvc._
 import play.api.libs.json._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class Services @javax.inject.Inject() (
       servicesDao: ServicesDao,
@@ -20,9 +20,7 @@ class Services @javax.inject.Inject() (
       val config: Config,
       val controllerComponents: ControllerComponents,
       val flowControllerComponents: FlowControllerComponents
-  ) extends FlowController {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+  )(implicit ec: ExecutionContext) extends FlowController {
 
   def get(
     id: Option[Seq[String]],

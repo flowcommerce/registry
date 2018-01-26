@@ -4,15 +4,15 @@ import db.{ApplicationVersionsDao, ApplicationsDao}
 import io.flow.common.v0.models.UserReference
 import io.flow.error.v0.models.json._
 import io.flow.play.controllers.{FlowController, FlowControllerComponents}
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
-import io.flow.registry.v0.models.json._
 import io.flow.play.util.{Config, Validation}
 import io.flow.postgresql.{Authorization, OrderBy, Pager}
-import play.api.mvc._
-import play.api.libs.json._
+import io.flow.registry.v0.models.json._
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
 import net.jcazevedo.moultingyaml._
+import play.api.libs.json._
+import play.api.mvc._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class Applications @javax.inject.Inject()(
   applicationsDao: ApplicationsDao,
@@ -20,9 +20,7 @@ class Applications @javax.inject.Inject()(
   val config: Config,
   val controllerComponents: ControllerComponents,
   val flowControllerComponents: FlowControllerComponents
-) extends FlowController {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+)(implicit ec: ExecutionContext) extends FlowController {
 
   def get(
     id: Option[Seq[String]],

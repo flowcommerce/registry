@@ -2,22 +2,20 @@ package db
 
 import javax.inject.{Inject, Singleton}
 
-import io.flow.play.util.{IdGenerator, UrlKey}
-import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.models.{Port, Service, ServiceForm}
-import io.flow.registry.v0.models.json._
-import io.flow.postgresql.{Authorization, OrderBy, Pager, Query}
-import io.flow.common.v0.models.UserReference
 import anorm._
+import io.flow.common.v0.models.UserReference
+import io.flow.play.util.UrlKey
+import io.flow.postgresql.play.db.DbHelpers
+import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.registry.v0.models.{Service, ServiceForm}
 import play.api.db._
-import play.api.libs.json._
-import io.flow.registry.v0.anorm.conversions.Types._
 
 @Singleton
 class ServicesDao @Inject() (
-     db: Database,
-     dbHelpers: DbHelpers
-   ){
+  @NamedDatabase("default") db: Database
+){
+
+  private val dbHelpers = DbHelpers(db, "services")
 
   private[this] val urlKey = UrlKey(minKeyLength = 3)
   private[this] val BaseQuery = Query(s"""
@@ -116,7 +114,7 @@ class ServicesDao @Inject() (
   }
 
   def delete(deletedBy: UserReference, service: Service) {
-    dbHelpers.delete("services", deletedBy, service.id)
+    dbHelpers.delete(deletedBy, service.id)
   }
 
   def findById(auth: Authorization, id: String): Option[Service] = {

@@ -6,7 +6,7 @@ import play.api.Logger
 import scala.util.{Failure, Success, Try}
 
 @javax.inject.Singleton
-class HealthchecksDao @javax.inject.Inject() (db: Database) {
+class HealthchecksDao @javax.inject.Inject() (@NamedDatabase("default") db: Database) {
 
   private[this] val Query = "select 1 as num"
 
