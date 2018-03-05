@@ -1,6 +1,5 @@
 package controllers
 
-import db.Helpers
 import io.flow.play.util.AuthData
 import io.flow.test.utils.FlowPlaySpec
 import io.flow.usage.util.UsageUtil
