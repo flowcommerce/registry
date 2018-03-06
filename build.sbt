@@ -26,7 +26,8 @@ lazy val api = project
       "com.typesafe.play" %% "play-json-joda" % "2.6.8",
       "org.postgresql" % "postgresql" % "42.2.1",
       "net.jcazevedo" %% "moultingyaml" % "0.4.0",
-      "io.flow" %% "lib-test-utils" % "0.0.6" % Test
+      "io.flow" %% "lib-test-utils" % "0.0.6" % Test,
+      "io.flow" %% "lib-usage" % "0.0.3"
     )
   )
 
