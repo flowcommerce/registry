@@ -1,0 +1,24 @@
+---
+flow:
+  common:
+    anorm_2_6_parsers:
+    - api/app/generated/FlowCommonV0Conversions.scala
+    - api/app/generated/FlowCommonV0Parsers.scala
+    play_2_x_json:
+    - api/app/generated/FlowCommonV0Models.scala
+  error:
+    play_2_x_json:
+    - api/app/generated/FlowErrorV0Models.scala
+  healthcheck:
+    play_2_6_client:
+    - api/app/generated/FlowHealthcheckV0Client.scala
+    play_2_x_routes:
+    - api/conf/healthcheck.routes
+  registry:
+    anorm_2_6_parsers:
+    - api/app/generated/FlowRegistryV0Conversions.scala
+    - api/app/generated/FlowRegistryV0Parsers.scala
+    play_2_6_client:
+    - api/app/generated/FlowRegistryV0Client.scala
+    play_2_x_routes:
+    - api/conf/registry.routes
