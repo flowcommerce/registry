@@ -21,14 +21,14 @@ lazy val api = project
       ws,
       guice,
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play26" % "0.2.51",
-      "io.flow" %% "lib-play-graphite-play26" % "0.0.49",
+      "io.flow" %% "lib-postgresql-play-play26" % "0.2.53",
+      "io.flow" %% "lib-play-graphite-play26" % "0.0.51",
       "com.typesafe.play" %% "play-json-joda" % "2.6.10",
       "org.postgresql" % "postgresql" % "42.2.5",
       "net.jcazevedo" %% "moultingyaml" % "0.4.0",
       "io.flow" %% "lib-test-utils" % "0.0.18" % Test,
-      "io.flow" %% "lib-usage" % "0.0.34",
-      "io.flow" %% "lib-log" % "0.0.33"
+      "io.flow" %% "lib-usage" % "0.0.37",
+      "io.flow" %% "lib-log" % "0.0.35"
     )
   )
 
