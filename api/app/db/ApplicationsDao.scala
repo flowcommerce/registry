@@ -19,7 +19,7 @@ class ApplicationsDao @Inject()(
   servicesDao: ServicesDao,
   dependenciesDao: DependenciesDao,
   portsDao: PortsDao,
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   private val dbHelpers = DbHelpers(db, "applications")

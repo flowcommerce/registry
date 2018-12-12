@@ -10,7 +10,7 @@ import org.joda.time.DateTime
 import play.api.db._
 
 @Singleton
-class ApplicationVersionsDao @Inject() (@NamedDatabase("default") db: Database) {
+class ApplicationVersionsDao @Inject() (db: Database) {
 
   private[this] val BaseQuery = Query("""
     select applications.*

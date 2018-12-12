@@ -35,7 +35,7 @@ case class InternalPort(
 
 @Singleton
 class PortsDao @Inject() (
-  @NamedDatabase("default") db: Database
+  db: Database
   ){
 
   private val dbHelpers = DbHelpers(db, "ports")
