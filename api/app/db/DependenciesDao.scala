@@ -23,7 +23,7 @@ case class InternalDependency(
 
 @Singleton
 class DependenciesDao @Inject() (
-    @NamedDatabase("default") db: Database
+    db: Database
 ){
 
   private val dbHelpers = DbHelpers(db, "dependencies")

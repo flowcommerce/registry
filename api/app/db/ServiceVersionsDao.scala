@@ -11,7 +11,7 @@ import play.api.db._
 
 @Singleton
 class ServiceVersionsDao @Inject()(
-  @NamedDatabase("default") db: Database
+  db: Database
 ){
 
   private[this] val BaseQuery = Query("""
