@@ -154,7 +154,8 @@
           "description": "Returns information about a specific service.",
           "path": "/:id",
           "responses": {
-            "200": { "type": "service" }
+            "200": { "type": "service" },
+            "404": { "type": "service" }
           }
         },
 

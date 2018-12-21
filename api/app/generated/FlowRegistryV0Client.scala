@@ -829,7 +829,8 @@ package io.flow.registry.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Service] = {
         _executeRequest("GET", s"/services/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Service", r, _.validate[io.flow.registry.v0.models.Service])
-          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+          case r if r.status == 404 => throw io.flow.registry.v0.errors.ServiceResponse(r)
+          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
         }
       }
 
@@ -898,8 +899,8 @@ package io.flow.registry.v0 {
         value <- values
       } yield s"$name=$value"
       val url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
-      auth.fold(logger.info(s"curl -X $method $url")) { _ =>
-        logger.info(s"curl -X $method -u '[REDACTED]:' $url")
+      auth.fold(logger.info(s"curl -X $method '$url'")) { _ =>
+        logger.info(s"curl -X $method -u '[REDACTED]:' '$url'")
       }
       req
     }
@@ -1150,6 +1151,13 @@ package io.flow.registry.v0 {
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
       lazy val genericError = _root_.io.flow.registry.v0.Client.parseJson("io.flow.error.v0.models.GenericError", response, _.validate[io.flow.error.v0.models.GenericError])
+    }
+
+    final case class ServiceResponse(
+      response: play.api.libs.ws.WSResponse,
+      message: Option[String] = None
+    ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
+      lazy val service = _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Service", response, _.validate[io.flow.registry.v0.models.Service])
     }
 
     final case class UnitResponse(status: Int) extends Exception(s"HTTP $status")

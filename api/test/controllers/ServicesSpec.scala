@@ -11,9 +11,17 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
     val service = createService()
     val id = service.id
 
+    println(s"TEST CASE 1")
     await(
       identifiedClient().services.deleteById(id)
     )
+
+    println(s"TEST CASE 2")
+    expectNotFound(
+      identifiedClient().services.deleteById(id)
+    )
+
+    println(s"TEST CASE 3")
     expectNotFound(
       identifiedClient().services.getById(id)
     )
