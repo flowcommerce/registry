@@ -21,7 +21,7 @@ class DevelopmentRegistry @javax.inject.Inject() (
      host(applicationId, applicationsDao)
 
   override def host(applicationId: String, port: Long): String =
-    RegistryConstants.developmentHost(applicationId, port)
+    RegistryConstants.developmentHost(port)
 
 }
 
@@ -39,7 +39,7 @@ class WorkstationRegistry @javax.inject.Inject() (
     host(applicationId, applicationsDao)
 
   override def host(applicationId: String, port: Long): String =
-    RegistryConstants.workstationHost(applicationId, port)
+    RegistryConstants.workstationHost(port)
 }
 
 trait LocalRegistry extends Registry {

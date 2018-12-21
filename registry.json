@@ -154,7 +154,8 @@
           "description": "Returns information about a specific service.",
           "path": "/:id",
           "responses": {
-            "200": { "type": "service" }
+            "200": { "type": "service" },
+            "404": { "type": "unit" }
           }
         },
 
@@ -238,7 +239,7 @@
           "path": "/yaml",
           "responses": {
             "200": { "type": "string" },
-            "401": { "type": "unit" }
+            "404": { "type": "unit" }            
           }
         },
 
@@ -248,7 +249,7 @@
           "path": "/:id",
           "responses": {
             "200": { "type": "application" },
-            "401": { "type": "unit" }
+            "404": { "type": "unit" }
           }
         },
 

@@ -120,9 +120,9 @@ class Services @javax.inject.Inject() (
       applicationsDao.findAll(Authorization.All, services = Some(Seq(service.id)), limit = 1) match {
         case Nil => {
           servicesDao.delete(request.user, service)
-            NoContent
+          NoContent
         }
-        case apps => {
+        case _ => {
           UnprocessableEntity(Json.toJson(Validation.error("1 or more applications is using this service")))
         }
       }

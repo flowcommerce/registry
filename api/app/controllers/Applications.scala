@@ -149,7 +149,7 @@ class Applications @javax.inject.Inject()(
     }
   }
 
-  def post() = Action.async(parse.json) { request =>
+  def post() = Identified.async(parse.json) { request =>
     Future {
       applicationsDao.create(
         io.flow.play.util.Constants.AnonymousUser,
