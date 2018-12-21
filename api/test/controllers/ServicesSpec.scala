@@ -18,12 +18,12 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
 
     println(s"TEST CASE 2")
     expectNotFound(
-      identifiedClient().services.deleteById(id)
+      identifiedClient().services.getById(id)
     )
 
     println(s"TEST CASE 3")
     expectNotFound(
-      identifiedClient().services.getById(id)
+      identifiedClient().services.deleteById(id)
     )
   }
 
@@ -87,15 +87,14 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
     )
   }
 
-  "GET /services/:id requires authorization" in  {
-    expectNotAuthorized(
-      anonClient.services.get()
-    )
+  "GET /services/:id is anonymous" in {
+    val service = createService()
+    await(
+      anonClient.services.get(id = Some(Seq(service.id)))
+    ).map(_.id) must equal(Seq(service.id))
+  }
 
-    expectNotAuthorized(
-      anonClient.services.getById(createTestId())
-    )
-
+  "creating service requires authorization" in  {
     val form = createServiceForm()
     expectNotAuthorized(
       anonClient.services.post(form)

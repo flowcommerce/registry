@@ -691,9 +691,8 @@ package io.flow.registry.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String] = {
         _executeRequest("GET", s"/applications/yaml", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("String", r, _.validate[String])
-          case r if r.status == 401 => throw io.flow.registry.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw io.flow.registry.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
         }
       }
 
@@ -703,9 +702,8 @@ package io.flow.registry.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Application] = {
         _executeRequest("GET", s"/applications/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Application", r, _.validate[io.flow.registry.v0.models.Application])
-          case r if r.status == 401 => throw io.flow.registry.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw io.flow.registry.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
         }
       }
 
@@ -797,7 +795,8 @@ package io.flow.registry.v0 {
 
         _executeRequest("GET", s"/services", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("Seq[io.flow.registry.v0.models.Service]", r, _.validate[Seq[io.flow.registry.v0.models.Service]])
-          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+          case r if r.status == 401 => throw io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
 
@@ -819,7 +818,8 @@ package io.flow.registry.v0 {
 
         _executeRequest("GET", s"/services/versions", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("Seq[io.flow.registry.v0.models.ServiceVersion]", r, _.validate[Seq[io.flow.registry.v0.models.ServiceVersion]])
-          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+          case r if r.status == 401 => throw io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
 
@@ -829,8 +829,9 @@ package io.flow.registry.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.registry.v0.models.Service] = {
         _executeRequest("GET", s"/services/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Service", r, _.validate[io.flow.registry.v0.models.Service])
-          case r if r.status == 404 => throw io.flow.registry.v0.errors.ServiceResponse(r)
-          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
+          case r if r.status == 401 => throw io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.registry.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.registry.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
@@ -1151,13 +1152,6 @@ package io.flow.registry.v0 {
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
       lazy val genericError = _root_.io.flow.registry.v0.Client.parseJson("io.flow.error.v0.models.GenericError", response, _.validate[io.flow.error.v0.models.GenericError])
-    }
-
-    final case class ServiceResponse(
-      response: play.api.libs.ws.WSResponse,
-      message: Option[String] = None
-    ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
-      lazy val service = _root_.io.flow.registry.v0.Client.parseJson("io.flow.registry.v0.models.Service", response, _.validate[io.flow.registry.v0.models.Service])
     }
 
     final case class UnitResponse(status: Int) extends Exception(s"HTTP $status")

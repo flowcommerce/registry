@@ -156,15 +156,14 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     )
   }
 
-  "GET /applications/:id requires authorization" in  {
-    expectNotAuthorized(
-      anonClient.applications.get()
-    )
+  "GET /applications/:id is anonymous" in {
+    val app = createApplication()
+    await {
+      anonClient.applications.get(id = Some(Seq(app.id)))
+    }.map(_.id) must equal(Seq(app.id))
+  }
 
-    expectNotAuthorized(
-      anonClient.applications.getById(createTestId())
-    )
-
+  "creating an application requires authorization" in  {
     val form = createApplicationForm()
     expectNotAuthorized(
       anonClient.applications.post(form)
