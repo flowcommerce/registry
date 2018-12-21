@@ -238,7 +238,8 @@
           "path": "/yaml",
           "responses": {
             "200": { "type": "string" },
-            "401": { "type": "unit" }
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }            
           }
         },
 
@@ -248,7 +249,8 @@
           "path": "/:id",
           "responses": {
             "200": { "type": "application" },
-            "401": { "type": "unit" }
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
           }
         },
 
