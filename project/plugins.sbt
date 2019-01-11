@@ -12,3 +12,5 @@ addSbtPlugin("com.gilt.sbt" % "sbt-newrelic" % "0.2.4")
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.0")
 
 addSbtPlugin("com.lightbend.sbt" % "sbt-javaagent" % "0.1.4")
+
+addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.4")
