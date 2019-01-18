@@ -1,9 +1,9 @@
-FROM flowdocker/play_builder:0.1.10 as builder
+FROM 479720515435.dkr.ecr.us-east-1.amazonaws.com/play_builder:0.1.13 as builder
 ADD . /opt/play
 WORKDIR /opt/play
 RUN SBT_OPTS="-Xms1024M -Xmx2048M -Xss2M -XX:MaxMetaspaceSize=2048M" sbt clean stage
 
-FROM flowdocker/play:0.1.10
+FROM 479720515435.dkr.ecr.us-east-1.amazonaws.com/play:0.1.13
 COPY --from=builder /opt/play/api/target/universal/stage /opt/play
 WORKDIR /opt/play
 ENTRYPOINT ["java", "-jar", "/root/environment-provider.jar", "--service", "play", "registry", "bin/registry-api"]
