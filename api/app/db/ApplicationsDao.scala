@@ -8,9 +8,8 @@ import io.flow.play.util.UrlKey
 import io.flow.postgresql.play.db.DbHelpers
 import io.flow.postgresql.{Authorization, OrderBy, Pager, Query}
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.anorm.conversions.Standard._
 import io.flow.registry.v0.models.json._
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Port}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
 import play.api.db._
 import play.api.libs.json._
 
@@ -22,8 +21,7 @@ class ApplicationsDao @Inject()(
   db: Database
 ) {
 
-  private val dbHelpers = DbHelpers(db, "applications")
-
+  private[this] val dbHelpers = DbHelpers(db, "applications")
   private[this] val urlKey = UrlKey(minKeyLength = 2)
   private[this] val SortByPort = "(select min(external) from ports where application_id = applications.id)"
 
@@ -104,7 +102,7 @@ class ApplicationsDao @Inject()(
                 case None => {
                   Seq(s"Dependency[$dependencyId] references a non existing application")
                 }
-                case Some(app) => {
+                case Some(_) => {
                   Nil
                 }
               }
@@ -251,7 +249,7 @@ class ApplicationsDao @Inject()(
         Left(Seq(s"Application named[$dependency] not found"))
       }
 
-      case Some(dep) => {
+      case Some(_) => {
         val putForm = ApplicationPutForm(
           dependency = Some(app.dependencies.filter(_ != dependency))
         )
@@ -359,8 +357,8 @@ class ApplicationsDao @Inject()(
     external: Option[Long],
     internal: Option[Long],
     serviceId: String
-  ) {
-    servicesDao.findById(Authorization.All, serviceId).map { service =>
+  ): Unit = {
+    servicesDao.findById(Authorization.All, serviceId).foreach { service =>
       portsDao.create(
         c,
         createdBy,
@@ -379,7 +377,7 @@ class ApplicationsDao @Inject()(
     createdBy: UserReference,
     applicationId: String,
     dependencyId: String
-  ) {
+  ): Unit = {
     dependenciesDao.create(
       c,
       createdBy,
@@ -388,9 +386,10 @@ class ApplicationsDao @Inject()(
         dependencyId = dependencyId
       )
     )
+    ()
   }
 
-  def delete(deletedBy: UserReference, application: Application) {
+  def delete(deletedBy: UserReference, application: Application): Unit = {
     db.withTransaction { implicit c =>
       Pager.create { offset =>
         portsDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset).map { port =>
@@ -427,18 +426,16 @@ class ApplicationsDao @Inject()(
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("-created_at", Some("applications"))
   ): Seq[Application] = {
-    // TODO: Auth
-
-    val sortSql = if (orderBy.sql == Some("port")) {
+    val sortSql = if (orderBy.sql.contains("port")) {
       Some(SortByPort)
-    } else if (orderBy.sql == Some("port desc")) {
+    } else if (orderBy.sql.contains("port desc")) {
       Some(s"$SortByPort desc")
     } else {
       orderBy.sql
     }
 
     db.withConnection { implicit c =>
-      BaseQuery.
+      dbHelpers.authorizedQuery(BaseQuery, auth).
         optionalIn("applications.id", ids).
         and(
           services.map { ids =>
@@ -453,12 +450,12 @@ class ApplicationsDao @Inject()(
           }
         ).
         and(
-          prefix.map { p =>
+          prefix.map { _ =>
             s"(applications.id = {prefix} or applications.id like {prefix} || '-%')"
           }
         ).bind("prefix", prefix).
         and(
-          q.map { q =>
+          q.map { _ =>
             s"applications.id like '%' || lower(trim({q})) || '%'"
           }
         ).bind("q", q).
@@ -468,33 +465,6 @@ class ApplicationsDao @Inject()(
         as(
           io.flow.registry.v0.anorm.parsers.Application.parser().*
         )
-    }
-  }
-
-  /**
-    * Write custom parser as it is possible for an application to not
-    * have any ports/dependencies in which case anorm will NOT find
-    * the column named ports/dependencies.
-    */
-  private[this] def parser(
-    id: String = "id",
-    ports: String = "ports",
-    dependencies: String = "dependencies"
-  ): RowParser[io.flow.registry.v0.models.Application] = {
-    SqlParser.str(id) ~
-      SqlParser.get[Seq[JsObject]](ports).? ~
-      SqlParser.get[Seq[JsObject]](dependencies).? map {
-      case id ~ ports ~ dependencies => {
-        io.flow.registry.v0.models.Application(
-          id = id,
-          ports = ports.getOrElse(Nil).map {
-            _.as[Port]
-          },
-          dependencies = dependencies.getOrElse(Nil).map {
-            _.as[String]
-          }
-        )
-      }
     }
   }
 

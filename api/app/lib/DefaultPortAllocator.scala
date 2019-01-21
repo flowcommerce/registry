@@ -4,7 +4,6 @@ import javax.inject.{Inject, Singleton}
 
 import db.{ApplicationsDao, PortsDao}
 import io.flow.postgresql.Authorization
-import io.flow.registry.v0.models.Service
 
 /**
  * Parses the name of the application and allocates the default port
@@ -33,11 +32,11 @@ class DefaultPortAllocator @Inject() (
   portsDao: PortsDao
 ) {
 
-  private[this] val Blacklist = Seq(8080)
+  private[this] val Blacklist = Seq(8080L)
 
   private[this] val MinPortNumber = 6000
 
-  private[this] val Blocksize = 10
+  private[this] val BlockSize = 10L
 
   private[this] val defaults = Map[String, Int](
     "nodejs" -> 0,
@@ -71,7 +70,7 @@ class DefaultPortAllocator @Inject() (
     distinct
 
   private[this] var i = 0
-  private[this] var last: Long = toBase(portsDao.maxExternalPortNumber().getOrElse(MinPortNumber - Blocksize))
+  private[this] var last: Long = toBase(portsDao.maxExternalPortNumber().getOrElse(MinPortNumber - BlockSize))
 
   @scala.annotation.tailrec
   private[this] def nextBlock(name: String): Long = {
@@ -81,13 +80,14 @@ class DefaultPortAllocator @Inject() (
         value
       }
       case None => {
-        last = last + Blocksize
+        last = last + BlockSize
         last
       }
     }
-    isBlockAvailable(block) match {
-      case true => block
-      case false => nextBlock(name)
+    if (isBlockAvailable(block)) {
+      block
+    } else {
+      nextBlock(name)
     }
   }
 
@@ -111,12 +111,12 @@ class DefaultPortAllocator @Inject() (
 
     offset match {
       case None => {
-        min.until(min + Blocksize + 1).
-          filter { v => !defaults.values.toSeq.contains( (v % Blocksize).toInt ) }.
-          find { isPortAvailable(_) }
+        min.until(min + BlockSize + 1).
+          filter { v => !defaults.values.toSeq.contains( (v % BlockSize).toInt ) }.
+          find { isPortAvailable }
       }
       case Some(value) => {
-        Seq(min + value).find { isPortAvailable(_) }
+        Seq(min + value).find { isPortAvailable }
       }
     }
   }
@@ -126,7 +126,7 @@ class DefaultPortAllocator @Inject() (
     * (e.g. 8200)
     */
   protected[lib] def toBase(number: Long): Long = {
-    number - (number % Blocksize)
+    number - (number % BlockSize)
   }
 
   protected[lib] def isPortAvailable(number: Long): Boolean = {
