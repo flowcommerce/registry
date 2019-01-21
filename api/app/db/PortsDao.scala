@@ -1,8 +1,8 @@
 package db
 
 import javax.inject.{Inject, Singleton}
-
 import anorm._
+import com.github.ghik.silencer.silent
 import io.flow.common.v0.models.UserReference
 import io.flow.util.IdGenerator
 import io.flow.postgresql.play.db.DbHelpers
@@ -36,7 +36,7 @@ case class InternalPort(
 @Singleton
 class PortsDao @Inject() (
   db: Database
-  ){
+) extends lib.PublicAuthorizedQuery {
 
   private val dbHelpers = DbHelpers(db, "ports")
 
@@ -126,7 +126,7 @@ class PortsDao @Inject() (
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("ports.application_id, ports.external")
   ): Seq[InternalPort] = {
-    dbHelpers.authorizedQuery(BaseQuery, auth).
+    dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
       optionalIn("ports.id", ids).
       optionalIn("ports.application_id", applications).
       optionalIn("ports.service_id", services).

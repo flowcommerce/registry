@@ -13,7 +13,7 @@ import play.api.db._
 @Singleton
 class ServicesDao @Inject() (
   db: Database
-){
+) extends lib.PublicAuthorizedQuery {
 
   private val dbHelpers = DbHelpers(db, "services")
 
@@ -131,7 +131,7 @@ class ServicesDao @Inject() (
     orderBy: OrderBy = OrderBy("-created_at", Some("services"))
   ): Seq[Service] = {
     db.withConnection { implicit c =>
-      dbHelpers.authorizedQuery(BaseQuery, auth).
+      dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
         optionalIn("services.id", ids).
         optionalIn("services.default_port", defaultPortNumbers).
         limit(limit).

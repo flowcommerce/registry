@@ -19,7 +19,7 @@ class ApplicationsDao @Inject()(
   dependenciesDao: DependenciesDao,
   portsDao: PortsDao,
   db: Database
-) {
+) extends lib.PublicAuthorizedQuery {
 
   private[this] val dbHelpers = DbHelpers(db, "applications")
   private[this] val urlKey = UrlKey(minKeyLength = 2)
@@ -63,9 +63,10 @@ class ApplicationsDao @Inject()(
           urlKey.validate(id)
         }
         case Some(application) => {
-          Some(application.id) == existing.map(_.id) match {
-            case true => Nil
-            case false => Seq("Application with this id already exists")
+          if (existing.map(_.id).contains(application.id)) {
+            Nil
+          } else {
+            Seq("Application with this id already exists")
           }
         }
       }
@@ -93,18 +94,15 @@ class ApplicationsDao @Inject()(
       }
       case Some(deps) => {
         deps.flatMap { dependencyId =>
-          dependencyId == id.trim match {
-            case true => {
-              Seq(s"Cannot declare dependency[$dependencyId] on self")
-            }
-            case false => {
-              findById(Authorization.All, dependencyId) match {
-                case None => {
-                  Seq(s"Dependency[$dependencyId] references a non existing application")
-                }
-                case Some(_) => {
-                  Nil
-                }
+          if (dependencyId == id.trim) {
+            Seq(s"Cannot declare dependency[$dependencyId] on self")
+          } else {
+            findById(Authorization.All, dependencyId) match {
+              case None => {
+                Seq(s"Dependency[$dependencyId] references a non existing application")
+              }
+              case Some(_) => {
+                Nil
               }
             }
           }
@@ -169,9 +167,10 @@ class ApplicationsDao @Inject()(
         Nil
       }
       case Some(port) => {
-        (port > 0) match {
-          case true => Nil
-          case false => Seq("Internal port must be > 0")
+        if (port > 0) {
+          Nil
+        } else {
+          Seq("Internal port must be > 0")
         }
       }
     }
@@ -392,16 +391,16 @@ class ApplicationsDao @Inject()(
   def delete(deletedBy: UserReference, application: Application): Unit = {
     db.withTransaction { implicit c =>
       Pager.create { offset =>
-        portsDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset).map { port =>
-          portsDao.delete(c, deletedBy, port)
-        }
-      }.toSeq
+        portsDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset)
+      }.toSeq.foreach {port =>
+        portsDao.delete(c, deletedBy, port)
+      }
 
       Pager.create { offset =>
-        dependenciesDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset).map { port =>
-          dependenciesDao.delete(c, deletedBy, port)
-        }
-      }.toSeq
+        dependenciesDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset)
+      }.toSeq.foreach { port =>
+        dependenciesDao.delete(c, deletedBy, port)
+      }
 
       dbHelpers.delete(c, deletedBy, application.id)
     }
@@ -435,7 +434,7 @@ class ApplicationsDao @Inject()(
     }
 
     db.withConnection { implicit c =>
-      dbHelpers.authorizedQuery(BaseQuery, auth).
+      dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
         optionalIn("applications.id", ids).
         and(
           services.map { ids =>

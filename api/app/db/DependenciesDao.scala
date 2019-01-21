@@ -23,7 +23,7 @@ case class InternalDependency(
 @Singleton
 class DependenciesDao @Inject() (
     db: Database
-){
+) extends lib.PublicAuthorizedQuery {
 
   private val dbHelpers = DbHelpers(db, "dependencies")
 
@@ -115,7 +115,7 @@ class DependenciesDao @Inject() (
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("dependencies.application_id, dependencies.dependency_id")
   ): Seq[InternalDependency] = {
-    dbHelpers.authorizedQuery(BaseQuery, auth).
+    dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
       optionalIn("dependencies.id", ids).
       optionalIn("dependencies.application_id", applications).
       optionalIn("dependencies.dependency_id", dependencies).
