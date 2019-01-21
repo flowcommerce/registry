@@ -2,7 +2,6 @@ package db
 
 import javax.inject.{Inject, Singleton}
 import anorm._
-import com.github.ghik.silencer.silent
 import io.flow.common.v0.models.UserReference
 import io.flow.util.IdGenerator
 import io.flow.postgresql.play.db.DbHelpers
