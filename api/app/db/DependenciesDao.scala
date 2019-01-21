@@ -3,12 +3,11 @@ package db
 import javax.inject.{Inject, Singleton}
 
 import io.flow.common.v0.models.UserReference
-import io.flow.play.util.IdGenerator
+import io.flow.util.IdGenerator
 import io.flow.postgresql.{Authorization, OrderBy, Query}
 import anorm._
 import io.flow.postgresql.play.db.DbHelpers
 import play.api.db._
-import play.api.libs.json._
 
 case class DependencyForm(
   applicationId: String,
@@ -24,7 +23,7 @@ case class InternalDependency(
 @Singleton
 class DependenciesDao @Inject() (
     db: Database
-){
+) extends lib.PublicAuthorizedQuery {
 
   private val dbHelpers = DbHelpers(db, "dependencies")
 
@@ -73,18 +72,18 @@ class DependenciesDao @Inject() (
     user: UserReference,
     applicationId: String,
     dependencyId: String
-  ) {
+  ): Unit = {
     findAll(
       Authorization.All,
       applications = Some(Seq(applicationId)),
       dependencies = Some(Seq(dependencyId)),
       limit = 1
-    ).map { dep =>
+    ).foreach { dep =>
       delete(c, user, dep)
     }
   }
 
-  def delete(implicit c: java.sql.Connection, deletedBy: UserReference, dependency: InternalDependency) {
+  def delete(implicit c: java.sql.Connection, deletedBy: UserReference, dependency: InternalDependency): Unit = {
     dbHelpers.delete(c, deletedBy, dependency.id)
   }
 
@@ -116,8 +115,7 @@ class DependenciesDao @Inject() (
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("dependencies.application_id, dependencies.dependency_id")
   ): Seq[InternalDependency] = {
-    // TODO: Auth
-    BaseQuery.
+    dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
       optionalIn("dependencies.id", ids).
       optionalIn("dependencies.application_id", applications).
       optionalIn("dependencies.dependency_id", dependencies).
@@ -125,11 +123,11 @@ class DependenciesDao @Inject() (
       offset(offset).
       orderBy(orderBy.sql).
       as(
-        parser().*
+        parser.*
       )
   }
 
-  def parser() = {
+  private[this] val parser: RowParser[InternalDependency] = {
     SqlParser.str("id") ~
     SqlParser.str("application_id") ~
     SqlParser.str("dependency_id") map {

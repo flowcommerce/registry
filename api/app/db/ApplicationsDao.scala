@@ -8,9 +8,8 @@ import io.flow.play.util.UrlKey
 import io.flow.postgresql.play.db.DbHelpers
 import io.flow.postgresql.{Authorization, OrderBy, Pager, Query}
 import io.flow.registry.api.lib.DefaultPortAllocator
-import io.flow.registry.v0.anorm.conversions.Standard._
 import io.flow.registry.v0.models.json._
-import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm, Port}
+import io.flow.registry.v0.models.{Application, ApplicationForm, ApplicationPutForm}
 import play.api.db._
 import play.api.libs.json._
 
@@ -20,10 +19,9 @@ class ApplicationsDao @Inject()(
   dependenciesDao: DependenciesDao,
   portsDao: PortsDao,
   db: Database
-) {
+) extends lib.PublicAuthorizedQuery {
 
-  private val dbHelpers = DbHelpers(db, "applications")
-
+  private[this] val dbHelpers = DbHelpers(db, "applications")
   private[this] val urlKey = UrlKey(minKeyLength = 2)
   private[this] val SortByPort = "(select min(external) from ports where application_id = applications.id)"
 
@@ -65,9 +63,10 @@ class ApplicationsDao @Inject()(
           urlKey.validate(id)
         }
         case Some(application) => {
-          Some(application.id) == existing.map(_.id) match {
-            case true => Nil
-            case false => Seq("Application with this id already exists")
+          if (existing.map(_.id).contains(application.id)) {
+            Nil
+          } else {
+            Seq("Application with this id already exists")
           }
         }
       }
@@ -95,18 +94,15 @@ class ApplicationsDao @Inject()(
       }
       case Some(deps) => {
         deps.flatMap { dependencyId =>
-          dependencyId == id.trim match {
-            case true => {
-              Seq(s"Cannot declare dependency[$dependencyId] on self")
-            }
-            case false => {
-              findById(Authorization.All, dependencyId) match {
-                case None => {
-                  Seq(s"Dependency[$dependencyId] references a non existing application")
-                }
-                case Some(app) => {
-                  Nil
-                }
+          if (dependencyId == id.trim) {
+            Seq(s"Cannot declare dependency[$dependencyId] on self")
+          } else {
+            findById(Authorization.All, dependencyId) match {
+              case None => {
+                Seq(s"Dependency[$dependencyId] references a non existing application")
+              }
+              case Some(_) => {
+                Nil
               }
             }
           }
@@ -171,9 +167,10 @@ class ApplicationsDao @Inject()(
         Nil
       }
       case Some(port) => {
-        (port > 0) match {
-          case true => Nil
-          case false => Seq("Internal port must be > 0")
+        if (port > 0) {
+          Nil
+        } else {
+          Seq("Internal port must be > 0")
         }
       }
     }
@@ -251,7 +248,7 @@ class ApplicationsDao @Inject()(
         Left(Seq(s"Application named[$dependency] not found"))
       }
 
-      case Some(dep) => {
+      case Some(_) => {
         val putForm = ApplicationPutForm(
           dependency = Some(app.dependencies.filter(_ != dependency))
         )
@@ -359,8 +356,8 @@ class ApplicationsDao @Inject()(
     external: Option[Long],
     internal: Option[Long],
     serviceId: String
-  ) {
-    servicesDao.findById(Authorization.All, serviceId).map { service =>
+  ): Unit = {
+    servicesDao.findById(Authorization.All, serviceId).foreach { service =>
       portsDao.create(
         c,
         createdBy,
@@ -379,7 +376,7 @@ class ApplicationsDao @Inject()(
     createdBy: UserReference,
     applicationId: String,
     dependencyId: String
-  ) {
+  ): Unit = {
     dependenciesDao.create(
       c,
       createdBy,
@@ -388,21 +385,22 @@ class ApplicationsDao @Inject()(
         dependencyId = dependencyId
       )
     )
+    ()
   }
 
-  def delete(deletedBy: UserReference, application: Application) {
+  def delete(deletedBy: UserReference, application: Application): Unit = {
     db.withTransaction { implicit c =>
       Pager.create { offset =>
-        portsDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset).map { port =>
-          portsDao.delete(c, deletedBy, port)
-        }
-      }.toSeq
+        portsDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset)
+      }.toSeq.foreach {port =>
+        portsDao.delete(c, deletedBy, port)
+      }
 
       Pager.create { offset =>
-        dependenciesDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset).map { port =>
-          dependenciesDao.delete(c, deletedBy, port)
-        }
-      }.toSeq
+        dependenciesDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset)
+      }.toSeq.foreach { port =>
+        dependenciesDao.delete(c, deletedBy, port)
+      }
 
       dbHelpers.delete(c, deletedBy, application.id)
     }
@@ -427,18 +425,16 @@ class ApplicationsDao @Inject()(
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("-created_at", Some("applications"))
   ): Seq[Application] = {
-    // TODO: Auth
-
-    val sortSql = if (orderBy.sql == Some("port")) {
+    val sortSql = if (orderBy.sql.contains("port")) {
       Some(SortByPort)
-    } else if (orderBy.sql == Some("port desc")) {
+    } else if (orderBy.sql.contains("port desc")) {
       Some(s"$SortByPort desc")
     } else {
       orderBy.sql
     }
 
     db.withConnection { implicit c =>
-      BaseQuery.
+      dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
         optionalIn("applications.id", ids).
         and(
           services.map { ids =>
@@ -453,12 +449,12 @@ class ApplicationsDao @Inject()(
           }
         ).
         and(
-          prefix.map { p =>
+          prefix.map { _ =>
             s"(applications.id = {prefix} or applications.id like {prefix} || '-%')"
           }
         ).bind("prefix", prefix).
         and(
-          q.map { q =>
+          q.map { _ =>
             s"applications.id like '%' || lower(trim({q})) || '%'"
           }
         ).bind("q", q).
@@ -468,33 +464,6 @@ class ApplicationsDao @Inject()(
         as(
           io.flow.registry.v0.anorm.parsers.Application.parser().*
         )
-    }
-  }
-
-  /**
-    * Write custom parser as it is possible for an application to not
-    * have any ports/dependencies in which case anorm will NOT find
-    * the column named ports/dependencies.
-    */
-  private[this] def parser(
-    id: String = "id",
-    ports: String = "ports",
-    dependencies: String = "dependencies"
-  ): RowParser[io.flow.registry.v0.models.Application] = {
-    SqlParser.str(id) ~
-      SqlParser.get[Seq[JsObject]](ports).? ~
-      SqlParser.get[Seq[JsObject]](dependencies).? map {
-      case id ~ ports ~ dependencies => {
-        io.flow.registry.v0.models.Application(
-          id = id,
-          ports = ports.getOrElse(Nil).map {
-            _.as[Port]
-          },
-          dependencies = dependencies.getOrElse(Nil).map {
-            _.as[String]
-          }
-        )
-      }
     }
   }
 

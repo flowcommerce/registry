@@ -1,9 +1,9 @@
 package db
 
 import javax.inject.{Inject, Singleton}
-
 import anorm._
 import io.flow.common.v0.models.ChangeType
+import io.flow.postgresql.play.db.DbHelpers
 import io.flow.postgresql.{Authorization, OrderBy, Query}
 import io.flow.registry.v0.models.ApplicationVersion
 import org.joda.time.DateTime
@@ -11,6 +11,8 @@ import play.api.db._
 
 @Singleton
 class ApplicationVersionsDao @Inject() (db: Database) {
+
+  private[this] val dbHelpers = DbHelpers(db, "applications")
 
   private[this] val BaseQuery = Query("""
     select applications.*
@@ -26,7 +28,7 @@ class ApplicationVersionsDao @Inject() (db: Database) {
     orderBy: OrderBy = OrderBy("journal_timestamp", Some("applications"))
   ): Seq[ApplicationVersion] = {
     db.withConnection { implicit c =>
-      BaseQuery.
+      dbHelpers.authorizedQuery(BaseQuery, auth).
         optionalIn("applications.journal_id", ids.map(_.map(_.toLong))).
         optionalIn("applications.id", applications).
         limit(limit).

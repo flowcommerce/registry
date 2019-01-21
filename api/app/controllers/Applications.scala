@@ -152,7 +152,7 @@ class Applications @javax.inject.Inject()(
   def post() = Identified.async(parse.json) { request =>
     Future {
       applicationsDao.create(
-        io.flow.play.util.Constants.AnonymousUser,
+        io.flow.util.Constants.AnonymousUser,
         request.body.as[ApplicationForm]) match {
           case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
           case Right(app) => Created(Json.toJson(app))

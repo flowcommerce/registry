@@ -1,9 +1,9 @@
 package db
 
 import javax.inject.{Inject, Singleton}
-
 import anorm._
 import io.flow.common.v0.models.ChangeType
+import io.flow.postgresql.play.db.DbHelpers
 import io.flow.postgresql.{Authorization, OrderBy, Query}
 import io.flow.registry.v0.models.ServiceVersion
 import org.joda.time.DateTime
@@ -14,6 +14,7 @@ class ServiceVersionsDao @Inject()(
   db: Database
 ){
 
+  private[this] val dbHelpers = DbHelpers(db, "services")
   private[this] val BaseQuery = Query("""
     select services.*
       from journal.services
@@ -28,7 +29,7 @@ class ServiceVersionsDao @Inject()(
     orderBy: OrderBy = OrderBy("journal_timestamp", Some("services"))
   ): Seq[ServiceVersion] = {
     db.withConnection { implicit c =>
-      BaseQuery.
+      dbHelpers.authorizedQuery(BaseQuery, auth).
         optionalIn("services.journal_id", ids.map(_.map(_.toLong))).
         optionalIn("services.id", services).
         limit(limit).

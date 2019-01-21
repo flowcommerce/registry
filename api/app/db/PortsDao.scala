@@ -1,10 +1,9 @@
 package db
 
 import javax.inject.{Inject, Singleton}
-
 import anorm._
 import io.flow.common.v0.models.UserReference
-import io.flow.play.util.IdGenerator
+import io.flow.util.IdGenerator
 import io.flow.postgresql.play.db.DbHelpers
 import io.flow.postgresql.{Authorization, OrderBy, Query}
 import io.flow.registry.v0.models.{Port, ServiceReference}
@@ -36,7 +35,7 @@ case class InternalPort(
 @Singleton
 class PortsDao @Inject() (
   db: Database
-  ){
+) extends lib.PublicAuthorizedQuery {
 
   private val dbHelpers = DbHelpers(db, "ports")
 
@@ -84,7 +83,7 @@ class PortsDao @Inject() (
     id
   }
 
-  def delete(implicit c: java.sql.Connection, deletedBy: UserReference, port: InternalPort) {
+  def delete(implicit c: java.sql.Connection, deletedBy: UserReference, port: InternalPort): Unit = {
     dbHelpers.delete(c, deletedBy, port.id)
   }
 
@@ -126,8 +125,7 @@ class PortsDao @Inject() (
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("ports.application_id, ports.external")
   ): Seq[InternalPort] = {
-    // TODO: Auth
-    BaseQuery.
+    dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
       optionalIn("ports.id", ids).
       optionalIn("ports.application_id", applications).
       optionalIn("ports.service_id", services).
@@ -136,11 +134,11 @@ class PortsDao @Inject() (
       offset(offset).
       orderBy(orderBy.sql).
       as(
-        parser().*
+        parser.*
       )
   }
 
-  def parser() = {
+  private[this] val parser: RowParser[InternalPort] = {
     SqlParser.str("id") ~
     SqlParser.str("application_id") ~
     SqlParser.str("service_id") ~

@@ -13,7 +13,7 @@ import play.api.db._
 @Singleton
 class ServicesDao @Inject() (
   db: Database
-){
+) extends lib.PublicAuthorizedQuery {
 
   private val dbHelpers = DbHelpers(db, "services")
 
@@ -50,9 +50,10 @@ class ServicesDao @Inject() (
           urlKey.validate(form.id)
         }
         case Some(service) => {
-          Some(service.id) == existing.map(_.id) match {
-            case true => Nil
-            case false => Seq("Service with this id already exists")
+          if (existing.map(_.id).contains(service.id)) {
+            Nil
+          } else {
+            Seq("Service with this id already existls")
           }
         }
       }
@@ -113,7 +114,7 @@ class ServicesDao @Inject() (
     }
   }
 
-  def delete(deletedBy: UserReference, service: Service) {
+  def delete(deletedBy: UserReference, service: Service): Unit = {
     dbHelpers.delete(deletedBy, service.id)
   }
 
@@ -129,10 +130,8 @@ class ServicesDao @Inject() (
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("-created_at", Some("services"))
   ): Seq[Service] = {
-    // TODO: Auth
-
     db.withConnection { implicit c =>
-      BaseQuery.
+      dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
         optionalIn("services.id", ids).
         optionalIn("services.default_port", defaultPortNumbers).
         limit(limit).

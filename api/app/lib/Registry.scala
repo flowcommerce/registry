@@ -2,7 +2,7 @@ package io.flow.registry.api.lib
 
 import db.ApplicationsDao
 import io.flow.play.clients.{MockRegistry, ProductionRegistry, Registry, RegistryConstants}
-import io.flow.play.util.FlowEnvironment
+import io.flow.util.FlowEnvironment
 import io.flow.postgresql.Authorization
 import play.api.inject.Module
 import play.api.{Configuration, Environment, Mode}
@@ -13,7 +13,6 @@ import play.api.{Configuration, Environment, Mode}
   */
 @javax.inject.Singleton
 class DevelopmentRegistry @javax.inject.Inject() (
-  app: play.api.Application,
   applicationsDao: ApplicationsDao
 ) extends LocalRegistry {
 
@@ -31,7 +30,6 @@ class DevelopmentRegistry @javax.inject.Inject() (
   */
 @javax.inject.Singleton
 class WorkstationRegistry @javax.inject.Inject() (
-  app: play.api.Application,
   applicationsDao: ApplicationsDao
 ) extends LocalRegistry {
 
@@ -48,7 +46,7 @@ trait LocalRegistry extends Registry {
 
   def host(applicationId: String, applicationsDao: ApplicationsDao): String = {
     val app = applicationsDao.findById(Authorization.All, applicationId).getOrElse {
-      sys.error("application[$applicationId] not found in registrydb")
+      sys.error(s"application[$applicationId] not found in registrydb")
     }
 
     val port = app.ports.headOption.getOrElse {
