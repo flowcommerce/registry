@@ -6,7 +6,7 @@ import util.RegistrySpec
 
 class ApplicationsDaoSpec extends RegistrySpec {
 
-  def validatePort(modulus: Int, app: Application) {
+  def validatePort(modulus: Int, app: Application): Unit = {
     app.ports.size must be(1)
     app.ports.foreach { p =>
       if (p.external % 10 != modulus) {
@@ -166,7 +166,7 @@ class ApplicationsDaoSpec extends RegistrySpec {
   "can reuse ID once deleted" in {
     val app = createApplication()
     applicationsDao.delete(testUser, app)
-    val app2 = createApplication(createApplicationForm().copy(id = app.id))
+    createApplication(createApplicationForm().copy(id = app.id))
   }
 
   "validates that there are no circular dependencies" in {

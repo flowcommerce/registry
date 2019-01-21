@@ -37,7 +37,7 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
 
   "PUT /services/:id creates service" in  {
     val id = createTestId()
-    val updated = await(identifiedClient().services.putById(id, createServicePutForm()))
+    await(identifiedClient().services.putById(id, createServicePutForm()))
     await(
       identifiedClient().services.getById(id)
     ).id must be(id)
@@ -60,7 +60,7 @@ class ServicesSpec extends RegistrySpec with MockRegistryClient {
   }
 
   "POST /services w/ invalid port" in  {
-    val service = createService()
+    createService()
     val form = createServiceForm().copy(defaultPort = 200)
 
     expectErrors(
