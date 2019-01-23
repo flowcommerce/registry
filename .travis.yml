@@ -7,15 +7,13 @@ cache:
   directories:
     - $HOME/.ivy2/cache
     - $HOME/.sbt/boot/
+services:
+  - docker
 before_install:
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
   - eval $(aws ecr get-login --no-include-email --region us-east-1)
-  - docker run -d -p 127.0.0.1:6019:5432 479720515435.dkr.ecr.us-east-1.amazonaws.com/registry-postgresql:latest
-services:
-  - docker
 before_script:
-  - eval $(aws ecr get-login --no-include-email --region us-east-1)
   - docker run -d -p 127.0.0.1:6019:5432 479720515435.dkr.ecr.us-east-1.amazonaws.com/registry-postgresql:latest
 script:
   - sbt ++$TRAVIS_SCALA_VERSION clean compile test
