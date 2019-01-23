@@ -53,7 +53,7 @@ class ServicesDao @Inject() (
           if (existing.map(_.id).contains(service.id)) {
             Nil
           } else {
-            Seq("Service with this id already existls")
+            Seq("Service with this id already exists")
           }
         }
       }
