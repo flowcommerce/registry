@@ -1,9 +1,9 @@
-FROM flowdocker/play_builder:0.1.13 as builder
+FROM flowdocker/play_builder:0.1.10 as builder
 ADD . /opt/play
 WORKDIR /opt/play
 RUN SBT_OPTS="-Xms1024M -Xmx2048M -Xss2M -XX:MaxMetaspaceSize=2048M" sbt clean stage
 
-FROM flowdocker/play:0.1.13
+FROM flowdocker/play:0.1.10
 COPY --from=builder /opt/play/api/target/universal/stage /opt/play
 WORKDIR /opt/play
 ENTRYPOINT ["java", "-jar", "/root/environment-provider.jar", "--service", "play", "registry", "bin/registry-api"]
