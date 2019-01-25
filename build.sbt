@@ -26,7 +26,7 @@ lazy val api = project
       "com.typesafe.play" %% "play-json-joda" % "2.6.10",
       "org.postgresql" % "postgresql" % "42.2.5",
       "net.jcazevedo" %% "moultingyaml" % "0.4.0",
-      "io.flow" %% "lib-test-utils" % "0.0.30" % Test,
+      "io.flow" %% "lib-test-utils" % "0.0.31" % Test,
       "io.flow" %% "lib-usage" % "0.0.68",
       "io.flow" %% "lib-log" % "0.0.57",
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.3.0"),
