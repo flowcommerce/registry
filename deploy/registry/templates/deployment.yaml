@@ -10,8 +10,6 @@ metadata:
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
     app.kubernetes.io/name: {{ include "deploy.name" $ }}
     app.kubernetes.io/stage: {{ $stage }}
-  annotations:
-    sumologic.com/sourceCategory: {{ $fullName }}_docker_logs
 spec:
   replicas: {{ $deployment.minReplicas }}
   selector:
@@ -27,6 +25,7 @@ spec:
         app.kubernetes.io/stage: {{ $stage }}
       annotations:
         iam.amazonaws.com/role: {{ $.Values.iamRole }}
+        sumologic.com/sourceCategory: {{ $fullName }}_docker_logs
     spec:
       containers:
         - name: {{ $.Chart.Name }}
