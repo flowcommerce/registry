@@ -47,3 +47,4 @@ deployments:
     maxUnavailable: 1
     disruptionBudgetEnabled: true
     targetCPUUtilizationPercentage: 80
+    version: master-1
