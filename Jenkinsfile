@@ -35,7 +35,7 @@ pipeline {
       steps {
         container('docker') {
           script {
-            docker.withRegistry('https://hub.docker.com', 'docker-hub-credentials') {
+            docker.withRegistry('', 'docker-hub-credentials') {
               IMAGE_TAG = "${env.BRANCH_NAME.toLowerCase()}-${env.BUILD_NUMBER}"
               withCaching(cacheDirectories: ['/root/.sbt/boot', '/root/.ivy2']) {
                 image = docker.build("$ORG/$APP_NAME:$IMAGE_TAG", '-f Dockerfile .')
