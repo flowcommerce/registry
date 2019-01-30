@@ -14,7 +14,6 @@ pipeline {
 
       containerTemplates([
         containerTemplate(name: 'helm', image: "lachlanevenson/k8s-helm:v2.12.0", command: 'cat', ttyEnabled: true),
-        containerTemplate(name: 'scala', image: "jenkinsxio/builder-scala", command: 'cat', ttyEnabled: true),
         containerTemplate(name: 'docker', image: 'docker', command: 'cat', ttyEnabled: true)
       ])
     }
@@ -34,14 +33,14 @@ pipeline {
       when { branch 'master' }
       steps {
         container('docker') {
-          docker.withRegistry('https://hub.docker.com', 'docker-hub-credentials') {
-            script {
+          script {
+            docker.withRegistry('https://hub.docker.com', 'docker-hub-credentials') {
               IMAGE_TAG = "${env.BRANCH_NAME.toLowerCase()}-${env.BUILD_NUMBER}"
               withCaching(cacheDirectories: ['/root/.sbt/boot', '/root/.ivy2']) {
                 image = docker.build("$ORG/$APP_NAME:$IMAGE_TAG", '-f Dockerfile .')
+                image.push()
               }
             }
-            script { image.push() }
           }
         }
       }
