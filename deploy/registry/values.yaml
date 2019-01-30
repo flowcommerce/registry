@@ -1,0 +1,49 @@
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  port: 9000
+
+iamRole: arn:aws:iam::479720515435:role/ecsInstanceRole
+image:
+  repository: flowcommerce/marketing-gateway
+  pullPolicy: IfNotPresent
+resources:
+  limits:
+    memory: "700"
+    cpu: 1
+  requests:
+    memory: "700Mi"
+    cpu: .05
+
+nodeSelector: {}
+affinity: {}
+
+ingress:
+  enabled: true
+  gateways:
+    - key: flow-io
+      tld: api.flow.io
+      hosts:
+        - registry.api.flow.io
+
+services:
+  live:
+    hosts:
+      - registry
+      - registry.api.flow.io
+    gateways:
+      - mesh
+      - registry-flow-io
+    stages:
+      - deployment: live
+        weight: 100
+
+deployments:
+  live:
+    minReplicas: 2
+    maxReplicas: 2
+    maxUnavailable: 1
+    disruptionBudgetEnabled: true
+    targetCPUUtilizationPercentage: 80
+    version: master-1
