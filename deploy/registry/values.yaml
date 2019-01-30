@@ -18,6 +18,7 @@ resources:
 
 nodeSelector: {}
 affinity: {}
+tolerations: {}
 
 ingress:
   enabled: true
