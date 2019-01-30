@@ -34,14 +34,14 @@ pipeline {
       when { branch 'master' }
       steps {
         container('docker') {
-          docker.withRegistry('https://hub.docker.com', 'docker-hub-credentials') {
-            script {
+          script {
+            docker.withRegistry('https://hub.docker.com', 'docker-hub-credentials') {
               IMAGE_TAG = "${env.BRANCH_NAME.toLowerCase()}-${env.BUILD_NUMBER}"
               withCaching(cacheDirectories: ['/root/.sbt/boot', '/root/.ivy2']) {
                 image = docker.build("$ORG/$APP_NAME:$IMAGE_TAG", '-f Dockerfile .')
+                image.push()
               }
             }
-            script { image.push() }
           }
         }
       }
