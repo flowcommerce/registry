@@ -10,10 +10,10 @@ image:
   pullPolicy: IfNotPresent
 resources:
   limits:
-    memory: "700Mi"
+    memory: "800Mi"
     cpu: 1
   requests:
-    memory: "700Mi"
+    memory: "800Mi"
     cpu: .05
 
 nodeSelector: {}
