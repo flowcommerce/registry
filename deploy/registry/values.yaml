@@ -16,6 +16,8 @@ resources:
     memory: "800Mi"
     cpu: .05
 
+jvmMemory: 500
+
 nodeSelector: {}
 affinity: {}
 tolerations: {}
@@ -27,15 +29,21 @@ ingress:
       tld: api.flow.io
       hosts:
         - registry.api.flow.io
+    - key: flow-pub
+      tld: flo.pub
+      hosts:
+        - registry.flo.pub
 
 services:
   live:
     hosts:
       - registry
       - registry.api.flow.io
+      - registry.flo.pub
     gateways:
       - mesh
       - registry-flow-io
+      - registry-flow-pub
     stages:
       - deployment: live
         weight: 100
