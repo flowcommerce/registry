@@ -27,12 +27,17 @@ ingress:
       tld: api.flow.io
       hosts:
         - registry.api.flow.io
+    - key: flow-pub
+      tld: flo.pub
+      hosts:
+        - registry.flo.pub
 
 services:
   live:
     hosts:
       - registry
       - registry.api.flow.io
+      - registry.flo.pub
     gateways:
       - mesh
       - registry-flow-io
