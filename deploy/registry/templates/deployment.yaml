@@ -56,6 +56,8 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
+      imagePullSecrets:
+        - name: flow-docker-hub
     {{- with $.Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}

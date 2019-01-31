@@ -6,7 +6,7 @@ service:
 
 iamRole: arn:aws:iam::479720515435:role/ecsInstanceRole
 image:
-  repository: flowcommerce/marketing-gateway
+  repository: flowcommerce/registry
   pullPolicy: IfNotPresent
 resources:
   limits:
