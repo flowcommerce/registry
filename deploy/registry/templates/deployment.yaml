@@ -42,7 +42,7 @@ spec:
                   resource: limits.memory
                   divisor: 1Ki
             - name: JAVA_OPTS
-              value: "$(java-dynamic-memory-opts 80)"
+              value: -Xms500m -Xmx500m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt
           ports:
             - name: http
               containerPort: {{ $.Values.service.port }}
