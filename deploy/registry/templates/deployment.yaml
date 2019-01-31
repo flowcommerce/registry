@@ -43,14 +43,14 @@ spec:
             httpGet:
               path: /_internal_/healthcheck
               port: http
-            initialDelaySeconds: 30
+            initialDelaySeconds: 130
             periodSeconds: 5
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
               path: /_internal_/healthcheck
               port: http
-            initialDelaySeconds: 20
+            initialDelaySeconds: 120
             failureThreshold: 10
             periodSeconds: 5
             timeoutSeconds: 5
