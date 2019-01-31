@@ -35,14 +35,6 @@ spec:
             - name: JAVA_OPTS
               value: -Xms500m -Xmx500m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt
           args: ["production"]
-          env:
-            - name: MEM_TOTAL_KB
-              valueFrom:
-                resourceFieldRef:
-                  resource: limits.memory
-                  divisor: 1Ki
-            - name: JAVA_OPTS
-              value: -Xms500m -Xmx500m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt
           ports:
             - name: http
               containerPort: {{ $.Values.service.port }}
