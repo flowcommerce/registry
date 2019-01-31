@@ -14,7 +14,6 @@ pipeline {
 
       containerTemplates([
         containerTemplate(name: 'helm', image: "lachlanevenson/k8s-helm:v2.12.0", command: 'cat', ttyEnabled: true),
-        containerTemplate(name: 'scala', image: "jenkinsxio/builder-scala", command: 'cat', ttyEnabled: true),
         containerTemplate(name: 'docker', image: 'docker', command: 'cat', ttyEnabled: true)
       ])
     }
@@ -27,7 +26,12 @@ pipeline {
 
   stages {
     stage('Checkout') {
-      steps { checkout scm }
+      steps {
+        checkoutWithTags scm
+        script {
+          IMAGE_TAG = sh(returnStdout: true, script: 'git describe --tags --dirty --always').trim()
+        }
+      }
     }
 
     stage('Build and push docker image release') {
@@ -36,11 +40,8 @@ pipeline {
         container('docker') {
           script {
             docker.withRegistry('', 'docker-hub-credentials') {
-              IMAGE_TAG = "${env.BRANCH_NAME.toLowerCase()}-${env.BUILD_NUMBER}"
-              withCaching(cacheDirectories: ['/root/.sbt/boot', '/root/.ivy2']) {
-                image = docker.build("$ORG/$APP_NAME:$IMAGE_TAG", '-f Dockerfile .')
-                image.push()
-              }
+              image = docker.build("$ORG/$APP_NAME:$IMAGE_TAG", '-f Dockerfile .')
+              image.push()
             }
           }
         }

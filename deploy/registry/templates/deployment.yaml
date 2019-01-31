@@ -35,6 +35,14 @@ spec:
             - name: JAVA_OPTS
               value: -Xms500m -Xmx500m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt
           args: ["production"]
+          env:
+            - name: MEM_TOTAL_KB
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+                  divisor: 1Ki
+            - name: JAVA_OPTS
+              value: "$(java-dynamic-memory-opts 80)"
           ports:
             - name: http
               containerPort: {{ $.Values.service.port }}
@@ -44,15 +52,16 @@ spec:
               path: /_internal_/healthcheck
               port: http
             initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 5
           readinessProbe:
             httpGet:
               path: /_internal_/healthcheck
               port: http
             initialDelaySeconds: 20
+            failureThreshold: 10
             periodSeconds: 5
-            timeoutSeconds: 2
+            timeoutSeconds: 5
           resources:
 {{ toYaml $.Values.resources | indent 12 }}
     {{- with $.Values.nodeSelector }}
