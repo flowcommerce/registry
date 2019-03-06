@@ -10,10 +10,10 @@ image:
   pullPolicy: IfNotPresent
 resources:
   limits:
-    memory: "800Mi"
+    memory: "900Mi"
     cpu: 1
   requests:
-    memory: "800Mi"
+    memory: "900Mi"
     cpu: .05
 
 jvmMemory: 500
@@ -50,8 +50,8 @@ services:
 
 deployments:
   live:
-    minReplicas: 1
-    maxReplicas: 1
+    minReplicas: 2
+    maxReplicas: 2
     maxUnavailable: 1
     disruptionBudgetEnabled: true
     targetCPUUtilizationPercentage: 80

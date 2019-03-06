@@ -29,7 +29,7 @@ pipeline {
       steps {
         checkoutWithTags scm
         script {
-          IMAGE_TAG = sh(returnStdout: true, script: 'git describe --tags --dirty --always').trim()
+          APP_TAG = sh(returnStdout: true, script: 'git describe --tags --dirty --always').trim()
         }
       }
     }
@@ -39,10 +39,12 @@ pipeline {
       steps {
         container('docker') {
           script {
+            
             docker.withRegistry('', 'docker-hub-credentials') {
-              image = docker.build("$ORG/$APP_NAME:$IMAGE_TAG", '-f Dockerfile .')
-              image.push()
+              registry = docker.build("$ORG/registry:$APP_TAG", '-f Dockerfile .')
+              registry.push()
             }
+            
           }
         }
       }
@@ -53,7 +55,9 @@ pipeline {
       steps {
         container('helm') {
           sh('helm init --client-only')
-          sh("helm upgrade --wait --install --debug --namespace production --set deployments.live.version=$IMAGE_TAG $APP_NAME ./deploy/$APP_NAME")
+          
+          sh("helm upgrade --wait --install --debug --namespace production --set deployments.live.version=$APP_TAG registry ./deploy/registry")
+          
         }
       }
     }

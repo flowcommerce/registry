@@ -35,5 +35,6 @@ spec:
       {{- range $host := $gateway.hosts }}
         - {{ $host | quote }}
       {{- end }}
+---
 {{- end }}
 {{- end -}}

@@ -23,5 +23,6 @@ spec:
     resource:
       name: cpu
       targetCPUUtilizationPercentage: {{ $deployment.targetCPUUtilizationPercentage }}
+---
 {{- end -}}
 {{- end -}}
