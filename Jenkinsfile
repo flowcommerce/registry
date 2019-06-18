@@ -41,7 +41,7 @@ pipeline {
           script {
             
             docker.withRegistry('', 'docker-hub-credentials') {
-              registry = docker.build("$ORG/registry:$APP_TAG", '-f Dockerfile .')
+              registry = docker.build("$ORG/registry:$APP_TAG", '--network=host -f Dockerfile .')
               registry.push()
             }
             
