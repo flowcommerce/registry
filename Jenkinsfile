@@ -29,8 +29,25 @@ pipeline {
       steps {
         checkoutWithTags scm
         script {
-          val  = sh(returnStdout: true, script: 'git describe --tags --dirty').trim()
-          APP_TAG = val
+          currentTag  = sh(returnStdout: true, script: 'git describe --tags --dirty').trim()
+
+          def semverMatch = /^(\d+)\.(\d+)\.(\d+)\-?(.*)$/
+          def semverParsed = (currentTag =~ semverMatch)[0]
+          def major = new Integer(semverParsed[1])
+          def minor = new Integer(semverParsed[2])
+          def micro = new Integer(semverParsed[3])
+          def extra = semverParsed[4]
+
+          if (extra) {
+              if (micro >= 99) {
+                  minor++
+                  micro = 0
+              } else {
+                  micro++
+              }
+              sh(script: """git tag -m "Jenkins automated tag $major.$minor.$micro" $major.$minor.$micro""")
+          }
+          APP_TAG = "$major.$minor.$micro"
         }
       }
     }
