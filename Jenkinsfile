@@ -29,6 +29,7 @@ pipeline {
       steps {
         checkoutWithTags scm
         script {
+          println(GIT_TAG_NAME)
           APP_TAG = sh(returnStdout: true, script: 'git describe --tags --dirty --always').trim()
         }
       }
