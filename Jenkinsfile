@@ -33,9 +33,9 @@ pipeline {
 
           def semverMatch = /^(\d+)\.(\d+)\.(\d+)\-?(.*)$/
           def semverParsed = (currentTag =~ semverMatch)[0]
-          def major = new Integer(semverParsed[1])
-          def minor = new Integer(semverParsed[2])
-          def micro = new Integer(semverParsed[3])
+          def major = semverParsed[1].toInteger()
+          def minor = semverParsed[2].toInteger()
+          def micro = semverParsed[3].toInteger()
           def extra = semverParsed[4]
 
           if (extra) {
