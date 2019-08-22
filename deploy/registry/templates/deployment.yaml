@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: {{ $.Chart.Name }}
-          image: "{{ $.Values.image.repository }}:{{ $appVersion }}"
+          image: "{{ $.Values.image.repository }}:{{ $deployment.version }}"
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           env:
             - name: JAVA_OPTS
