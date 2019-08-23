@@ -77,6 +77,8 @@ pipeline {
         container('helm') {
           sh('helm init --client-only')
           
+          sh("helm upgrade --dry-run --install --debug --namespace production --set deployments.live.version=$APP_TAG registry ./deploy/registry")
+
           sh("helm upgrade --wait --install --debug --namespace production --set deployments.live.version=$APP_TAG registry ./deploy/registry")
           
         }
