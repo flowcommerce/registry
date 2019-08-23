@@ -29,29 +29,7 @@ pipeline {
       steps {
         checkoutWithTags scm
 
-        script {
-          currentTag  = sh(returnStdout: true, script: 'git describe --tags --dirty').trim()
-
-          def semverMatch = /^(\d+)\.(\d+)\.(\d+)\-?(.*)$/
-          def semverParsed = (currentTag =~ semverMatch)[0]
-          def major = semverParsed[1].toInteger()
-          def minor = semverParsed[2].toInteger()
-          def micro = semverParsed[3].toInteger()
-          def extra = semverParsed[4]
-
-          if (extra) {
-              if (micro >= 99) {
-                  minor++
-                  micro = 0
-              } else {
-                  micro++
-              }
-              sh(script: """git tag -m "Jenkins automated tag $major.$minor.$micro" $major.$minor.$micro""")
-          }
-
-          sh(script: """sed -i 's/appVersion: "Manual Deploy"/appVersion: "$major.$minor.$micro"/' deploy/registry/Chart.yaml""")
-          APP_TAG = "$major.$minor.$micro"
-        }
+        flowVersion sh, APP_NAME
       }
     }
 
@@ -75,12 +53,7 @@ pipeline {
       when { branch 'master' }
       steps {
         container('helm') {
-          sh('helm init --client-only')
-          
-          sh("helm upgrade --dry-run --install --debug --namespace production --set deployments.live.version=$APP_TAG registry ./deploy/registry")
-
-          sh("helm upgrade --wait --install --debug --namespace production --set deployments.live.version=$APP_TAG registry ./deploy/registry")
-          
+          helmDeploy sh, APP_NAME, APP_TAG
         }
       }
     }
