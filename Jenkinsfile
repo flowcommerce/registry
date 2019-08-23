@@ -28,6 +28,7 @@ pipeline {
     stage('Checkout') {
       steps {
         checkoutWithTags scm
+
         script {
           currentTag  = sh(returnStdout: true, script: 'git describe --tags --dirty').trim()
 
@@ -74,7 +75,7 @@ pipeline {
         container('helm') {
           sh('helm init --client-only')
           
-          sh("helm upgrade --wait --install --debug --namespace production --set app.version=$APP_TAG registry ./deploy/registry")
+          sh("helm upgrade --wait --install --debug --namespace production --set deployments.live.version=$APP_TAG registry ./deploy/registry")
           
         }
       }
