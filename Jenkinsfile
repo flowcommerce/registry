@@ -48,6 +48,8 @@ pipeline {
               }
               sh(script: """git tag -m "Jenkins automated tag $major.$minor.$micro" $major.$minor.$micro""")
           }
+
+          sh(script: """sed -i 's/appVersion: "Manual Deploy"/appVersion: "$major.$minor.$micro"/' deploy/registry/Chart.yaml""")
           APP_TAG = "$major.$minor.$micro"
         }
       }
