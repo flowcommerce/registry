@@ -28,8 +28,11 @@ pipeline {
     stage('Checkout') {
       steps {
         checkoutWithTags scm
-
-        flowVersion sh, APP_NAME
+        
+        script {
+          def flowVersion = new flowVersion()
+          APP_TAG = flowVersion.make(APP_NAME)
+        }
       }
     }
 
@@ -40,8 +43,8 @@ pipeline {
           script {
             
             docker.withRegistry('', 'docker-hub-credentials') {
-              registry = docker.build("$ORG/registry:$APP_TAG", '--network=host -f Dockerfile .')
-              registry.push()
+              build = docker.build("$ORG/registry:$APP_TAG", '--network=host -f Dockerfile .')
+              build.push()
             }
             
           }
@@ -53,7 +56,10 @@ pipeline {
       when { branch 'master' }
       steps {
         container('helm') {
-          helmDeploy sh, APP_NAME, APP_TAG
+          script {
+            def helm = new helmDeploy()
+            helm.deploy(APP_NAME, APP_TAG)
+          }
         }
       }
     }
