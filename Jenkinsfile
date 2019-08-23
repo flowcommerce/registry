@@ -30,8 +30,7 @@ pipeline {
         checkoutWithTags scm
         
         script {
-          def flowVersion = new flowVersion()
-          APP_TAG = flowVersion.make(APP_NAME)
+          APP_TAG = new flowVersion().make(APP_NAME)
         }
       }
     }
@@ -57,8 +56,7 @@ pipeline {
       steps {
         container('helm') {
           script {
-            def helm = new helmDeploy()
-            helm.deploy(APP_NAME, APP_TAG)
+            new helmDeploy().deploy(APP_NAME, APP_TAG)
           }
         }
       }
