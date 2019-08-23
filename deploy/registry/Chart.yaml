@@ -1,4 +1,4 @@
 apiVersion: v1
-appVersion: "Manual Deploy"
+appVersion: Manual Deploy
 name: registry
 version: 0.0.1

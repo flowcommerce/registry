@@ -28,7 +28,7 @@ pipeline {
     stage('Checkout') {
       steps {
         checkoutWithTags scm
-        
+
         script {
           APP_TAG = new flowVersion().make(APP_NAME)
         }
@@ -41,9 +41,9 @@ pipeline {
         container('docker') {
           script {
             
-            docker.withRegistry('', 'docker-hub-credentials') {
-              build = docker.build("$ORG/registry:$APP_TAG", '--network=host -f Dockerfile .')
-              build.push()
+            docker.withRegistry('https://index.docker.io/v1/', 'jenkins-dockerhub') {
+              db = docker.build("$ORG/registry:$APP_TAG", '--network=host -f Dockerfile .')
+              db.push()
             }
             
           }
@@ -56,7 +56,9 @@ pipeline {
       steps {
         container('helm') {
           script {
-            new helmDeploy().deploy(APP_NAME, APP_TAG)
+          
+            new helmDeploy().deploy('registry', APP_TAG)
+          
           }
         }
       }
