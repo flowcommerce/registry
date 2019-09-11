@@ -1,7 +1,7 @@
 package util
 
 import db._
-import io.flow.common.v0.models.{Environment, UserReference}
+import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.Authorization
 import io.flow.registry.api.lib.DefaultPortAllocator
 import io.flow.registry.v0.models._
