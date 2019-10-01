@@ -34,6 +34,30 @@ spec:
           env:
             - name: JAVA_OPTS
               value: "-Xms{{ $.Values.jvmMemory}}m -Xmx{{ $.Values.jvmMemory}}m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt"
+            - name: FLOW_KUBERNETES_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: FLOW_KUBERNETES_NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: FLOW_KUBERNETES_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: FLOW_KUBERNETES_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: FLOW_KUBERNETES_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: FLOW_KUBERNETES_POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
           args: ["production"]
           ports:
             - name: http
