@@ -13,16 +13,13 @@ lazy val api = project
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "org.aspectj" % "aspectjweaver" % "1.9.4",
-    javaOptions in Universal += "-Dorg.aspectj.tracing.factory=default",
-    javaOptions in Test += "-Dkamon.modules.kamon-system-metrics.auto-start=false",
-    javaOptions in Test += "-Dkamon.show-aspectj-missing-warning=no",
+    javaAgents += "io.kamon" % "kanela-agent" % "1.0.1",
     libraryDependencies ++= Seq(
       ws,
       guice,
       jdbc,
       "io.flow" %% "lib-postgresql-play-play26" % "0.3.48",
-      "io.flow" %% "lib-play-graphite-play26" % "0.1.17",
+      "io.flow" %% "lib-play-graphite-play26" % "0.1.17-k2",
       "com.typesafe.play" %% "play-json-joda" % "2.7.4",
       "org.postgresql" % "postgresql" % "42.2.8",
       "net.jcazevedo" %% "moultingyaml" % "0.4.1",
