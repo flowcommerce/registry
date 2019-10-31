@@ -40,6 +40,7 @@
     <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
     <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
     <logger name="kamon.graphite.GraphiteSender" level="DEBUG" />
+    <logger name="kamon.graphite.MetricPacketBuilder" level="DEBUG" />
 
     <root level="WARN">
         <appender-ref ref="ASYNCFILE" />
