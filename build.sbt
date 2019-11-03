@@ -13,13 +13,13 @@ lazy val api = project
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "io.kamon" % "kanela-agent" % "1.0.1",
+    javaAgents += "io.kamon" % "kanela-agent" % "1.0.2",
     libraryDependencies ++= Seq(
       ws,
       guice,
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play26" % "0.3.48",
-      "io.flow" %% "lib-play-graphite-play26" % "0.1.17-k2-20",
+      "io.flow" %% "lib-postgresql-play-play26" % "0.3.52",
+      "io.flow" %% "lib-play-graphite-play26" % "0.1.17",
       "com.typesafe.play" %% "play-json-joda" % "2.7.4",
       "org.postgresql" % "postgresql" % "42.2.8",
       "net.jcazevedo" %% "moultingyaml" % "0.4.1",
