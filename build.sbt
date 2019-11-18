@@ -13,7 +13,7 @@ lazy val api = project
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "io.kamon" % "kanela-agent" % "1.0.2",
+    javaAgents += "io.kamon" % "kanela-agent" % "1.0.3",
     libraryDependencies ++= Seq(
       ws,
       guice,
@@ -24,7 +24,7 @@ lazy val api = project
       "org.postgresql" % "postgresql" % "42.2.8",
       "net.jcazevedo" %% "moultingyaml" % "0.4.1",
       "io.flow" %% "lib-test-utils" % "0.0.72" % Test,
-      "io.flow" %% "lib-usage" % "0.1.8",
+      "io.flow" %% "lib-usage" % "0.1.9",
       "io.flow" %% "lib-log" % "0.0.87",
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.4.2"),
       "com.github.ghik" %% "silencer-lib" % "1.4.2" % Provided
