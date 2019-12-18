@@ -28,6 +28,13 @@ pipeline {
     stage('Checkout') {
       steps {
         checkoutWithTags scm
+      }
+    }
+
+    stage('Set tags') {
+      when { true }
+      steps {
+        checkoutWithTags scm
 
         script {
           APP_TAG = new flowVersion().make(APP_NAME)
@@ -35,8 +42,9 @@ pipeline {
       }
     }
 
+
     stage('Build and push docker image release') {
-      when { branch 'master' }
+      when { branch 'master'  }
       steps {
         container('docker') {
           script {
