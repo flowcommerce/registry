@@ -39,7 +39,7 @@ pipeline {
       when {
         expression {
           return branch('master') &&
-            !(VERSION.isTagged)
+            !(VERSION.isSameAsCurrentRepoTag)
         }
       }
       steps {
