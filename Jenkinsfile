@@ -31,26 +31,34 @@ pipeline {
       }
     }
 
-    stage('Set tags') {
-      when { true }
+    stage('Commit SemVer tag if necessary') {
+      when {
+        expression {
+          return branch 'master' &&
+            !(new flowVersionDev().calculateSemver(APP_NAME).isTagged())
+        }
+      }
       steps {
-        checkoutWithTags scm
-
         script {
-          APP_TAG = new flowVersion().make(APP_NAME)
+          new flowVersionDev().calculateSemver(APP_NAME).commitSemver()
         }
       }
     }
 
 
     stage('Build and push docker image release') {
-      when { branch 'master'  }
+      when {
+        expression {
+        return branch 'master' &&
+          new flowVersionDev().calculateSemver(APP_NAME).isTagged()
+        }
+      }
       steps {
         container('docker') {
           script {
-            
+            semver = new flowVersionDev().calculateSemver(APP_NAME).printable()
             docker.withRegistry('https://index.docker.io/v1/', 'jenkins-dockerhub') {
-              db = docker.build("$ORG/registry:$APP_TAG", '--network=host -f Dockerfile .')
+              db = docker.build("$ORG/registry:$semver", '--network=host -f Dockerfile .')
               db.push()
             }
             
@@ -60,13 +68,12 @@ pipeline {
     }
 
     stage('Deploy Helm chart') {
-      when { branch 'master' }
+      when { branch 'master' && tagged() }
       steps {
         container('helm') {
           script {
-          
-            new helmDeploy().deploy('registry', APP_TAG)
-          
+            semver = new flowVersionDev().calculateSemver(APP_NAME)
+            new helmDeploy().deploy('registry', semver.printable()
           }
         }
       }
