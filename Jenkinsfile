@@ -22,13 +22,16 @@ pipeline {
   environment {
     ORG      = 'flowcommerce'
     APP_NAME = 'registry'
-    VERSION = new flowVersionDev().calculateSemver(APP_NAME)
   }
 
   stages {
     stage('Checkout') {
       steps {
         checkoutWithTags scm
+
+        script {
+          VERSION = new flowVersionDev().calculateSemver() //requires check-out
+        }
       }
     }
 
