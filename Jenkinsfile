@@ -44,7 +44,7 @@ pipeline {
       }
       steps {
         script {
-          commitSemver(VERSION)
+          new flowVersionDev().commitSemver(VERSION)
         }
       }
     }
