@@ -44,7 +44,7 @@ pipeline {
       }
       steps {
         script {
-          commitSemver VERSION
+          commitSemver(VERSION)
         }
       }
     }
@@ -79,7 +79,7 @@ pipeline {
         container('helm') {
           script {
             semver = VERSION.printable()
-            new helmDeploy().deploy('registry', semver
+            new helmDeploy().deploy('registry', semver)
           }
         }
       }
