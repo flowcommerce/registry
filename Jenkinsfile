@@ -35,7 +35,7 @@ pipeline {
       when {
         expression {
           return branch('master') &&
-            !(new flowVersionDev().calculateSemver(APP_NAME).isTagged())
+            !(new flowVersionDev().calculateSemver(APP_NAME).isTagged)
         }
       }
       steps {
@@ -50,7 +50,7 @@ pipeline {
       when {
         expression {
           return branch('master') &&
-            new flowVersionDev().calculateSemver(APP_NAME).isTagged()
+            new flowVersionDev().calculateSemver(APP_NAME).isTagged
         }
       }
       steps {
@@ -71,7 +71,7 @@ pipeline {
       when {
         expression {
           return branch('master') &&
-            new flowVersionDev().calculateSemver(APP_NAME).isTagged()
+            new flowVersionDev().calculateSemver(APP_NAME).isTagged
         }
       }
       steps {
