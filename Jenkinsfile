@@ -53,7 +53,7 @@ pipeline {
     stage('Build and push docker image release') {
       when {
         expression {
-          return branch('master') && VERSION.isTagged
+          return branch('master')
         }
       }
       steps {
@@ -72,7 +72,7 @@ pipeline {
     stage('Deploy Helm chart') {
       when {
         expression {
-          return branch('master') && VERSION.isTagged
+          return branch('master')
         }
       }
       steps {
