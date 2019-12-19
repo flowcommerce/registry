@@ -30,7 +30,7 @@ pipeline {
         checkoutWithTags scm
 
         script {
-          VERSION = new flowVersionDev().calculateSemver() //requires check-out
+          VERSION = new flowVersionDev().calculateSemver() //requires checkout
         }
       }
     }
