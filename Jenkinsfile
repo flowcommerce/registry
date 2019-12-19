@@ -22,6 +22,7 @@ pipeline {
   environment {
     ORG      = 'flowcommerce'
     APP_NAME = 'registry'
+    VERSION = new flowVersionDev().calculateSemver(APP_NAME)
   }
 
   stages {
@@ -35,12 +36,12 @@ pipeline {
       when {
         expression {
           return branch('master') &&
-            !(new flowVersionDev().calculateSemver(APP_NAME).isTagged)
+            !(VERSION.isTagged)
         }
       }
       steps {
         script {
-          new flowVersionDev().calculateSemver(APP_NAME).commitSemver()
+          VERSION.commitSemver()
         }
       }
     }
@@ -49,19 +50,17 @@ pipeline {
     stage('Build and push docker image release') {
       when {
         expression {
-          return branch('master') &&
-            new flowVersionDev().calculateSemver(APP_NAME).isTagged
+          return branch('master') && VERSION.isTagged
         }
       }
       steps {
         container('docker') {
           script {
-            semver = new flowVersionDev().calculateSemver(APP_NAME).printable()
+            semver = VERSION.printable()
             docker.withRegistry('https://index.docker.io/v1/', 'jenkins-dockerhub') {
               db = docker.build("$ORG/registry:$semver", '--network=host -f Dockerfile .')
               db.push()
             }
-            
           }
         }
       }
@@ -70,14 +69,13 @@ pipeline {
     stage('Deploy Helm chart') {
       when {
         expression {
-          return branch('master') &&
-            new flowVersionDev().calculateSemver(APP_NAME).isTagged
+          return branch('master') && VERSION.isTagged
         }
       }
       steps {
         container('helm') {
           script {
-            semver = new flowVersionDev().calculateSemver(APP_NAME)
+            semver = VERSION
             new helmDeploy().deploy('registry', semver.printable())
           }
         }
