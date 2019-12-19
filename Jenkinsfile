@@ -34,7 +34,7 @@ pipeline {
     stage('Commit SemVer tag if necessary') {
       when {
         expression {
-          return branch 'master' &&
+          return branch('master') &&
             !(new flowVersionDev().calculateSemver(APP_NAME).isTagged())
         }
       }
@@ -49,8 +49,8 @@ pipeline {
     stage('Build and push docker image release') {
       when {
         expression {
-        return branch 'master' &&
-          new flowVersionDev().calculateSemver(APP_NAME).isTagged()
+          return branch('master') &&
+            new flowVersionDev().calculateSemver(APP_NAME).isTagged()
         }
       }
       steps {
@@ -68,7 +68,12 @@ pipeline {
     }
 
     stage('Deploy Helm chart') {
-      when { branch 'master' && tagged() }
+      when {
+        expression {
+          return branch('master') &&
+            new flowVersionDev().calculateSemver(APP_NAME).isTagged()
+        }
+      }
       steps {
         container('helm') {
           script {
