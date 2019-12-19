@@ -78,7 +78,7 @@ pipeline {
         container('helm') {
           script {
             semver = new flowVersionDev().calculateSemver(APP_NAME)
-            new helmDeploy().deploy('registry', semver.printable()
+            new helmDeploy().deploy('registry', semver.printable())
           }
         }
       }
