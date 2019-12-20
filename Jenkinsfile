@@ -30,12 +30,12 @@ pipeline {
         checkoutWithTags scm
 
         script {
-          VERSION = new flowVersionDev().calculateSemver() //requires checkout
+          VERSION = new flowSemver().calculateSemver() //requires checkout
         }
       }
     }
 
-    stage('Commit SemVer tag if necessary') {
+    stage('Commit SemVer tag') {
       when {
         expression {
           return branch('master') &&
@@ -44,17 +44,14 @@ pipeline {
       }
       steps {
         script {
-          new flowVersionDev().commitSemver(VERSION)
+          new flowSemver().commitSemver(VERSION)
         }
       }
     }
 
-
     stage('Build and push docker image release') {
       when {
-        expression {
-          return branch('master')
-        }
+        branch('master')
       }
       steps {
         container('docker') {
@@ -71,15 +68,12 @@ pipeline {
 
     stage('Deploy Helm chart') {
       when {
-        expression {
-          return branch('master')
-        }
+        branch('master')
       }
       steps {
         container('helm') {
           script {
-            semver = VERSION.printable()
-            new helmDeploy().deploy('registry', semver)
+            new helmDeploy().deploy(APP_NAME, VERSION.printable())
           }
         }
       }
