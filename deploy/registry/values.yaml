@@ -25,11 +25,11 @@ tolerations: {}
 ingress:
   enabled: true
   gateways:
-    - key: flow-io
+    - key: registry-flow-io
       tld: api.flow.io
       hosts:
         - registry.api.flow.io
-    - key: flow-pub
+    - key: registry-flow-pub
       tld: flo.pub
       hosts:
         - registry.flo.pub
