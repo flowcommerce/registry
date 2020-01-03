@@ -37,10 +37,7 @@ pipeline {
 
     stage('Commit SemVer tag') {
       when {
-        expression {
-          return branch('master') &&
-            !(VERSION.isSameAsCurrentRepoTag)
-        }
+        branch('master')
       }
       steps {
         script {
@@ -58,7 +55,7 @@ pipeline {
           script {
             semver = VERSION.printable()
             docker.withRegistry('https://index.docker.io/v1/', 'jenkins-dockerhub') {
-              db = docker.build("$ORG/registry:$semver", '--network=host -f Dockerfile .')
+              db = docker.build("$ORG/$APP_NAME:$semver", '--network=host -f Dockerfile .')
               db.push()
             }
           }
