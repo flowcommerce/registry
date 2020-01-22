@@ -3,7 +3,7 @@ code:
     common:
       version: latest
       generators:
-        anorm_2_8_parsers: api/app/generated
+        anorm_2_6_parsers: api/app/generated
         play_2_x_json: api/app/generated
     error:
       version: latest

@@ -10,7 +10,7 @@ flow:
     play_2_x_json:
     - api/app/generated/FlowErrorV0Models.scala
   healthcheck:
-    play_2_6_client:
+    play_2_8_client:
     - api/app/generated/FlowHealthcheckV0Client.scala
     play_2_x_routes:
     - api/conf/healthcheck.routes
@@ -18,7 +18,7 @@ flow:
     anorm_2_6_parsers:
     - api/app/generated/FlowRegistryV0Conversions.scala
     - api/app/generated/FlowRegistryV0Parsers.scala
-    play_2_6_client:
+    play_2_8_client:
     - api/app/generated/FlowRegistryV0Client.scala
     play_2_x_routes:
     - api/conf/registry.routes
