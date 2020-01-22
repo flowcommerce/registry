@@ -11,8 +11,8 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.0")
 
 addSbtPlugin("com.lightbend.sbt" % "sbt-javaagent" % "0.1.5")
 
-//addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.10")
-//
-//resolvers += "Flow Plugins" at "https://flow.jfrog.io/flow/plugins-release/"
-//
-//addSbtPlugin("io.flow" % "sbt-flow-linter" % "0.0.11")
+addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.10")
+
+resolvers += "Flow Plugins" at "https://flow.jfrog.io/flow/plugins-release/"
+
+addSbtPlugin("io.flow" % "sbt-flow-linter" % "0.0.11")
