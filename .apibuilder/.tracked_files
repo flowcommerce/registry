@@ -1,7 +1,7 @@
 ---
 flow:
   common:
-    anorm_2_6_parsers:
+    anorm_2_8_parsers:
     - api/app/generated/FlowCommonV0Conversions.scala
     - api/app/generated/FlowCommonV0Parsers.scala
     play_2_x_json:
@@ -15,7 +15,7 @@ flow:
     play_2_x_routes:
     - api/conf/healthcheck.routes
   registry:
-    anorm_2_6_parsers:
+    anorm_2_8_parsers:
     - api/app/generated/FlowRegistryV0Conversions.scala
     - api/app/generated/FlowRegistryV0Parsers.scala
     play_2_8_client:
