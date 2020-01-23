@@ -174,7 +174,7 @@ class ApplicationsDaoSpec extends RegistrySpec {
     val other = createApplication(createApplicationForm().copy(dependency = Some(Seq(base.id))))
     val form = createApplicationPutForm().copy(dependency = Some(Seq(other.id)))
 
-    applicationsDao.update(testUser, base, form).left.get must be(
+    applicationsDao.update(testUser, base, form).leftValue must be(
       Seq(s"Application[${base.id}] Cannot declare a circular dependency on[${other.id}]")
     )
 
