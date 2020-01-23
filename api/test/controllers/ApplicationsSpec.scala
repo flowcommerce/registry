@@ -72,7 +72,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
   }
 
   "POST /applications w/ valid explicit ports" in  {
-    val external: Long = portsDao.maxExternalPortNumber().getOrElse(6000L) + 3L
+    val external: Long = portsDao.maxExternalPortNumber().getOrElse(6000l) + 3l
     val internal = 1234L
 
     val application = createApplication(createApplicationForm().copy(external = Some(external), internal = Some(internal)))
