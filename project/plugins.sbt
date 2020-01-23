@@ -5,16 +5,14 @@ logLevel := Level.Warn
 resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/"
 
 // Use the Play sbt plugin for Play projects
-addSbtPlugin("com.typesafe.play"%"sbt-plugin"%"2.6.20")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.0")
 
-addSbtPlugin("com.gilt.sbt" % "sbt-newrelic" % "0.2.4")
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
 
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.0")
+addSbtPlugin("com.lightbend.sbt" % "sbt-javaagent" % "0.1.5")
 
-addSbtPlugin("com.lightbend.sbt" % "sbt-javaagent" % "0.1.4")
-
-addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.4")
+addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.10")
 
 resolvers += "Flow Plugins" at "https://flow.jfrog.io/flow/plugins-release/"
 
-addSbtPlugin("io.flow" % "sbt-flow-linter" % "0.0.9")
+addSbtPlugin("io.flow" % "sbt-flow-linter" % "0.0.14")
