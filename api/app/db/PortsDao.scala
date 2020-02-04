@@ -73,12 +73,12 @@ class PortsDao @Inject() (
   ): String = {
     val id = idGenerator.randomId()
     SQL(InsertQuery).on(
-      'id -> id,
-      'application_id -> form.applicationId,
-      'service_id -> form.serviceId,
-      'internal -> form.internal,
-      'external -> form.external,
-      'updated_by_user_id -> createdBy.id
+      Symbol("id") -> id,
+      Symbol("application_id") -> form.applicationId,
+      Symbol("service_id") -> form.serviceId,
+      Symbol("internal") -> form.internal,
+      Symbol("external") -> form.external,
+      Symbol("updated_by_user_id") -> createdBy.id
     ).execute()
     id
   }
