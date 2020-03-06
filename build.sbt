@@ -24,7 +24,7 @@ lazy val api = project
       "net.jcazevedo" %% "moultingyaml" % "0.4.1",
       "io.flow" %% "lib-test-utils-play28" % "0.0.81" % Test,
       "io.flow" %% "lib-usage-play28" % "0.1.15",
-      "io.flow" %% "lib-log" % "0.0.97",
+      "io.flow" %% "lib-log" % "0.1.0",
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.4.4" cross CrossVersion.full),
       "com.github.ghik" %% "silencer-lib" % "1.4.4" % Provided cross CrossVersion.full,
     ),
