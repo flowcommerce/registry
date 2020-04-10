@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/instance: {{ $.Release.Name }}
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
     app.kubernetes.io/name: {{ include "deploy.name" $ }}
-    app.kubernetes.io/stage: stable
+    app.kubernetes.io/stage: live
 spec:
   ports:
     - port: {{ $.Values.service.port }}

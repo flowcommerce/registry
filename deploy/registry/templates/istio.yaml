@@ -41,13 +41,13 @@ spec:
     - destination:
         host: {{ $fullName }}
         port:
-          number: 9000
+          number: {{ $.Values.service.port }}
         subset:  {{ $stage.deployment }}
       weight: 100
     - destination:
         host: {{ $fullName }}-canary
         port:
-          number: 9000
+          number: {{ $.Values.service.port }}
         subset:  {{ $stage.deployment }}
       weight: 0
 {{- end }}
