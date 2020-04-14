@@ -98,7 +98,6 @@ spec:
     {{- end }}
   strategy:
     canary:
-      maxSurge: {{ $deployment.maxSurge }}
   {{- with $deployment.steps }}
       steps:
 {{ toYaml . | indent 8 }}
