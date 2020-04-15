@@ -35,21 +35,11 @@ spec:
   gateways:
 {{ toYaml $service.gateways | indent 4 }}
   http:
-  - name: primary
-    route:
+  - route:
 {{- range $stage := $service.stages }}
     - destination:
         host: {{ $fullName }}
-        port:
-          number: {{ $.Values.service.port }}
         subset:  {{ $stage.deployment }}
-      weight: 100
-    - destination:
-        host: {{ $fullName }}-canary
-        port:
-          number: {{ $.Values.service.port }}
-        subset:  {{ $stage.deployment }}
-      weight: 0
 {{- end }}
 ---
 {{- end -}}

@@ -1,7 +1,7 @@
 {{- $fullName := include "deploy.fullname" . -}}
 {{- range $stage, $deployment := index .Values "deployments" }}
-apiVersion: argoproj.io/v1alpha1
-kind: Rollout
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: {{ $fullName }}-{{ $stage }}
   labels:
@@ -96,19 +96,5 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
-  strategy:
-    canary:
-  {{- with $deployment.steps }}
-      steps:
-{{ toYaml . | indent 8 }}
-  {{- end }}
-      canaryService: {{ $fullName }}-canary
-      stableService: {{ $fullName }}
-      trafficRouting:
-        istio:
-          virtualService:
-            name: {{ $fullName }}-live
-            routes:
-              - primary # At least one route is required
 ---
 {{- end -}}
