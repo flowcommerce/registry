@@ -12,12 +12,12 @@ spec:
     loadBalancer:
       simple: ROUND_ROBIN
   subsets:
-{{- range $stage := $service.stages }}
-    - name: {{ $stage.deployment }}
+    - name: live
       labels:
-        app.kubernetes.io/stage: {{ $stage.deployment }}
-{{- end }}
-
+        app.kubernetes.io/stage: live
+    - name: canary
+      labels:
+        app.kubernetes.io/stage: canary
 ---
 
 apiVersion: networking.istio.io/v1alpha3
@@ -35,11 +35,15 @@ spec:
   gateways:
 {{ toYaml $service.gateways | indent 4 }}
   http:
-  - route:
-{{- range $stage := $service.stages }}
+  - name: primary
+    route:
     - destination:
         host: {{ $fullName }}
-        subset:  {{ $stage.deployment }}
-{{- end }}
+        subset:  live
+      weight: 100
+    - destination:
+        host: {{ $fullName }}-canary
+        subset:  canary
+      weight: 0
 ---
 {{- end -}}

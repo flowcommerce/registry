@@ -56,3 +56,10 @@ deployments:
     disruptionBudgetEnabled: true
     targetCPUUtilizationPercentage: 80
     version: #from commandline
+    steps:
+      - setWeight: 5
+      - pause:
+          duration: 120
+      - setWeight: 50
+      - pause:
+          duration: 120
