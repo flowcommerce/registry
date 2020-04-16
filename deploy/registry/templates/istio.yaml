@@ -39,9 +39,11 @@ spec:
     route:
     - destination:
         host: {{ $fullName }} # Rollout: strategy.stableService
+        subset: live
       weight: 100
     - destination:
         host: {{ $fullName }}-canary # Rollout: strategy.canaryService
+        subset: canary
       weight: 0
 ---
 {{- end -}}
