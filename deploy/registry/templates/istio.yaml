@@ -11,12 +11,6 @@ spec:
       mode: ISTIO_MUTUAL
     loadBalancer:
       simple: ROUND_ROBIN
-  subsets:
-  {{- range $stage := $service.stages }}
-    - name: {{ $stage.deployment }}
-      labels:
-        app.kubernetes.io/stage: {{ $stage.deployment }}
-{{- end }}
 
 ---
 
@@ -39,11 +33,9 @@ spec:
     route:
     - destination:
         host: {{ $fullName }} # Rollout: strategy.stableService
-        subset: live
       weight: 100
     - destination:
         host: {{ $fullName }}-canary # Rollout: strategy.canaryService
-        subset: canary
       weight: 0
 ---
 {{- end -}}
@@ -58,8 +50,4 @@ spec:
       mode: ISTIO_MUTUAL
     loadBalancer:
       simple: ROUND_ROBIN
-  subsets:
-    - name: canary
-      labels:
-        app.kubernetes.io/stage: canary
 ---
