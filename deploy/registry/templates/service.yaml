@@ -1,4 +1,5 @@
 {{- $fullName := include "deploy.fullname" . -}}
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -14,6 +15,9 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+#    - port: 9095
+#      protocol: TCP
+#      name: http-metrics
   selector:
     app.kubernetes.io/name: {{ include "deploy.name" $ }}
     app.kubernetes.io/instance: {{ $.Release.Name }}
@@ -33,6 +37,9 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+#    - port: 9095
+#      protocol: TCP
+#      name: http-metrics
   selector:
     app.kubernetes.io/name: {{ include "deploy.name" $ }}
     app.kubernetes.io/instance: {{ $.Release.Name }}
