@@ -46,11 +46,11 @@ spec:
     - destination:
         host: {{ $fullName }} # Rollout: strategy.stableService
         port:
-          number: {{ .Values.service.port }}
+          number: {{ $.Values.service.port }}
       weight: 100
     - destination:
         host: {{ $fullName }}-canary # Rollout: strategy.canaryService
         port:
-          number: {{ .Values.service.port }}
+          number: {{ $.Values.service.port }}
       weight: 0
 {{- end -}}
