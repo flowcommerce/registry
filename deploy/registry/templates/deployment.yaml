@@ -27,7 +27,7 @@ spec:
         flow.io/version: {{ $deployment.version }}
       annotations:
         iam.amazonaws.com/role: {{ $.Values.iamRole }}
-        sumologic.com/sourceCategory: {{ $fullName }}_docker_logs
+        sumologic.com/sourceCategory: {{ $fullName }}
     spec:
       containers:
         - name: {{ $.Chart.Name }}
