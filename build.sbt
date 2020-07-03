@@ -1,4 +1,4 @@
-import play.sbt.PlayScala._
+
 
 name := "registry"
 
@@ -18,7 +18,7 @@ lazy val api = project
       guice,
       jdbc,
       "io.flow" %% "lib-postgresql-play-play28" % "0.3.79",
-      "io.flow" %% "lib-play-graphite-play28" % "0.1.49",
+      "io.flow" %% "lib-play-graphite-play28" % "0.1.50",
       "com.typesafe.play" %% "play-json-joda" % "2.9.0",
       "org.postgresql" % "postgresql" % "42.2.14",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
