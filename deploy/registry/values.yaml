@@ -3,6 +3,8 @@ fullnameOverride: ""
 
 service:
   port: 9000
+  metricsEndpoint:
+    enabled: false
 
 iamRole: arn:aws:iam::479720515435:role/ecsInstanceRole
 image:
@@ -18,9 +20,9 @@ resources:
 
 jvmMemory: 500
 
-nodeSelector: {}
+nodeSelector: {} 
 affinity: {}
-tolerations: {}
+tolerations: {} 
 
 ingress:
   enabled: true
@@ -56,3 +58,4 @@ deployments:
     disruptionBudgetEnabled: true
     targetCPUUtilizationPercentage: 80
     version: #from commandline
+    strategy: RollingUpdate

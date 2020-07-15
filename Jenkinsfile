@@ -14,14 +14,13 @@ pipeline {
 
       containerTemplates([
         containerTemplate(name: 'helm', image: "lachlanevenson/k8s-helm:v2.12.0", command: 'cat', ttyEnabled: true),
-        containerTemplate(name: 'docker', image: 'docker:18', command: 'cat', ttyEnabled: true)
+        containerTemplate(name: 'docker', image: 'docker:18', resourceRequestCpu: '1', resourceRequestMemory: '2Gi', command: 'cat', ttyEnabled: true)
       ])
     }
   }
 
   environment {
     ORG      = 'flowcommerce'
-    APP_NAME = 'registry'
   }
 
   stages {
@@ -36,9 +35,7 @@ pipeline {
     }
 
     stage('Commit SemVer tag') {
-      when {
-        branch('master')
-      }
+      when { branch 'master' }
       steps {
         script {
           new flowSemver().commitSemver(VERSION)
@@ -47,30 +44,30 @@ pipeline {
     }
 
     stage('Build and push docker image release') {
-      when {
-        branch('master')
-      }
+      when { branch 'master' }
       steps {
         container('docker') {
           script {
             semver = VERSION.printable()
+            
             docker.withRegistry('https://index.docker.io/v1/', 'jenkins-dockerhub') {
-              db = docker.build("$ORG/$APP_NAME:$semver", '--network=host -f Dockerfile .')
+              db = docker.build("$ORG/registry:$semver", '--network=host -f Dockerfile .')
               db.push()
             }
+            
           }
         }
       }
     }
 
     stage('Deploy Helm chart') {
-      when {
-        branch('master')
-      }
+      when { branch 'master' }
       steps {
         container('helm') {
           script {
-            new helmDeploy().deploy(APP_NAME, VERSION.printable())
+          
+            new helmDeploy().deploy('registry', VERSION.printable())
+          
           }
         }
       }
