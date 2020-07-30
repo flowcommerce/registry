@@ -25,6 +25,7 @@ lazy val api = project
       "io.flow" %% "lib-test-utils-play28" % "0.0.98" % Test,
       "io.flow" %% "lib-usage-play28" % "0.1.29",
       "io.flow" %% "lib-log" % "0.1.15",
+      "io.kamon" %% "kamon-zipkin" % "2.1.4",
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.6.0" cross CrossVersion.full),
       "com.github.ghik" %% "silencer-lib" % "1.6.0" % Provided cross CrossVersion.full,
     ),
