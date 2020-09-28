@@ -13,13 +13,13 @@ import io.flow.postgresql.Authorization
  *
  * Some basic rules we implemented to minimize probability of port
  * collissions with external software
- * 
+ *
  *  - start at 6000 ( > postgresql port )
- *  - blacklist any number ending in 00 (things people randomly are
+ *  - denylist any number ending in 00 (things people randomly are
  *    more likely to use like 7000, 8000, 9000)
- *  - create a blacklist of well known ports that we encounter
+ *  - create a denylist of well known ports that we encounter
  *    (e.g. 8080)
- * 
+ *
  * The basic algorithm is to grab the prefix of an application and
  * then to iterate through existing blocks of ports to find an
  * available one. If not found, allocate another block of ports
@@ -32,7 +32,7 @@ class DefaultPortAllocator @Inject() (
   portsDao: PortsDao
 ) {
 
-  private[this] val Blacklist = Seq(8080L)
+  private[this] val Denylist = Seq(8080L)
 
   private[this] val MinPortNumber = 6000
 
@@ -130,7 +130,7 @@ class DefaultPortAllocator @Inject() (
   }
 
   protected[lib] def isPortAvailable(number: Long): Boolean = {
-    if (Blacklist.contains(number)) {
+    if (Denylist.contains(number)) {
       false
     } else {
       portsDao.findByExternal(Authorization.All, number).isEmpty
@@ -138,7 +138,7 @@ class DefaultPortAllocator @Inject() (
   }
 
   protected[lib] def isBlockAvailable(number: Long): Boolean = {
-    if (Blacklist.contains(number)) {
+    if (Denylist.contains(number)) {
       false
     } else if (number % 100 == 0) {
       false

@@ -3,7 +3,7 @@ package io.flow.registry.api.lib
 import util.RegistrySpec
 
 class DefaultPortAllocatorSpec extends RegistrySpec {
-  
+
   "offset" in {
     defaultPortAllocator.offset("nodejs") must be(Some(0))
     defaultPortAllocator.offset("play") must be(Some(1))
@@ -13,7 +13,7 @@ class DefaultPortAllocatorSpec extends RegistrySpec {
     defaultPortAllocator.offset("other") must be(None)
   }
 
-  "blacklist block" in {
+  "denylist block" in {
     defaultPortAllocator.isBlockAvailable(6000) must be(false)
     defaultPortAllocator.isBlockAvailable(6100) must be(false)
     defaultPortAllocator.isBlockAvailable(6120) must be(true)
@@ -25,7 +25,7 @@ class DefaultPortAllocatorSpec extends RegistrySpec {
     defaultPortAllocator.isBlockAvailable(8910) must be(true)
   }
 
-  "blacklist ports" in {
+  "denylist ports" in {
     defaultPortAllocator.isPortAvailable(8080) must be(false)
     defaultPortAllocator.isPortAvailable(8124) must be(true)
   }
