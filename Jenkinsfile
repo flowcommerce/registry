@@ -62,14 +62,18 @@ pipeline {
 
     stage('Deploy Helm chart') {
       when { branch 'master' }
-      steps {
-        container('helm') {
-          script {
-          
-            new helmDeploy().deploy('registry', VERSION.printable())
-          
+      parallel {
+        
+        stage('deploy registry') {
+          steps {
+            script {
+              container('helm') {
+                new helmDeploy().deploy('registry', VERSION.printable())
+              }
+            }
           }
         }
+        
       }
     }
   }
