@@ -1,5 +1,3 @@
-
-
 name := "registry"
 
 scalaVersion in ThisBuild := "2.13.3"
@@ -19,14 +17,13 @@ lazy val api = project
       guice,
       jdbc,
       "io.flow" %% "lib-postgresql-play-play28" % "0.4.11",
-      "io.flow" %% "lib-play-graphite-play28" % "0.1.84",
+      "io.flow" %% "lib-play-graphite-play28" % "0.1.86-zipkin",
       "com.typesafe.play" %% "play-json-joda" % "2.9.2",
       "org.postgresql" % "postgresql" % "42.2.18",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
       "io.flow" %% "lib-test-utils-play28" % "0.1.23" % Test,
       "io.flow" %% "lib-usage-play28" % "0.1.52",
       "io.flow" %% "lib-log" % "0.1.33",
-      "io.kamon" %% "kamon-zipkin" % "2.1.11",
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.7.2" cross CrossVersion.full),
       "com.github.ghik" %% "silencer-lib" % "1.7.2" % Provided cross CrossVersion.full,
     ),
