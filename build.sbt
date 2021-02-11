@@ -6,7 +6,6 @@ lazy val api = project
   .in(file("api"))
   .enablePlugins(PlayScala)
   .enablePlugins(JavaAppPackaging, JavaAgent)
-  .enablePlugins(PlayAkkaHttp2Support)
   .settings(commonSettings: _*)
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
