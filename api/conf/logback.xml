@@ -24,6 +24,7 @@
     <logger name="application" level="INFO" />
 
     <logger name="kamon.zipkin.ZipkinReporter" level="INFO" />
+    <logger name="AsyncReporter$BoundedAsyncReporter" level="DEBUG" />
 
     <!-- Off these ones as they are annoying, and anyway we manage configuration ourselves -->
     <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
