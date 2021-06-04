@@ -22,7 +22,7 @@ lazy val api = project
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "io.kamon" % "kanela-agent" % "1.0.9",
+    javaAgents += "io.kamon" % "kanela-agent" % "1.0.11",
     libraryDependencies ++= Seq(
       ws,
       guice,
