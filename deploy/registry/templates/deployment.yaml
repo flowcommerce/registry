@@ -27,6 +27,7 @@ spec:
         app.kubernetes.io/stage: {{ $stage }}
         app: {{ include "deploy.name" $ }}
         flow.io/version: {{ $deployment.version }}
+        admission.datadoghq.com/enabled: "true"
       annotations:
         iam.amazonaws.com/role: {{ $.Values.iamRole }}
         sumologic.com/sourceCategory: {{ $fullName }}

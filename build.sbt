@@ -35,6 +35,7 @@ lazy val api = project
       "io.flow" %% "lib-test-utils-play28" % "0.1.30" % Test,
       "io.flow" %% "lib-usage-play28" % "0.1.60",
       "io.flow" %% "lib-log" % "0.1.38",
+      "io.kamon" %% "kamon-datadog" % "2.2.0",
     ),
     scalacOptions ++= allScalacOptions,
   )
@@ -44,8 +45,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     specs2 % Test
   ),
-  sources in(Compile, doc) := Seq.empty,
-  publishArtifact in(Compile, packageDoc) := false,
+  Compile / doc / sources := Seq.empty,
+  Compile / packageDoc / publishArtifact := false,
   resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/",
   resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
   resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release/",
