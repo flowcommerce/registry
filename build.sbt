@@ -37,6 +37,9 @@ lazy val api = project
       "io.flow" %% "lib-log" % "0.1.41",
       "io.kamon" %% "kamon-datadog" % "2.2.0",
     ),
+    dependencyOverrides ++= Seq(
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
+    ),
     scalacOptions ++= allScalacOptions,
   )
 
