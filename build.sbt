@@ -22,20 +22,23 @@ lazy val api = project
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "io.kamon" % "kanela-agent" % "1.0.9",
+    javaAgents += "io.kamon" % "kanela-agent" % "1.0.11",
     libraryDependencies ++= Seq(
       ws,
       guice,
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play28" % "0.4.23",
-      "io.flow" %% "lib-play-graphite-play28" % "0.1.93",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.4.25",
+      "io.flow" %% "lib-play-graphite-play28" % "0.1.96",
       "com.typesafe.play" %% "play-json-joda" % "2.9.2",
       "org.postgresql" % "postgresql" % "42.2.20",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
-      "io.flow" %% "lib-test-utils-play28" % "0.1.30" % Test,
-      "io.flow" %% "lib-usage-play28" % "0.1.60",
-      "io.flow" %% "lib-log" % "0.1.38",
+      "io.flow" %% "lib-test-utils-play28" % "0.1.33" % Test,
+      "io.flow" %% "lib-usage-play28" % "0.1.62",
+      "io.flow" %% "lib-log" % "0.1.41",
       "io.kamon" %% "kamon-datadog" % "2.2.0",
+    ),
+    dependencyOverrides ++= Seq(
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
     ),
     scalacOptions ++= allScalacOptions,
   )
