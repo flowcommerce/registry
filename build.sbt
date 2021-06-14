@@ -22,7 +22,7 @@ lazy val api = project
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-//    javaAgents += "io.kamon" % "kanela-agent" % "1.0.11",
+    javaAgents += "io.kamon" % "kanela-agent" % "1.0.11",
     javaAgents += "com.datadoghq" % "dd-java-agent" % "0.80.0",
     libraryDependencies ++= Seq(
       ws,
@@ -36,7 +36,7 @@ lazy val api = project
       "io.flow" %% "lib-test-utils-play28" % "0.1.33" % Test,
       "io.flow" %% "lib-usage-play28" % "0.1.62",
       "io.flow" %% "lib-log" % "0.1.41",
-//      "io.kamon" %% "kamon-datadog" % "2.2.0",
+      "io.kamon" %% "kamon-datadog" % "2.2.0",
     ),
     dependencyOverrides ++= Seq(
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
