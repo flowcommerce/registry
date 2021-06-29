@@ -21,9 +21,7 @@ lazy val api = project
   .settings(commonSettings: _*)
   .settings(
     Universal / javaOptions ++= Seq(
-      "-Ddd.profiling.enabled=true",
       s"-Ddd.service=registry",
-      "-XX:FlightRecorderOptions=stackdepth=256",
     ),
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
