@@ -57,4 +57,9 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     System.getenv("ARTIFACTORY_USERNAME"),
     System.getenv("ARTIFACTORY_PASSWORD")
   ),
+  Universal / javaOptions ++= Seq(
+    s"-Ddd.service=${name.value}",
+    s"-Ddd.env=production",
+    s"-Ddd.version=${version.value}",
+  ),
 )
