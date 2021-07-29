@@ -46,10 +46,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.hostIP
-            - name: DD_AGENT_HOST
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
             - name: FLOW_KUBERNETES_POD_NAME
               valueFrom:
                 fieldRef:
@@ -66,6 +62,12 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.uid
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: DD_SERVICE
+              value: {{ $.Chart.Name }}
           args: ["production"]
           ports:
             - name: http
