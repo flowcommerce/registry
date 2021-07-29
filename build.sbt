@@ -20,6 +20,9 @@ lazy val api = project
   .enablePlugins(JavaAppPackaging, JavaAgent)
   .settings(commonSettings: _*)
   .settings(
+    Universal / javaOptions ++= Seq(
+      s"-Ddd.service=registry",
+    ),
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
 //    javaAgents += "io.kamon" % "kanela-agent" % "1.0.11",
@@ -56,10 +59,5 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "flow.jfrog.io",
     System.getenv("ARTIFACTORY_USERNAME"),
     System.getenv("ARTIFACTORY_PASSWORD")
-  ),
-  Universal / javaOptions ++= Seq(
-    s"-Ddd.service=${name.value}",
-    s"-Ddd.env=production",
-    s"-Ddd.version=${version.value}",
-  ),
+  )
 )
