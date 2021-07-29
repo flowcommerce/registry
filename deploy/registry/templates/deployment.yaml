@@ -68,6 +68,8 @@ spec:
                   fieldPath: status.hostIP
             - name: DD_SERVICE
               value: {{ $.Chart.Name }}
+            - name: DD_VERSION
+              value: {{ $deployment.version }}
           args: ["production"]
           ports:
             - name: http
