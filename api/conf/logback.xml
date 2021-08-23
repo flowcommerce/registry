@@ -7,7 +7,7 @@
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
           <evaluator> <!-- defaults to type ch.qos.logback.classic.boolex.JaninoEventEvaluator -->
-             <expression>return message.toLowerCase().startsWith("datadog");</expression>
+             <expression>return logger.toLowerCase().startsWith("datadog");</expression>
           </evaluator>
           <OnMismatch>DENY</OnMismatch>
           <OnMatch>ACCEPT</OnMatch>
