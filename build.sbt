@@ -36,7 +36,6 @@ lazy val api = project
       "io.flow" %% "lib-usage-play28" % "0.1.70",
       "io.flow" %% "lib-log" % "0.1.47",
       "io.kamon" %% "kamon-datadog" % "2.2.3",
-      "org.codehaus.janino" % "janino" % "3.1.6",
     ),
     scalacOptions ++= allScalacOptions,
   )
