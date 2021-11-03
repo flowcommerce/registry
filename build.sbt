@@ -17,9 +17,12 @@ lazy val allScalacOptions = Seq(
 lazy val api = project
   .in(file("api"))
   .enablePlugins(PlayScala)
+  .enablePlugins (Cinnamon)
   .enablePlugins(JavaAppPackaging, JavaAgent)
   .settings(commonSettings: _*)
   .settings(
+    run / cinnamon := true,
+    cinnamonLogLevel := "INFO",
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     javaAgents += "com.datadoghq" % "dd-java-agent" % "0.89.0",
@@ -36,6 +39,9 @@ lazy val api = project
       "io.flow" %% "lib-usage-play28" % "0.1.79",
       "io.flow" %% "lib-log" % "0.1.52",
       "io.kamon" %% "kamon-datadog" % "2.3.1",
+      Cinnamon.library.cinnamonAkka,
+      Cinnamon.library.cinnamonCHMetrics,
+      Cinnamon.library.cinnamonDatadogSocket,
     ),
     scalacOptions ++= allScalacOptions,
   )
