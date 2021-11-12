@@ -21,7 +21,18 @@ resources:
 jvmMemory: 500
 
 nodeSelector: {} 
-affinity: {}
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchExpressions:
+        - key: app
+          operator: In
+          values:
+          - registry
+      topologyKey: topology.kubernetes.io/zone
+
 tolerations: {} 
 
 ingress:
