@@ -118,7 +118,7 @@ spec:
               - key: app
                 operator: In
                 values:
-                - registry
+                - {{ include "deploy.name" $ }}
             topologyKey: topology.kubernetes.io/zone
     {{- with $.Values.tolerations }}
       tolerations:
