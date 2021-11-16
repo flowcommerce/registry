@@ -115,13 +115,13 @@ spec:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 100
             podAffinityTerm:
-          labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - {{ include "deploy.name" $ }}
-            topologyKey: topology.kubernetes.io/zone
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{ include "deploy.name" $ }}
+              topologyKey: topology.kubernetes.io/zone
     {{- with $.Values.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
