@@ -110,10 +110,16 @@ spec:
     {{- end }}
       imagePullSecrets:
         - name: flow-docker-hub
-    {{- with $.Values.affinity }}
       affinity:
-{{ toYaml . | indent 8 }}
-    {{- end }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - {{ include "deploy.name" $ }}
+            topologyKey: topology.kubernetes.io/zone
     {{- with $.Values.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
