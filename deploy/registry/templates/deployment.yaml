@@ -39,7 +39,7 @@ spec:
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           env:
             - name: JAVA_OPTS
-              value: "-Xms{{ $.Values.jvmMemory}}m -Xmx{{ $.Values.jvmMemory}}m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt"
+              value: "-Xms{{ $.Values.jvmMemory}}m -Xmx{{ $.Values.jvmMemory}}m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt -XX:+UseG1GC -XX:+UseStringDeduplication"
             - name: FLOW_KUBERNETES_NODE_NAME
               valueFrom:
                 fieldRef:
