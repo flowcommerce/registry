@@ -41,6 +41,7 @@ lazy val api = project
       "io.kamon" %% "kamon-datadog" % "2.4.2",
       Cinnamon.library.cinnamonAkka,
       Cinnamon.library.cinnamonCHMetrics,
+      Cinnamon.library.cinnamonDatadog,
       Cinnamon.library.cinnamonDatadogSocket,
     ),
     scalacOptions ++= allScalacOptions,
