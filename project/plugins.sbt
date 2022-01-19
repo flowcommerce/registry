@@ -17,4 +17,4 @@ resolvers += "Flow Plugins" at "https://flow.jfrog.io/flow/plugins-release/"
 
 addSbtPlugin("io.flow" % "sbt-flow-linter" % "0.0.34")
 
-addSbtPlugin("com.lightbend.cinnamon" % "sbt-cinnamon" % "2.16.2")
+addSbtPlugin("com.lightbend.cinnamon" % "sbt-cinnamon" % "2.3.1")
