@@ -12,7 +12,7 @@ import play.api.db._
 @Singleton
 class ServiceVersionsDao @Inject()(
   db: Database
-){
+) extends lib.PublicAuthorizedQuery {
 
   private[this] val dbHelpers = DbHelpers(db, "services")
   private[this] val BaseQuery = Query("""
@@ -29,7 +29,7 @@ class ServiceVersionsDao @Inject()(
     orderBy: OrderBy = OrderBy("journal_timestamp", Some("services"))
   ): Seq[ServiceVersion] = {
     db.withConnection { implicit c =>
-      dbHelpers.authorizedQuery(BaseQuery, auth).
+      dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
         optionalIn("services.journal_id", ids.map(_.map(_.toLong))).
         optionalIn("services.id", services).
         limit(limit).

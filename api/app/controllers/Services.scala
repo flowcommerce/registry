@@ -56,7 +56,7 @@ class Services @javax.inject.Inject() (
     limit: Long = 25,
     offset: Long = 0,
     sort: String
-  ) = Anonymous.async { _ =>
+  ) = Anonymous.async { request =>
     Future {
       OrderBy.parse(sort) match {
         case Left(errors) => {
@@ -66,7 +66,7 @@ class Services @javax.inject.Inject() (
           Ok(
             Json.toJson(
               serviceVersionsDao.findAll(
-                Authorization.All,
+                Authorization.fromUser(request.user.map(_.id)),
                 ids = optionals(id),
                 services = optionals(service),
                 limit = limit,

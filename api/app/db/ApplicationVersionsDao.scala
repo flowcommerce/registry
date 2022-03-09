@@ -10,7 +10,8 @@ import org.joda.time.DateTime
 import play.api.db._
 
 @Singleton
-class ApplicationVersionsDao @Inject() (db: Database) {
+class ApplicationVersionsDao @Inject() (db: Database)
+  extends lib.PublicAuthorizedQuery {
 
   private[this] val dbHelpers = DbHelpers(db, "applications")
 
@@ -28,7 +29,7 @@ class ApplicationVersionsDao @Inject() (db: Database) {
     orderBy: OrderBy = OrderBy("journal_timestamp", Some("applications"))
   ): Seq[ApplicationVersion] = {
     db.withConnection { implicit c =>
-      dbHelpers.authorizedQuery(BaseQuery, auth).
+      dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
         optionalIn("applications.journal_id", ids.map(_.map(_.toLong))).
         optionalIn("applications.id", applications).
         limit(limit).
