@@ -22,7 +22,7 @@ class Healthchecks @javax.inject.Inject()(
 
   def getHealthcheck() = Action { _ =>
     val checks = Map(
-      "db" -> !healthchecksDao.isHealthy()
+      "db" -> healthchecksDao.isHealthy()
     )
 
     checks.filter { case (_, check) => !check }.keys.toList match {
