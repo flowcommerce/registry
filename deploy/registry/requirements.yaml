@@ -1,0 +1,4 @@
+dependencies:
+  - name: flow-generic-scala
+    version: 1.2.3
+    repository: https://flow.jfrog.io/artifactory/api/helm/generic-charts-helm
