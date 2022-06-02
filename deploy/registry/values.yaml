@@ -100,3 +100,4 @@ canary:
       datadog:
         interval: 30s
         query: p95:trace.akka_http.request{service:registry}
+        
