@@ -1,10 +1,9 @@
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "registry"
+fullnameOverride: "registry"
 
 service:
   port: 9000
-  metricsEndpoint:
-    enabled: false
+
 
 iamRole: arn:aws:iam::479720515435:role/ecsInstanceRole
 image:
@@ -18,7 +17,9 @@ resources:
     memory: "900Mi"
     cpu: .05
 
-jvmMemory: 500
+jvmOpts:
+  memory: 500m
+  extraArgs: "-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt -XX:+UseG1GC -XX:+UseStringDeduplication"
 
 nodeSelector: {} 
 
@@ -30,10 +31,12 @@ ingress:
   gateways:
     - key: registry-flow-io
       tld: api.flow.io
+      dns: true
       hosts:
         - registry.api.flow.io
     - key: registry-flow-pub
       tld: flo.pub
+      dns: true
       hosts:
         - registry.flo.pub
 
@@ -51,6 +54,9 @@ services:
       - deployment: live
         weight: 100
 
+istio:
+  terminationDrainDuration: 30s
+
 deployments:
   live:
     minReplicas: 2
@@ -60,3 +66,38 @@ deployments:
     targetCPUUtilizationPercentage: 80
     version: #from commandline
     strategy: RollingUpdate
+    maxSurge: 10%
+
+canary: 
+  enabled: true # Disable this to follow the default RollingUpdate Strategy
+  migration: true
+  steps:
+    - setWeight: 15
+    - pause:
+        duration: 60
+    - setWeight: 30
+    - pause:
+        duration: 60
+    - setWeight: 60
+    - pause:
+        duration: 60
+  analysis:
+   - name: error-rate
+     interval: 30s
+     successCondition: default(result, 0) < 0.05   
+     failureLimit: 0
+     provider:
+      datadog:
+        interval: 30s
+        query: |
+          sum:trace.akka_http.request.errors{service:registry}.as_count()  /
+          sum:trace.akka_http.request.hits{service:registry}.as_count()
+   - name: response-time
+     interval: 30s
+     successCondition: default(result, 0) < 0.1
+     failureLimit: 0
+     provider:
+      datadog:
+        interval: 30s
+        query: p95:trace.akka_http.request{service:registry}
+        
