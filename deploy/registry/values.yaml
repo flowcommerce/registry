@@ -94,7 +94,7 @@ canary:
           sum:trace.akka_http.request.hits{service:registry}.as_count()
    - name: response-time
      interval: 30s
-     successCondition: default(result, 0) < 100
+     successCondition: default(result, 0) < 0.1
      failureLimit: 0
      provider:
       datadog:
