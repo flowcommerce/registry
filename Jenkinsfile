@@ -1,5 +1,8 @@
 properties([pipelineTriggers([githubPush()])])
 
+def chartname = "flow-generic"
+def chartversion = "^1.0.0"
+
 pipeline {
   options {
     disableConcurrentBuilds()
@@ -68,7 +71,7 @@ pipeline {
           steps {
             script {
               container('helm') {
-                new helmCommonDeploy().deploy('registry', 'production', VERSION.printable())
+                new helmGenericDeploy().deploy('registry', 'production', VERSION.printable(), "${chartname}", "${chartversion}")
               }
             }
           }
