@@ -1,5 +1,8 @@
 properties([pipelineTriggers([githubPush()])])
 
+def chartname = "flow-generic"
+def chartversion = "^1.0.0"
+
 pipeline {
   options {
     disableConcurrentBuilds()
@@ -13,7 +16,7 @@ pipeline {
       inheritFrom 'default'
 
       containerTemplates([
-        containerTemplate(name: 'helm', image: "lachlanevenson/k8s-helm:v2.12.0", command: 'cat', ttyEnabled: true),
+        containerTemplate(name: 'helm', image: "lachlanevenson/k8s-helm:v2.17.0", command: 'cat', ttyEnabled: true),
         containerTemplate(name: 'docker', image: 'docker:18', resourceRequestCpu: '1', resourceRequestMemory: '2Gi', command: 'cat', ttyEnabled: true)
       ])
     }
@@ -68,7 +71,7 @@ pipeline {
           steps {
             script {
               container('helm') {
-                new helmCommonDeploy().deploy('registry', 'production', VERSION.printable())
+                new helmGenericDeploy().deploy('registry', 'production', VERSION.printable(), "${chartname}", "${chartversion}")
               }
             }
           }
