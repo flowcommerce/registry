@@ -25,10 +25,7 @@ deployments:
     maxReplicas: 2
     maxUnavailable: 1
 
-rolloutResource:
-   enabled: true 
-
-canary: 
+rollout: 
   enabled: true # Disable this to follow the default RollingUpdate Strategy
   migration: false
   analysis:
