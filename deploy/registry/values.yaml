@@ -41,5 +41,3 @@ rollout:
      provider:
       datadog:
         query: p95:trace.akka_http.request{service:registry}
-
-        
