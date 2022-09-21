@@ -59,10 +59,10 @@ class DependenciesDao @Inject() (
   ): String = {
     val id = idGenerator.randomId()
     SQL(InsertQuery).on(
-      Symbol("id") -> id,
-      Symbol("application_id") -> form.applicationId,
-      Symbol("dependency_id") -> form.dependencyId,
-      Symbol("updated_by_user_id") -> createdBy.id
+      "id" -> id,
+      "application_id" -> form.applicationId,
+      "dependency_id" -> form.dependencyId,
+      "updated_by_user_id" -> createdBy.id
     ).execute()
     id
   }

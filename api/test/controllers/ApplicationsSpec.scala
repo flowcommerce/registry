@@ -105,7 +105,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     expectErrors(
       identifiedClient().applications.post(form)
     ).genericError.messages must contain theSameElementsAs Seq(
-      "Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-id"
+      "Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: abadid"
     )
   }
 
