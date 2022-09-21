@@ -77,9 +77,9 @@ class ServicesDao @Inject() (
           val id = form.id.trim
 
           SQL(InsertQuery).on(
-            Symbol("id") -> id,
-            Symbol("default_port") -> form.defaultPort,
-            Symbol("updated_by_user_id") -> createdBy.id
+            "id" -> id,
+            "default_port" -> form.defaultPort,
+            "updated_by_user_id" -> createdBy.id
           ).execute()
         }
 
@@ -98,9 +98,9 @@ class ServicesDao @Inject() (
       case Nil => {
         db.withConnection { implicit c =>
           SQL(UpdateQuery).on(
-            Symbol("id") -> existing.id,
-            Symbol("default_port") -> form.defaultPort,
-            Symbol("updated_by_user_id") -> createdBy.id
+            "id" -> existing.id,
+            "default_port" -> form.defaultPort,
+            "updated_by_user_id" -> createdBy.id
           ).execute()
         }
 

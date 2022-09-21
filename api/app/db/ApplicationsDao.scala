@@ -207,10 +207,10 @@ class ApplicationsDao @Inject()(
           }
 
           SQL(InsertQuery).on(
-            Symbol("id") -> id,
-            Symbol("ports") -> portsAsJson(c, id),
-            Symbol("dependencies") -> dependenciesAsJson(c, id),
-            Symbol("updated_by_user_id") -> createdBy.id
+            "id" -> id,
+            "ports" -> portsAsJson(c, id),
+            "dependencies" -> dependenciesAsJson(c, id),
+            "updated_by_user_id" -> createdBy.id
           ).execute()
         }
 
@@ -298,10 +298,10 @@ class ApplicationsDao @Inject()(
           // Update the applications table to trigger the journal
           // write.
           SQL(UpdateQuery).on(
-            Symbol("id") -> app.id,
-            Symbol("ports") -> portsAsJson(c, app.id),
-            Symbol("dependencies") -> dependenciesAsJson(c, app.id),
-            Symbol("updated_by_user_id") -> createdBy.id
+            "id" -> app.id,
+            "ports" -> portsAsJson(c, app.id),
+            "dependencies" -> dependenciesAsJson(c, app.id),
+            "updated_by_user_id" -> createdBy.id
           ).execute()
 
         }
