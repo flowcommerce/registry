@@ -27,14 +27,14 @@ lazy val api = project
       ws,
       guice,
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play28" % "0.4.71",
-      "io.flow" %% "lib-metrics-play28" % "1.0.33",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.4.72",
+      "io.flow" %% "lib-metrics-play28" % "1.0.34",
       "com.typesafe.play" %% "play-json-joda" % "2.9.3",
       "org.postgresql" % "postgresql" % "42.5.0",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
-      "io.flow" %% "lib-test-utils-play28" % "0.1.79" % Test,
-      "io.flow" %% "lib-usage-play28" % "0.1.96",
-      "io.flow" %% "lib-log" % "0.1.73"
+      "io.flow" %% "lib-test-utils-play28" % "0.1.80" % Test,
+      "io.flow" %% "lib-usage-play28" % "0.1.97",
+      "io.flow" %% "lib-log" % "0.1.74"
     ),
     scalacOptions ++= allScalacOptions,
   )
