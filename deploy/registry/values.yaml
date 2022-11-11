@@ -25,18 +25,11 @@ deployments:
     maxUnavailable: 1
 
 rollout: 
-  enabled: true # Disable this to follow the default RollingUpdate Strategy
-  migration: false
-  analysis:
-   - name: error-rate
-     successCondition: default(result, 0) < 0.05   
-     provider:
-      datadog:
-        query: |
-          sum:trace.akka_http.request.errors{service:registry}.as_count()  /
-          sum:trace.akka_http.request.hits{service:registry}.as_count()
-   - name: response-time
-     successCondition: default(result, 0) < 0.1
-     provider:
-      datadog:
-        query: p95:trace.akka_http.request{service:registry}
+  enabled: true
+  defaultAnalysis:
+    errorRate:
+      enabled: true
+      successCondition: default(result, 0) < 0.05
+    p95ResponseTime:
+      enabled: true
+      successCondition: default(result, 0) < 0.1
