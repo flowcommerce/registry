@@ -53,7 +53,7 @@ class RegistryLoggingFilterImpl @javax.inject.Inject() (
         val line = Seq(
           requestHeader.method,
           s"${requestHeader.host}${requestHeader.uri}",
-          result.header.status,
+          result.header.status.toString,
           s"${requestTime}ms",
           requestId,
           headerMap.getOrElse("User-Agent", Nil).mkString(","),
