@@ -2,3 +2,4 @@
 -> / registry.Routes
 
 -> / usage.Routes
+-> / kubehealthchecks.Routes
