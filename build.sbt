@@ -42,6 +42,7 @@ lazy val api = project
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name ~= ("registry-" + _),
   libraryDependencies ++= Seq(
+    "io.flow" %% "lib-healthcheck-play28" % "0.0.1",
     specs2 % Test
   ),
   Compile / doc / sources := Seq.empty,
