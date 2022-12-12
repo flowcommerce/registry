@@ -22,19 +22,19 @@ lazy val api = project
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.0.1",
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.2.0",
     libraryDependencies ++= Seq(
       ws,
       guice,
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play28" % "0.4.81",
-      "io.flow" %% "lib-metrics-play28" % "1.0.39",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.4.82",
+      "io.flow" %% "lib-metrics-play28" % "1.0.40",
       "com.typesafe.play" %% "play-json-joda" % "2.9.3",
-      "org.postgresql" % "postgresql" % "42.5.0",
+      "org.postgresql" % "postgresql" % "42.5.1",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
-      "io.flow" %% "lib-test-utils-play28" % "0.1.82" % Test,
-      "io.flow" %% "lib-usage-play28" % "0.2.1",
-      "io.flow" %% "lib-log" % "0.1.78"
+      "io.flow" %% "lib-test-utils-play28" % "0.1.84" % Test,
+      "io.flow" %% "lib-usage-play28" % "0.2.3",
+      "io.flow" %% "lib-log" % "0.1.79"
     ),
     scalacOptions ++= allScalacOptions,
   )
@@ -42,7 +42,7 @@ lazy val api = project
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name ~= ("registry-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-healthcheck-play28" % "0.0.1",
+    "io.flow" %% "lib-healthcheck-play28" % "0.0.2",
     specs2 % Test
   ),
   Compile / doc / sources := Seq.empty,
