@@ -71,6 +71,7 @@ pipeline {
       steps {
         container('himanshu') {
           script {
+            sh 'sbt ++2.13.10 clean flowLint test doc'
             docker.withRegistry('https://index.docker.io/v1/', 'jenkins-dockerhub') {
                 docker.image('flowcommerce/registry-postgresql:latest').withRun('--network=host -p 127.0.0.1:6019:5432') { c ->
                     docker.image('himanshu1018/sbt-docker:latest').inside("--network=host") {
