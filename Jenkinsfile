@@ -9,7 +9,6 @@ pipeline {
 
   agent {
     kubernetes {
-      label 'worker-registry'
       inheritFrom 'default'
 
       containerTemplates([
