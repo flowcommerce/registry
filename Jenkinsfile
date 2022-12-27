@@ -44,25 +44,7 @@ pipeline {
       }
     }
 
-    stage('Build and push docker image release') {
-      when { branch 'main' }
-      steps {
-        container('docker') {
-          script {
-            semver = VERSION.printable()
-            
-            docker.withRegistry('https://index.docker.io/v1/', 'jenkins-dockerhub') {
-              db = docker.build("$ORG/registry:$semver", '--network=host -f Dockerfile .')
-              db.push()
-            }
-            
-          }
-        }
-      }
-    }
-
-
-    stage('Test') {
+    stage('SBT Test') {
       when {
         allOf {
           not { branch 'main' }
@@ -79,6 +61,23 @@ pipeline {
                     }
                 }
             }
+          }
+        }
+      }
+    }
+    
+    stage('Build and push docker image release') {
+      when { branch 'main' }
+      steps {
+        container('docker') {
+          script {
+            semver = VERSION.printable()
+            
+            docker.withRegistry('https://index.docker.io/v1/', 'jenkins-dockerhub') {
+              db = docker.build("$ORG/registry:$semver", '--network=host -f Dockerfile .')
+              db.push()
+            }
+            
           }
         }
       }
