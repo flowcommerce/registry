@@ -58,6 +58,7 @@ pipeline {
                 docker.image('flowcommerce/registry-postgresql:latest').withRun('--network=host -p 127.0.0.1:6019:5432') { c ->
                     docker.image('himanshu1018/sbt-docker:latest').inside("--network=host") {
                        sh 'sbt ++2.13.10 clean flowLint test doc'
+                       junit allowEmptyResults: true, testResults: '**/target/test-reports/*.xml'
                     }
                 }
             }
