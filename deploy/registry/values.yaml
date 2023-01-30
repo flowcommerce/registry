@@ -36,3 +36,7 @@ rollout:
       successCondition: default(result, 0) < 0.05
     p95ResponseTime:
       successCondition: default(result, 0) < 0.1
+
+datadogMonitors:
+- type: trace.akka_http.request.errors-sum
+- type: trace.akka_http.request-p95
