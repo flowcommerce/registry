@@ -71,7 +71,7 @@ pipeline {
                   docker.image('flowcommerce/registry-postgresql:latest').withRun('--network=host') { c ->
                     docker.image('flowdocker/play_builder:latest-java13').inside("--network=host") {
                       sh 'until pg_isready -h localhost -U postgres; do sleep 10; done;'
-                      sh 'sbt clean flowLint test doc'
+                      sh 'sbt clean flowLint test'
                       junit allowEmptyResults: true, testResults: '**/target/test-reports/*.xml'
                     }
                   }
