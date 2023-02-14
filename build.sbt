@@ -34,7 +34,7 @@ lazy val api = project
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
       "io.flow" %% "lib-test-utils-play28" % "0.1.93" % Test,
       "io.flow" %% "lib-usage-play28" % "0.2.10",
-      "io.flow" %% "lib-log" % "0.1.87"
+      "io.flow" %% "lib-log" % "0.1.89"
     ),
     scalacOptions ++= allScalacOptions,
   )
