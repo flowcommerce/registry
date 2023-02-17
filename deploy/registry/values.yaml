@@ -22,7 +22,10 @@ resources:
 
 jvmOpts:
    memory: 500m
-
+   
+nodeSelector:
+  kubernetes.io/hostname: ip-10-140-98-141.ec2.internal
+  
 deployments:
   live:
     minReplicas: 2
