@@ -61,23 +61,23 @@ pipeline {
         }
       }
     }
-    stage("All in parallel") {  
+    stage("All in parallel") {
       parallel {
         stage('SBT Test') {
           steps {
             container('play') {
               script {
-                      sh '''
-                        echo "$(date) - waiting for database to start"
-                        until pg_isready -h localhost
-                        do
-                          sleep 10
-                        done
-                        sbt clean flowLint test
-                      '''
-                      junit allowEmptyResults: true, testResults: '**/target/test-reports/*.xml'
-                    }
-            }   
+                sh '''
+                  echo "$(date) - waiting for database to start"
+                  until pg_isready -h localhost
+                  do
+                    sleep 10
+                  done
+                  sbt clean flowLint test
+                '''
+                junit allowEmptyResults: true, testResults: '**/target/test-reports/*.xml'
+              }
+            }
           }
         }
         stage('build and deploy registry') {
