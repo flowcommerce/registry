@@ -68,7 +68,6 @@ pipeline {
             container('play') {
               script {
                       sh '''
-                        apk add postgresql-client --no-cache
                         echo "$(date) - waiting for database to start"
                         until pg_isready -h localhost
                         do
