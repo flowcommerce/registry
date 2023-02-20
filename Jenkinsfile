@@ -74,7 +74,7 @@ pipeline {
                         do
                           sleep 10
                         done
-                        sbt clean flowLint test doc
+                        sbt clean flowLint test
                       '''
                       junit allowEmptyResults: true, testResults: '**/target/test-reports/*.xml'
                     }
