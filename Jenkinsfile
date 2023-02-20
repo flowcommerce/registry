@@ -10,11 +10,9 @@ pipeline {
   agent {
     kubernetes {
       label 'worker-registry'
-      inheritFrom 'default'
+      inheritFrom 'generic'
 
       containerTemplates([
-        containerTemplate(name: 'helm', image: "flowcommerce/k8s-build-helm2:0.0.50", command: 'cat', ttyEnabled: true),
-        containerTemplate(name: 'docker', image: 'docker:18', resourceRequestCpu: '1', resourceRequestMemory: '2Gi', command: 'cat', ttyEnabled: true),
         containerTemplate(name: 'postgres', image: "flowcommerce/registry-postgresql:latest", alwaysPullImage: true, resourceRequestMemory: '1Gi'),
         containerTemplate(name: 'play', image: "flowdocker/play_builder:latest-java13", alwaysPullImage: true, resourceRequestMemory: '2Gi', command: 'cat', ttyEnabled: true)
       ])
