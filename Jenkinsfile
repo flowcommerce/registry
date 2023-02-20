@@ -10,11 +10,11 @@ pipeline {
   agent {
     kubernetes {
       label 'worker-registry'
-      inheritFrom 'default'
+      inheritFrom 'generic'
 
       containerTemplates([
-        containerTemplate(name: 'helm', image: "flowcommerce/k8s-build-helm2:0.0.50", command: 'cat', ttyEnabled: true),
-        containerTemplate(name: 'docker', image: 'docker:18', resourceRequestCpu: '1', resourceRequestMemory: '2Gi', command: 'cat', ttyEnabled: true)
+        containerTemplate(name: 'postgres', image: "flowcommerce/registry-postgresql:latest", alwaysPullImage: true, resourceRequestMemory: '1Gi'),
+        containerTemplate(name: 'play', image: "flowdocker/play_builder:latest-java13", alwaysPullImage: true, resourceRequestMemory: '2Gi', command: 'cat', ttyEnabled: true)
       ])
     }
   }
@@ -43,23 +43,6 @@ pipeline {
       }
     }
 
-    stage('Build and push docker image release') {
-      when { branch 'main' }
-      steps {
-        container('docker') {
-          script {
-            semver = VERSION.printable()
-            
-            docker.withRegistry('https://index.docker.io/v1/', 'jenkins-dockerhub') {
-              db = docker.build("$ORG/registry:$semver", '--network=host -f Dockerfile .')
-              db.push()
-            }
-            
-          }
-        }
-      }
-    }
-
     stage('Display Helm Diff') {
       when {
         allOf {
@@ -78,21 +61,52 @@ pipeline {
         }
       }
     }
-
-    stage('Deploy Helm chart') {
-      when { branch 'main' }
+    stage("All in parallel") {
       parallel {
-        
-        stage('deploy registry') {
+        stage('SBT Test') {
           steps {
-            script {
-              container('helm') {
-                new helmCommonDeploy().deploy('registry', 'production', VERSION.printable())
+            container('play') {
+              script {
+                sh '''
+                  echo "$(date) - waiting for database to start"
+                  until pg_isready -h localhost
+                  do
+                    sleep 10
+                  done
+                  sbt clean flowLint test
+                '''
+                junit allowEmptyResults: true, testResults: '**/target/test-reports/*.xml'
               }
             }
           }
         }
-        
+        stage('build and deploy registry') {
+          when { branch 'main' }
+          stages {
+            stage('Build and push docker image release') {
+              steps {
+                container('docker') {
+                  script {
+                    semver = VERSION.printable()
+                    docker.withRegistry('https://index.docker.io/v1/', 'jenkins-dockerhub') {
+                      db = docker.build("$ORG/registry:$semver", '--network=host -f Dockerfile .')
+                      db.push()
+                    }
+                  }
+                }
+              }
+            }
+            stage('deploy registry') {
+              steps {
+                script {
+                  container('helm') {
+                    new helmCommonDeploy().deploy('registry', 'production', VERSION.printable())
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
