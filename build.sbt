@@ -33,7 +33,7 @@ lazy val api = project
       "org.postgresql" % "postgresql" % "42.6.0",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
       "io.flow" %% "lib-test-utils-play28" % "0.1.95" % Test,
-      "io.flow" %% "lib-usage-play28" % "0.2.13",
+      "io.flow" %% "lib-usage-play28" % "0.2.14",
       "io.flow" %% "lib-log" % "0.1.91"
     ),
     scalacOptions ++= allScalacOptions,
