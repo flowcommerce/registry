@@ -27,14 +27,14 @@ lazy val api = project
       ws,
       guice,
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play28" % "0.5.7",
-      "io.flow" %% "lib-metrics-play28" % "1.0.50",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.5.9",
+      "io.flow" %% "lib-metrics-play28" % "1.0.51",
       "com.typesafe.play" %% "play-json-joda" % "2.9.4",
       "org.postgresql" % "postgresql" % "42.6.0",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
-      "io.flow" %% "lib-test-utils-play28" % "0.1.95" % Test,
-      "io.flow" %% "lib-usage-play28" % "0.2.14",
-      "io.flow" %% "lib-log" % "0.1.91"
+      "io.flow" %% "lib-test-utils-play28" % "0.1.96" % Test,
+      "io.flow" %% "lib-usage-play28" % "0.2.15",
+      "io.flow" %% "lib-log" % "0.1.92"
     ),
     scalacOptions ++= allScalacOptions,
   )
@@ -42,7 +42,7 @@ lazy val api = project
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name ~= ("registry-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-healthcheck-play28" % "0.0.10",
+    "io.flow" %% "lib-healthcheck-play28" % "0.0.11",
     specs2 % Test
   ),
   Compile / doc / sources := Seq.empty,
