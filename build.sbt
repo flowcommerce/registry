@@ -22,7 +22,7 @@ lazy val api = project
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.15.0",
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.14.0",
     libraryDependencies ++= Seq(
       ws,
       guice,
