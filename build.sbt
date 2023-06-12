@@ -22,19 +22,19 @@ lazy val api = project
   .settings(
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.14.0",
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.15.3",
     libraryDependencies ++= Seq(
       ws,
       guice,
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play28" % "0.5.15",
-      "io.flow" %% "lib-metrics-play28" % "1.0.55",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.5.16",
+      "io.flow" %% "lib-metrics-play28" % "1.0.57",
       "com.typesafe.play" %% "play-json-joda" % "2.9.4",
       "org.postgresql" % "postgresql" % "42.6.0",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
-      "io.flow" %% "lib-test-utils-play28" % "0.2.0" % Test,
-      "io.flow" %% "lib-usage-play28" % "0.2.20",
-      "io.flow" %% "lib-log" % "0.1.94"
+      "io.flow" %% "lib-test-utils-play28" % "0.2.1" % Test,
+      "io.flow" %% "lib-usage-play28" % "0.2.22",
+      "io.flow" %% "lib-log" % "0.1.95"
     ),
     scalacOptions ++= allScalacOptions,
   )
