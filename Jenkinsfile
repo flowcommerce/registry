@@ -9,8 +9,7 @@ pipeline {
 
   agent {
     kubernetes {
-      label 'worker-registry'
-      inheritFrom 'generic'
+      inheritFrom 'kaniko-slim'
 
       containerTemplates([
         containerTemplate(name: 'postgres', image: "flowcommerce/registry-postgresql:latest", alwaysPullImage: true, resourceRequestMemory: '1Gi'),
@@ -89,13 +88,14 @@ pipeline {
           stages {
             stage('Build and push docker image release') {
               steps {
-                container('docker') {
+                container('kaniko') {
                   script {
                     semver = VERSION.printable()
-                    docker.withRegistry('https://index.docker.io/v1/', 'jenkins-dockerhub') {
-                      db = docker.build("$ORG/registry:$semver", '--network=host -f Dockerfile .')
-                      db.push()
-                    }
+                    sh """
+                       /kaniko/executor -f `pwd`/api/Dockerfile -c `pwd` \
+                       --snapshot-mode=redo --use-new-run  \
+                       --destination ${env.ORG}/registry:$semver
+                    """
                   }
                 }
               }
