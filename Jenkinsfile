@@ -92,7 +92,7 @@ pipeline {
                   script {
                     semver = VERSION.printable()
                     sh """
-                       /kaniko/executor -f `pwd`/api/Dockerfile -c `pwd` \
+                       /kaniko/executor -f `pwd`/Dockerfile -c `pwd` \
                        --snapshot-mode=redo --use-new-run  \
                        --destination ${env.ORG}/registry:$semver
                     """
