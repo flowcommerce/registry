@@ -25,7 +25,9 @@ lazy val api = project
     javaAgents += "com.datadoghq" % "dd-java-agent" % "1.20.0",
     libraryDependencies ++= Seq(
       ws,
-      guice,
+      "com.google.inject" % "guice" % "5.1.0",
+      "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
+      "org.projectlombok" % "lombok" % "1.18.28" % "provided",
       jdbc,
       "io.flow" %% "lib-postgresql-play-play28" % "0.5.22",
       "io.flow" %% "lib-metrics-play28" % "1.0.62",
@@ -35,6 +37,10 @@ lazy val api = project
       "io.flow" %% "lib-test-utils-play28" % "0.2.7" % Test,
       "io.flow" %% "lib-usage-play28" % "0.2.27",
       "io.flow" %% "lib-log" % "0.1.99"
+    ),
+    Test / javaOptions ++= Seq(
+      "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
+      "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
     ),
     scalacOptions ++= allScalacOptions,
   )
