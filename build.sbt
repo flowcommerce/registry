@@ -1,8 +1,6 @@
 name := "registry"
 
 ThisBuild / scalaVersion := "2.13.10"
-ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
-
 
 lazy val allScalacOptions = Seq(
   "-deprecation",
