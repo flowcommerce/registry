@@ -30,14 +30,14 @@ lazy val api = project
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.28" % "provided",
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play28" % "0.5.24",
-      "io.flow" %% "lib-metrics-play28" % "1.0.65",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.5.26",
+      "io.flow" %% "lib-metrics-play28" % "1.0.67",
       "com.typesafe.play" %% "play-json-joda" % "2.9.4",
       "org.postgresql" % "postgresql" % "42.6.0",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
-      "io.flow" %% "lib-test-utils-play28" % "0.2.11" % Test,
-      "io.flow" %% "lib-usage-play28" % "0.2.29",
-      "io.flow" %% "lib-log" % "0.2.3"
+      "io.flow" %% "lib-test-utils-play28" % "0.2.12" % Test,
+      "io.flow" %% "lib-usage-play28" % "0.2.30",
+      "io.flow" %% "lib-log" % "0.2.4"
     ),
     Test / javaOptions ++= Seq(
       "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
