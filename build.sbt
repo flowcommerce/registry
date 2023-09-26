@@ -1,6 +1,7 @@
 name := "registry"
 
 ThisBuild / scalaVersion := "2.13.10"
+ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 
 lazy val allScalacOptions = Seq(
   "-deprecation",
@@ -25,7 +26,9 @@ lazy val api = project
     javaAgents += "com.datadoghq" % "dd-java-agent" % "1.20.1",
     libraryDependencies ++= Seq(
       ws,
-      guice,
+      "com.google.inject" % "guice" % "5.1.0",
+      "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
+      "org.projectlombok" % "lombok" % "1.18.28" % "provided",
       jdbc,
       "io.flow" %% "lib-postgresql-play-play28" % "0.5.24",
       "io.flow" %% "lib-metrics-play28" % "1.0.65",
@@ -35,6 +38,10 @@ lazy val api = project
       "io.flow" %% "lib-test-utils-play28" % "0.2.11" % Test,
       "io.flow" %% "lib-usage-play28" % "0.2.29",
       "io.flow" %% "lib-log" % "0.2.3"
+    ),
+    Test / javaOptions ++= Seq(
+      "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
+      "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
     ),
     scalacOptions ++= allScalacOptions,
   )
