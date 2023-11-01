@@ -13,10 +13,10 @@ class HealthchecksSpec extends FlowPlaySpec {
   override lazy val portNumber: PortNumber = PortNumber(9010)
   lazy val client = new Client(wsClient, s"http://localhost:$port")
 
-  "GET /_internal_/healthcheck" in new WithServer(port=port) {
+  "GET /_internal_/healthcheck" in new WithServer(port = port) {
     await(
       client.Healthchecks.getHealthcheck()
-    ) must be (
+    ) must be(
       Healthcheck("healthy")
     )
   }

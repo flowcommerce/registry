@@ -10,8 +10,7 @@ import org.joda.time.DateTime
 import play.api.db._
 
 @Singleton
-class ApplicationVersionsDao @Inject() (db: Database)
-  extends lib.PublicAuthorizedQuery {
+class ApplicationVersionsDao @Inject() (db: Database) extends lib.PublicAuthorizedQuery {
 
   private[this] val dbHelpers = DbHelpers(db, "applications")
 
@@ -29,13 +28,14 @@ class ApplicationVersionsDao @Inject() (db: Database)
     orderBy: OrderBy = OrderBy("journal_timestamp", Some("applications"))
   ): Seq[ApplicationVersion] = {
     db.withConnection { implicit c =>
-      dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
-        optionalIn("applications.journal_id", ids.map(_.map(_.toLong))).
-        optionalIn("applications.id", applications).
-        limit(limit).
-        offset(offset).
-        orderBy(orderBy.sql).
-        as(
+      dbHelpers
+        .authorizedQuery(BaseQuery, queryAuth(auth))
+        .optionalIn("applications.journal_id", ids.map(_.map(_.toLong)))
+        .optionalIn("applications.id", applications)
+        .limit(limit)
+        .offset(offset)
+        .orderBy(orderBy.sql)
+        .as(
           parser().*
         )
     }
@@ -43,17 +43,17 @@ class ApplicationVersionsDao @Inject() (db: Database)
 
   private[this] def parser(): RowParser[ApplicationVersion] = {
     SqlParser.get[Long]("journal_id") ~
-    SqlParser.get[DateTime]("journal_timestamp") ~
-    SqlParser.get[String]("journal_operation") ~
-    io.flow.registry.v0.anorm.parsers.Application.parser() map {
-      case id ~ ts ~ op ~ application => {
-        ApplicationVersion(
-          id = id.toString,
-          timestamp = ts,
-          `type` = ChangeType(op),
-          application = application
-        )
+      SqlParser.get[DateTime]("journal_timestamp") ~
+      SqlParser.get[String]("journal_operation") ~
+      io.flow.registry.v0.anorm.parsers.Application.parser() map {
+        case id ~ ts ~ op ~ application => {
+          ApplicationVersion(
+            id = id.toString,
+            timestamp = ts,
+            `type` = ChangeType(op),
+            application = application
+          )
+        }
       }
-    }
   }
 }

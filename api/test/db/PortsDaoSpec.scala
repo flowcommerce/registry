@@ -53,7 +53,10 @@ class PortsDaoSpec extends RegistrySpec {
       val port1 = createPort()
       val port2 = createPort()
 
-      portsDao.findAll(Authorization.All, externals = Some(Seq(port1.external, port2.external))).map(_.id).sorted must be(
+      portsDao
+        .findAll(Authorization.All, externals = Some(Seq(port1.external, port2.external)))
+        .map(_.id)
+        .sorted must be(
         Seq(port1.id, port2.id).sorted
       )
 

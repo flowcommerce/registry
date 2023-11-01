@@ -48,7 +48,6 @@ class ApplicationsDaoSpec extends RegistrySpec {
       )
     )
 
-
   }
 
   "allocates ports based on type" in {
@@ -114,7 +113,7 @@ class ApplicationsDaoSpec extends RegistrySpec {
     val app2 = createApplication(createApplicationForm().copy(dependency = Some(Seq(app.id))))
 
     applicationsDao.delete(testUser, app2)
-    applicationsDao.findById(Authorization.All, app2.id) must be(None)    
+    applicationsDao.findById(Authorization.All, app2.id) must be(None)
   }
 
   "update does not modify dependencies if not provided" in {
@@ -132,7 +131,8 @@ class ApplicationsDaoSpec extends RegistrySpec {
 
     val myApp = createApplication(createApplicationForm().copy(dependency = Some(Seq(app1.id))))
 
-    val updated = rightOrErrors(applicationsDao.update(testUser, myApp, ApplicationPutForm(dependency = Some(Seq(app2.id)))))
+    val updated =
+      rightOrErrors(applicationsDao.update(testUser, myApp, ApplicationPutForm(dependency = Some(Seq(app2.id)))))
     updated.dependencies must be(Seq(app2.id))
   }
 

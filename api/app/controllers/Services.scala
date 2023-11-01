@@ -14,13 +14,14 @@ import play.api.libs.json._
 import scala.concurrent.{ExecutionContext, Future}
 
 class Services @javax.inject.Inject() (
-      servicesDao: ServicesDao,
-      serviceVersionsDao: ServiceVersionsDao,
-      applicationsDao: ApplicationsDao,
-      val config: Config,
-      val controllerComponents: ControllerComponents,
-      val flowControllerComponents: FlowControllerComponents
-  )(implicit ec: ExecutionContext) extends FlowController {
+  servicesDao: ServicesDao,
+  serviceVersionsDao: ServiceVersionsDao,
+  applicationsDao: ApplicationsDao,
+  val config: Config,
+  val controllerComponents: ControllerComponents,
+  val flowControllerComponents: FlowControllerComponents
+)(implicit ec: ExecutionContext)
+  extends FlowController {
 
   def get(
     id: Option[Seq[String]],

@@ -14,13 +14,14 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Applications @javax.inject.Inject()(
+class Applications @javax.inject.Inject() (
   applicationsDao: ApplicationsDao,
   applicationVersionsDao: ApplicationVersionsDao,
   val config: Config,
   val controllerComponents: ControllerComponents,
   val flowControllerComponents: FlowControllerComponents
-)(implicit ec: ExecutionContext) extends FlowController {
+)(implicit ec: ExecutionContext)
+  extends FlowController {
 
   def get(
     id: Option[Seq[String]],
@@ -90,55 +91,55 @@ class Applications @javax.inject.Inject()(
 
   def getYaml() = Anonymous.async { request =>
     Future {
-      val yaml = Pager.create { offset =>
-        applicationsDao.findAll(
-          Authorization.fromUser(request.user.map(_.id)),
-          limit = 100,
-          offset = offset
-        )
-      }.map { a =>
-        //build up port array
-        val ports = a.ports.map { p =>
+      val yaml = Pager
+        .create { offset =>
+          applicationsDao.findAll(
+            Authorization.fromUser(request.user.map(_.id)),
+            limit = 100,
+            offset = offset
+          )
+        }
+        .map { a =>
+          // build up port array
+          val ports = a.ports.map { p =>
+            val healthcheck = p.service.id match {
+              case "play" | "nodejs" =>
+                YamlObject(
+                  YamlString("  host") -> YamlString("ws"),
+                  YamlString("  port") -> YamlNumber(p.external)
+                )
 
-          val healthcheck = p.service.id match {
-            case "play" | "nodejs" =>
-              YamlObject(
-                YamlString("  host") -> YamlString("ws"),
-                YamlString("  port") -> YamlNumber(p.external)
-              )
+              case "postgresql" =>
+                YamlObject(
+                  YamlString("  dbname") -> YamlString(s"${a.id}"),
+                  YamlString("  host") -> YamlString("ws"),
+                  YamlString("  port") -> YamlNumber(p.external),
+                  YamlString("  user") -> YamlString("api")
+                )
+            }
 
-            case "postgresql" =>
-              YamlObject(
-                YamlString("  dbname") -> YamlString(s"${a.id}"),
-                YamlString("  host") -> YamlString("ws"),
-                YamlString("  port") -> YamlNumber(p.external),
-                YamlString("  user") -> YamlString("api")
-              )
+            YamlObject(
+              YamlString("healthcheck") -> healthcheck,
+              YamlString("  external") -> YamlNumber(p.external),
+              YamlString("  internal") -> YamlNumber(p.internal)
+            )
           }
 
+          val portYaml = YamlArray(ports.toVector)
+
+          // build dependencies
+          val dependencies = a.dependencies.mkString(", ")
+
+          // merge together with id for main application object
           YamlObject(
-            YamlString("healthcheck") -> healthcheck,
-            YamlString("  external") -> YamlNumber(p.external),
-            YamlString("  internal") -> YamlNumber(p.internal))
+            YamlString("id") -> YamlString(a.id),
+            YamlString("ports") -> portYaml,
+            YamlString("dependencies") -> YamlString(s"[$dependencies]")
+          )
         }
 
-        val portYaml = YamlArray(ports.toVector)
-
-        //build dependencies
-        val dependencies = a.dependencies.mkString(", ")
-
-        //merge together with id for main application object
-        YamlObject(
-          YamlString("id") -> YamlString(a.id),
-          YamlString("ports") -> portYaml,
-          YamlString("dependencies") -> YamlString(s"[$dependencies]")
-        )
-      }
-
       Ok(
-        YamlArray(yaml.toVector).prettyPrint.
-          replaceAll("- healthcheck", "  - healthcheck").
-          replaceAll("'", "")
+        YamlArray(yaml.toVector).prettyPrint.replaceAll("- healthcheck", "  - healthcheck").replaceAll("'", "")
       )
     }
   }

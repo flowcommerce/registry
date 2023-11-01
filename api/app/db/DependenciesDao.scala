@@ -22,7 +22,7 @@ case class InternalDependency(
 
 @Singleton
 class DependenciesDao @Inject() (
-    db: Database
+  db: Database
 ) extends lib.PublicAuthorizedQuery {
 
   private val dbHelpers = DbHelpers(db, "dependencies")
@@ -52,23 +52,25 @@ class DependenciesDao @Inject() (
     }
   }
 
-  private[db] def create(
-    implicit c: java.sql.Connection,
+  private[db] def create(implicit
+    c: java.sql.Connection,
     createdBy: UserReference,
     form: DependencyForm
   ): String = {
     val id = idGenerator.randomId()
-    SQL(InsertQuery).on(
-      "id" -> id,
-      "application_id" -> form.applicationId,
-      "dependency_id" -> form.dependencyId,
-      "updated_by_user_id" -> createdBy.id
-    ).execute()
+    SQL(InsertQuery)
+      .on(
+        "id" -> id,
+        "application_id" -> form.applicationId,
+        "dependency_id" -> form.dependencyId,
+        "updated_by_user_id" -> createdBy.id
+      )
+      .execute()
     id
   }
 
-  private[db] def deleteApplicationDependency(
-    implicit c: java.sql.Connection,
+  private[db] def deleteApplicationDependency(implicit
+    c: java.sql.Connection,
     user: UserReference,
     applicationId: String,
     dependencyId: String
@@ -105,40 +107,41 @@ class DependenciesDao @Inject() (
     }
   }
 
-  private[db] def findAllWithConnection(
-    implicit c: java.sql.Connection,
+  private[db] def findAllWithConnection(implicit
+    c: java.sql.Connection,
     auth: Authorization,
     ids: Option[Seq[String]] = None,
     applications: Option[Seq[String]] = None,
-    dependencies: Option[Seq[String]] = None,    
+    dependencies: Option[Seq[String]] = None,
     limit: Long = 25,
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("dependencies.application_id, dependencies.dependency_id")
   ): Seq[InternalDependency] = {
-    dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
-      optionalIn("dependencies.id", ids).
-      optionalIn("dependencies.application_id", applications).
-      optionalIn("dependencies.dependency_id", dependencies).
-      limit(limit).
-      offset(offset).
-      orderBy(orderBy.sql).
-      as(
+    dbHelpers
+      .authorizedQuery(BaseQuery, queryAuth(auth))
+      .optionalIn("dependencies.id", ids)
+      .optionalIn("dependencies.application_id", applications)
+      .optionalIn("dependencies.dependency_id", dependencies)
+      .limit(limit)
+      .offset(offset)
+      .orderBy(orderBy.sql)
+      .as(
         parser.*
       )
   }
 
   private[this] val parser: RowParser[InternalDependency] = {
     SqlParser.str("id") ~
-    SqlParser.str("application_id") ~
-    SqlParser.str("dependency_id") map {
-      case id ~ applicationId ~ dependencyId => {
-        InternalDependency(
-          id = id,
-          applicationId = applicationId,
-          dependencyId = dependencyId
-        )
+      SqlParser.str("application_id") ~
+      SqlParser.str("dependency_id") map {
+        case id ~ applicationId ~ dependencyId => {
+          InternalDependency(
+            id = id,
+            applicationId = applicationId,
+            dependencyId = dependencyId
+          )
+        }
       }
-    }
   }
 
 }

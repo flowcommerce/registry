@@ -10,7 +10,7 @@ import org.joda.time.DateTime
 import play.api.db._
 
 @Singleton
-class ServiceVersionsDao @Inject()(
+class ServiceVersionsDao @Inject() (
   db: Database
 ) extends lib.PublicAuthorizedQuery {
 
@@ -29,13 +29,14 @@ class ServiceVersionsDao @Inject()(
     orderBy: OrderBy = OrderBy("journal_timestamp", Some("services"))
   ): Seq[ServiceVersion] = {
     db.withConnection { implicit c =>
-      dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
-        optionalIn("services.journal_id", ids.map(_.map(_.toLong))).
-        optionalIn("services.id", services).
-        limit(limit).
-        offset(offset).
-        orderBy(orderBy.sql).
-        as(
+      dbHelpers
+        .authorizedQuery(BaseQuery, queryAuth(auth))
+        .optionalIn("services.journal_id", ids.map(_.map(_.toLong)))
+        .optionalIn("services.id", services)
+        .limit(limit)
+        .offset(offset)
+        .orderBy(orderBy.sql)
+        .as(
           parser().*
         )
     }
@@ -43,17 +44,17 @@ class ServiceVersionsDao @Inject()(
 
   private[this] def parser(): RowParser[ServiceVersion] = {
     SqlParser.get[Long]("journal_id") ~
-    SqlParser.get[DateTime]("journal_timestamp") ~
-    SqlParser.get[String]("journal_operation") ~
-    io.flow.registry.v0.anorm.parsers.Service.parser() map {
-      case id ~ ts ~ op ~ service => {
-        ServiceVersion(
-          id = id.toString,
-          timestamp = ts,
-          `type` = ChangeType(op),
-          service = service
-        )
+      SqlParser.get[DateTime]("journal_timestamp") ~
+      SqlParser.get[String]("journal_operation") ~
+      io.flow.registry.v0.anorm.parsers.Service.parser() map {
+        case id ~ ts ~ op ~ service => {
+          ServiceVersion(
+            id = id.toString,
+            timestamp = ts,
+            `type` = ChangeType(op),
+            service = service
+          )
+        }
       }
-    }
   }
 }

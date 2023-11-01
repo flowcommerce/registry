@@ -73,7 +73,7 @@ pipeline {
                     do
                       sleep 10
                     done
-                    sbt clean flowLint test
+                    sbt clean flowLint test scalafmtSbtCheck scalafmtCheck
                   '''
                 }
                 finally {

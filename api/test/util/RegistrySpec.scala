@@ -19,8 +19,7 @@ trait RegistrySpec extends FlowPlaySpec {
     rightOrErrors(servicesDao.create(testUser, createServiceForm()))
   }
 
-  def createService(form: ServiceForm = createServiceForm())
-                   (implicit user: UserReference = testUser): Service = {
+  def createService(form: ServiceForm = createServiceForm())(implicit user: UserReference = testUser): Service = {
     rightOrErrors(servicesDao.create(user, form))
   }
 
@@ -37,14 +36,15 @@ trait RegistrySpec extends FlowPlaySpec {
     )
   }
 
-  def createApplication(form: ApplicationForm = createApplicationForm())
-                       (implicit user: UserReference = testUser): io.flow.registry.v0.models.Application = {
+  def createApplication(
+    form: ApplicationForm = createApplicationForm()
+  )(implicit user: UserReference = testUser): io.flow.registry.v0.models.Application = {
     rightOrErrors(applicationsDao.create(user, form))
   }
 
   def createApplicationForm(
-                             service: Service = testService
-                           ): ApplicationForm = {
+    service: Service = testService
+  ): ApplicationForm = {
     ApplicationForm(
       id = createUrlKey("app"),
       service = service.id
@@ -56,16 +56,16 @@ trait RegistrySpec extends FlowPlaySpec {
   }
 
   def createPort(
-                  form: PortForm = createPortForm()
-                )(
-                  implicit user: UserReference = testUser
-                ): InternalPort = {
+    form: PortForm = createPortForm()
+  )(implicit
+    user: UserReference = testUser
+  ): InternalPort = {
     portsDao.create(user, form)
   }
 
   def createPortForm(
-                      application: io.flow.registry.v0.models.Application = createApplication()
-                    ): PortForm = {
+    application: io.flow.registry.v0.models.Application = createApplication()
+  ): PortForm = {
     lazy val nextPort: Long = portsDao.maxExternalPortNumber().getOrElse(6000)
 
     PortForm(
@@ -77,17 +77,17 @@ trait RegistrySpec extends FlowPlaySpec {
   }
 
   def createDependency(
-                        form: DependencyForm = createDependencyForm()
-                      )(
-                        implicit user: UserReference = testUser
-                      ): InternalDependency = {
+    form: DependencyForm = createDependencyForm()
+  )(implicit
+    user: UserReference = testUser
+  ): InternalDependency = {
     dependenciesDao.create(user, form)
   }
 
   def createDependencyForm(
-                            application: io.flow.registry.v0.models.Application = createApplication(),
-                            dependency: io.flow.registry.v0.models.Application = createApplication()
-                          ): DependencyForm = {
+    application: io.flow.registry.v0.models.Application = createApplication(),
+    dependency: io.flow.registry.v0.models.Application = createApplication()
+  ): DependencyForm = {
     DependencyForm(
       applicationId = application.id,
       dependencyId = dependency.id
