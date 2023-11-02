@@ -2,8 +2,7 @@ package lib
 
 import io.flow.postgresql.Authorization
 
-/**
-  * Maps Authorization.PublicOnly -> Authorization.All
+/** Maps Authorization.PublicOnly -> Authorization.All
   */
 trait PublicAuthorizedQuery {
 

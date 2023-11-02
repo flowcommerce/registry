@@ -14,7 +14,7 @@ import play.api.db._
 import play.api.libs.json._
 
 @Singleton
-class ApplicationsDao @Inject()(
+class ApplicationsDao @Inject() (
   servicesDao: ServicesDao,
   dependenciesDao: DependenciesDao,
   portsDao: PortsDao,
@@ -25,8 +25,7 @@ class ApplicationsDao @Inject()(
   private[this] val urlKey = UrlKey(minKeyLength = 2)
   private[this] val SortByPort = "(select min(external) from ports where application_id = applications.id)"
 
-  private[this] val BaseQuery = Query(
-    s"""
+  private[this] val BaseQuery = Query(s"""
     select applications.id,
            applications.ports,
            applications.dependencies
@@ -120,13 +119,16 @@ class ApplicationsDao @Inject()(
             Nil
           }
           case Some(deps) => {
-            val circularDependency = Pager.create { offset =>
-              dependenciesDao.findAll(
-                Authorization.All,
-                dependencies = Some(Seq(app.id)),
-                offset = offset
-              )
-            }.toList.find { dep => deps.contains(dep.applicationId) }
+            val circularDependency = Pager
+              .create { offset =>
+                dependenciesDao.findAll(
+                  Authorization.All,
+                  dependencies = Some(Seq(app.id)),
+                  offset = offset
+                )
+              }
+              .toList
+              .find { dep => deps.contains(dep.applicationId) }
 
             circularDependency match {
               case None => {
@@ -206,12 +208,14 @@ class ApplicationsDao @Inject()(
             }
           }
 
-          SQL(InsertQuery).on(
-            "id" -> id,
-            "ports" -> portsAsJson(c, id),
-            "dependencies" -> dependenciesAsJson(c, id),
-            "updated_by_user_id" -> createdBy.id
-          ).execute()
+          SQL(InsertQuery)
+            .on(
+              "id" -> id,
+              "ports" -> portsAsJson(c, id),
+              "dependencies" -> dependenciesAsJson(c, id),
+              "updated_by_user_id" -> createdBy.id
+            )
+            .execute()
         }
 
         Right(
@@ -224,7 +228,11 @@ class ApplicationsDao @Inject()(
     }
   }
 
-  def upsertDependency(createdBy: UserReference, app: Application, dependency: String): Either[Seq[String], Application] = {
+  def upsertDependency(
+    createdBy: UserReference,
+    app: Application,
+    dependency: String
+  ): Either[Seq[String], Application] = {
     findById(Authorization.User(createdBy.id), dependency) match {
       case None => {
         Left(Seq(s"Application named[$dependency] not found"))
@@ -242,7 +250,11 @@ class ApplicationsDao @Inject()(
     }
   }
 
-  def removeDependency(createdBy: UserReference, app: Application, dependency: String): Either[Seq[String], Application] = {
+  def removeDependency(
+    createdBy: UserReference,
+    app: Application,
+    dependency: String
+  ): Either[Seq[String], Application] = {
     findById(Authorization.User(createdBy.id), dependency) match {
       case None => {
         Left(Seq(s"Application named[$dependency] not found"))
@@ -266,16 +278,18 @@ class ApplicationsDao @Inject()(
       case Nil => {
         val dependenciesToAdd = form.dependency match {
           case None => Nil
-          case Some(deps) => deps.filter {
-            !app.dependencies.contains(_)
-          }
+          case Some(deps) =>
+            deps.filter {
+              !app.dependencies.contains(_)
+            }
         }
 
         val dependenciesToDelete = form.dependency match {
           case None => Nil
-          case Some(deps) => app.dependencies.filter {
-            !deps.contains(_)
-          }
+          case Some(deps) =>
+            app.dependencies.filter {
+              !deps.contains(_)
+            }
         }
 
         db.withTransaction { implicit c =>
@@ -297,12 +311,14 @@ class ApplicationsDao @Inject()(
 
           // Update the applications table to trigger the journal
           // write.
-          SQL(UpdateQuery).on(
-            "id" -> app.id,
-            "ports" -> portsAsJson(c, app.id),
-            "dependencies" -> dependenciesAsJson(c, app.id),
-            "updated_by_user_id" -> createdBy.id
-          ).execute()
+          SQL(UpdateQuery)
+            .on(
+              "id" -> app.id,
+              "ports" -> portsAsJson(c, app.id),
+              "dependencies" -> dependenciesAsJson(c, app.id),
+              "updated_by_user_id" -> createdBy.id
+            )
+            .execute()
 
         }
         Right(
@@ -315,42 +331,49 @@ class ApplicationsDao @Inject()(
     }
   }
 
-  /**
-    * Fetches all ports from the ports table and returns as a JSON
-    * string for denormalization in the applications table.
+  /** Fetches all ports from the ports table and returns as a JSON string for denormalization in the applications table.
     */
   private[this] def portsAsJson(implicit c: java.sql.Connection, applicationId: String): String = {
-    Json.toJson(
-      Pager.create { offset =>
-        portsDao.findAllWithConnection(
-          c,
-          Authorization.All,
-          applications = Some(Seq(applicationId)),
-          offset = offset
-        )
-      }.toSeq.map(_.port)
-    ).toString
+    Json
+      .toJson(
+        Pager
+          .create { offset =>
+            portsDao.findAllWithConnection(
+              c,
+              Authorization.All,
+              applications = Some(Seq(applicationId)),
+              offset = offset
+            )
+          }
+          .toSeq
+          .map(_.port)
+      )
+      .toString
   }
 
-  /**
-    * Fetches all dependencies from the dependencies table and returns as a JSON
-    * string for denormalization in the applications table.
+  /** Fetches all dependencies from the dependencies table and returns as a JSON string for denormalization in the
+    * applications table.
     */
   private[this] def dependenciesAsJson(implicit c: java.sql.Connection, applicationId: String): String = {
-    Json.toJson(
-      Pager.create { offset =>
-        dependenciesDao.findAllWithConnection(
-          c,
-          Authorization.All,
-          applications = Some(Seq(applicationId)),
-          offset = offset
-        )
-      }.toSeq.map(_.dependencyId)
-    ).toString
+    Json
+      .toJson(
+        Pager
+          .create { offset =>
+            dependenciesDao.findAllWithConnection(
+              c,
+              Authorization.All,
+              applications = Some(Seq(applicationId)),
+              offset = offset
+            )
+          }
+          .toSeq
+          .map(_.dependencyId)
+      )
+      .toString
   }
 
-  private[this] def createPort(
-    implicit c: java.sql.Connection,
+  private[this] def createPort(implicit
+    c: java.sql.Connection,
     createdBy: UserReference,
     applicationId: String,
     external: Option[Long],
@@ -371,8 +394,8 @@ class ApplicationsDao @Inject()(
     }
   }
 
-  private[this] def createDependency(
-    implicit c: java.sql.Connection,
+  private[this] def createDependency(implicit
+    c: java.sql.Connection,
     createdBy: UserReference,
     applicationId: String,
     dependencyId: String
@@ -390,17 +413,33 @@ class ApplicationsDao @Inject()(
 
   def delete(deletedBy: UserReference, application: Application): Unit = {
     db.withTransaction { implicit c =>
-      Pager.create { offset =>
-        portsDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset)
-      }.toSeq.foreach {port =>
-        portsDao.delete(c, deletedBy, port)
-      }
+      Pager
+        .create { offset =>
+          portsDao.findAllWithConnection(
+            c,
+            Authorization.User(deletedBy.id),
+            applications = Some(Seq(application.id)),
+            offset = offset
+          )
+        }
+        .toSeq
+        .foreach { port =>
+          portsDao.delete(c, deletedBy, port)
+        }
 
-      Pager.create { offset =>
-        dependenciesDao.findAllWithConnection(c, Authorization.User(deletedBy.id), applications = Some(Seq(application.id)), offset = offset)
-      }.toSeq.foreach { port =>
-        dependenciesDao.delete(c, deletedBy, port)
-      }
+      Pager
+        .create { offset =>
+          dependenciesDao.findAllWithConnection(
+            c,
+            Authorization.User(deletedBy.id),
+            applications = Some(Seq(application.id)),
+            offset = offset
+          )
+        }
+        .toSeq
+        .foreach { port =>
+          dependenciesDao.delete(c, deletedBy, port)
+        }
 
       dbHelpers.delete(c, deletedBy, application.id)
     }
@@ -434,34 +473,39 @@ class ApplicationsDao @Inject()(
     }
 
     db.withConnection { implicit c =>
-      dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
-        optionalIn("applications.id", ids).
-        and(
+      dbHelpers
+        .authorizedQuery(BaseQuery, queryAuth(auth))
+        .optionalIn("applications.id", ids)
+        .and(
           services.map { ids =>
             // TODO: bind variables
-            s"applications.id in (select application_id from ports where service_id in (%s))".format(ids.mkString("'", "', '", "'"))
+            s"applications.id in (select application_id from ports where service_id in (%s))".format(
+              ids.mkString("'", "', '", "'")
+            )
           }
-        ).
-        and(
+        )
+        .and(
           portNumbers.map { nums =>
             // TODO: bind variables
             s"applications.id in (select application_id from ports where external in (%s))".format(nums.mkString(", "))
           }
-        ).
-        and(
+        )
+        .and(
           prefix.map { _ =>
             s"(applications.id = {prefix} or applications.id like {prefix} || '-%')"
           }
-        ).bind("prefix", prefix).
-        and(
+        )
+        .bind("prefix", prefix)
+        .and(
           q.map { _ =>
             s"applications.id like '%' || lower(trim({q})) || '%'"
           }
-        ).bind("q", q).
-        limit(limit).
-        offset(offset).
-        orderBy(sortSql).
-        as(
+        )
+        .bind("q", q)
+        .limit(limit)
+        .offset(offset)
+        .orderBy(sortSql)
+        .as(
           io.flow.registry.v0.anorm.parsers.Application.parser().*
         )
     }

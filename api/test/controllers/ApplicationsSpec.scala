@@ -6,7 +6,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "DELETE /applications/:id deletes" in  {
+  "DELETE /applications/:id deletes" in {
     val application = createApplication()
     val id = application.id
 
@@ -19,22 +19,24 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     )
   }
 
-  "PUT /applications/:id updates application" in  {
+  "PUT /applications/:id updates application" in {
     val application = createApplication(createApplicationForm().copy(service = "play"))
-    await(identifiedClient().applications.putById(
-      application.id,
-      createApplicationPutForm().copy(service = Some("nodejs")),
-      testHeaders
-    ))
+    await(
+      identifiedClient().applications.putById(
+        application.id,
+        createApplicationPutForm().copy(service = Some("nodejs")),
+        testHeaders
+      )
+    )
 
     val updated = await(
       identifiedClient().applications.getById(application.id)
     )
-    updated.id must be (application.id)
+    updated.id must be(application.id)
     updated.ports.map(_.service.id) must contain theSameElementsAs Seq("nodejs", "play")
   }
 
-  "PUT /applications/:id requires service to create an application" in  {
+  "PUT /applications/:id requires service to create an application" in {
     val id = createTestId()
 
     expectErrors(
@@ -43,7 +45,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
 
   }
 
-  "PUT /applications/:id creates application" in  {
+  "PUT /applications/:id creates application" in {
     val id = createTestId()
     await(identifiedClient().applications.putById(id, createApplicationPutForm().copy(service = Some("play"))))
 
@@ -54,7 +56,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     updated.ports.map(_.service.id) must contain theSameElementsAs Seq("play")
   }
 
-  "POST /applications" in  {
+  "POST /applications" in {
     val form = createApplicationForm()
 
     val application = await(identifiedClient().applications.post(form))
@@ -62,7 +64,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     application.dependencies must be(Nil)
   }
 
-  "POST /applications w/ existing id" in  {
+  "POST /applications w/ existing id" in {
     val application = createApplication()
     val form = createApplicationForm().copy(id = application.id)
 
@@ -71,11 +73,12 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ).genericError.messages must contain theSameElementsAs Seq("Application with this id already exists")
   }
 
-  "POST /applications w/ valid explicit ports" in  {
+  "POST /applications w/ valid explicit ports" in {
     val external: Long = portsDao.maxExternalPortNumber().getOrElse(6000L) + 3L
     val internal = 1234L
 
-    val application = createApplication(createApplicationForm().copy(external = Some(external), internal = Some(internal)))
+    val application =
+      createApplication(createApplicationForm().copy(external = Some(external), internal = Some(internal)))
     val appPort = application.ports.headOption.getOrElse {
       sys.error("No ports created")
     }
@@ -83,7 +86,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     appPort.internal must be(internal)
   }
 
-  "POST /applications w/ invalid external port" in  {
+  "POST /applications w/ invalid external port" in {
     val form = createApplicationForm().copy(external = Some(200))
 
     expectErrors(
@@ -91,7 +94,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ).genericError.messages must contain theSameElementsAs Seq("External port must be > 1024")
   }
 
-  "POST /applications w/ invalid internal port" in  {
+  "POST /applications w/ invalid internal port" in {
     val form = createApplicationForm().copy(internal = Some(-200))
 
     expectErrors(
@@ -99,7 +102,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ).genericError.messages must contain theSameElementsAs Seq("Internal port must be > 0")
   }
 
-  "POST /applications w/ invalid id" in  {
+  "POST /applications w/ invalid id" in {
     val form = createApplicationForm().copy(id = " a bad id ")
 
     expectErrors(
@@ -109,7 +112,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     )
   }
 
-  "POST /applications w/ invalid service" in  {
+  "POST /applications w/ invalid service" in {
     val form = createApplicationForm().copy(service = createUrlKey())
 
     expectErrors(
@@ -117,7 +120,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ).genericError.messages must contain theSameElementsAs Seq("Service not found")
   }
 
-  "POST /applications w/ dependencies" in  {
+  "POST /applications w/ dependencies" in {
     val dep1 = createApplication()
     val dep2 = createApplication()
     val form = createApplicationForm().copy(dependency = Some(Seq(dep1.id, dep2.id)))
@@ -127,16 +130,18 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     application.dependencies must contain theSameElementsAs Seq(dep1.id, dep2.id).sorted
   }
 
-  "POST /applications w/ invalid dependency ID" in  {
+  "POST /applications w/ invalid dependency ID" in {
     val dependencyId = createTestId()
     val form = createApplicationForm().copy(dependency = Some(Seq(dependencyId)))
 
     expectErrors(
       identifiedClient().applications.post(form)
-    ).genericError.messages must contain theSameElementsAs Seq(s"Dependency[$dependencyId] references a non existing application")
+    ).genericError.messages must contain theSameElementsAs Seq(
+      s"Dependency[$dependencyId] references a non existing application"
+    )
   }
 
-  "POST /applications w/ self as a dependency" in  {
+  "POST /applications w/ self as a dependency" in {
     val id = createTestId()
     val form = createApplicationForm().copy(id = id, dependency = Some(Seq(id)))
 
@@ -145,7 +150,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ).genericError.messages must contain theSameElementsAs Seq(s"Cannot declare dependency[$id] on self")
   }
 
-  "GET /applications/:id" in  {
+  "GET /applications/:id" in {
     val application = createApplication()
     await(
       identifiedClient().applications.getById(application.id)
@@ -163,7 +168,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     }.map(_.id) must equal(Seq(app.id))
   }
 
-  "creating an application requires authorization" in  {
+  "creating an application requires authorization" in {
     val form = createApplicationForm()
     expectNotAuthorized(
       anonClient.applications.post(form)
@@ -178,7 +183,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     )
   }
 
-  "GET /applications by ids" in  {
+  "GET /applications by ids" in {
     val application1 = createApplication()
     val application2 = createApplication()
 
@@ -191,7 +196,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ) must be(Nil)
   }
 
-  "GET /applications by prefix" in  {
+  "GET /applications by prefix" in {
     val prefix = createUrlKey()
     val application1 = createApplication(createApplicationForm().copy(id = prefix + "-1"))
     val application2 = createApplication(createApplicationForm().copy(id = prefix + "-2"))
@@ -205,7 +210,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ) must be(Nil)
   }
 
-  "GET /applications by query" in  {
+  "GET /applications by query" in {
     val prefix = createUrlKey()
     val application1 = createApplication(createApplicationForm().copy(id = prefix + "-foo-1"))
     val application2 = createApplication(createApplicationForm().copy(id = prefix + "-foo-2"))
@@ -228,12 +233,14 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ) must be(Nil)
   }
 
-  "GET /applications by port nums" in  {
+  "GET /applications by port nums" in {
     val application1 = createApplication()
     val application2 = createApplication()
 
     await(
-      identifiedClient().applications.get(port = Some(Seq(application1.ports.map(_.external).head, application2.ports.map(_.external).head)))
+      identifiedClient().applications.get(port =
+        Some(Seq(application1.ports.map(_.external).head, application2.ports.map(_.external).head))
+      )
     ).map(_.id).sorted must contain theSameElementsAs Seq(application1.id, application2.id).sorted
 
     await(
@@ -241,7 +248,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ) must be(Nil)
   }
 
-  "GET /applications by service" in  {
+  "GET /applications by service" in {
     val service1 = createService()
     val service2 = createService()
 
@@ -250,19 +257,19 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     val ids = Seq(application1.id, application2.id)
 
     await(
-      identifiedClient().applications.get(id =  Some(ids), service = Some(Seq(service1.id, service2.id)))
+      identifiedClient().applications.get(id = Some(ids), service = Some(Seq(service1.id, service2.id)))
     ).map(_.id).sorted must contain theSameElementsAs Seq(application1.id, application2.id).sorted
 
     await(
-      identifiedClient().applications.get(id =  Some(ids), service = Some(Seq(service1.id)))
+      identifiedClient().applications.get(id = Some(ids), service = Some(Seq(service1.id)))
     ).map(_.id) must contain theSameElementsAs Seq(application1.id)
 
     await(
-      identifiedClient().applications.get(id =  Some(ids), service = Some(Seq(testService.id)))
+      identifiedClient().applications.get(id = Some(ids), service = Some(Seq(testService.id)))
     ) must be(Nil)
   }
 
-  "GET /applications paginates" in  {
+  "GET /applications paginates" in {
     val application1 = createApplication()
     val application2 = createApplication()
     val application3 = createApplication()
@@ -277,7 +284,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ).map(_.id) must contain theSameElementsAs Seq(application3.id)
   }
 
-  "GET /applications sorts" in  {
+  "GET /applications sorts" in {
     val application1 = createApplication()
     val application2 = createApplication()
     val ids = Seq(application1.id, application2.id)
@@ -291,7 +298,7 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ).map(_.id) must contain theSameElementsAs ids.reverse
   }
 
-  "GET /applications sorts by port" in  {
+  "GET /applications sorts by port" in {
     val application1 = createApplication()
     val application2 = createApplication()
     val ids = Seq(application1.id, application2.id)
@@ -305,12 +312,14 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ).map(_.id) must contain theSameElementsAs ids.reverse
   }
 
-  "PUT /applications/:id/dependencies/:dependency" in  {
+  "PUT /applications/:id/dependencies/:dependency" in {
     val dep1 = createApplication()
     val dep2 = createApplication()
     val application = createApplication()
 
-    await(identifiedClient().applications.putDependenciesByIdAndDependency(application.id, dep1.id)).dependencies must contain theSameElementsAs Seq(dep1.id)
+    await(
+      identifiedClient().applications.putDependenciesByIdAndDependency(application.id, dep1.id)
+    ).dependencies must contain theSameElementsAs Seq(dep1.id)
 
     val finalApp = await(identifiedClient().applications.putDependenciesByIdAndDependency(application.id, dep2.id))
     finalApp.id must be(application.id)
@@ -322,16 +331,20 @@ class ApplicationsSpec extends RegistrySpec with MockRegistryClient {
     ).genericError.messages must contain theSameElementsAs Seq("Application named[other] not found")
   }
 
-  "DELETE /applications/:id/dependencies/:dependency" in  {
+  "DELETE /applications/:id/dependencies/:dependency" in {
     val dep1 = createApplication()
     val dep2 = createApplication()
     val form = createApplicationForm().copy(dependency = Some(Seq(dep1.id, dep2.id)))
     val application = createApplication(form)
 
-    await(identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, dep2.id)).dependencies must contain theSameElementsAs Seq(dep1.id)
+    await(
+      identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, dep2.id)
+    ).dependencies must contain theSameElementsAs Seq(dep1.id)
 
     // Duplicate okay
-    await(identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, dep2.id)).dependencies must contain theSameElementsAs Seq(dep1.id)
+    await(
+      identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, dep2.id)
+    ).dependencies must contain theSameElementsAs Seq(dep1.id)
 
     val finalApp = await(identifiedClient().applications.deleteDependenciesByIdAndDependency(application.id, dep1.id))
     finalApp.id must be(application.id)

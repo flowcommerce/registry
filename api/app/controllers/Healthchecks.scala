@@ -11,12 +11,12 @@ import play.api.libs.json._
 import io.flow.play.util.Config
 
 @javax.inject.Singleton
-class Healthchecks @javax.inject.Inject()(
-     healthchecksDao: HealthchecksDao,
-     val config: Config,
-     val controllerComponents: ControllerComponents,
-     val flowControllerComponents: FlowControllerComponents
-   ) extends FlowController {
+class Healthchecks @javax.inject.Inject() (
+  healthchecksDao: HealthchecksDao,
+  val config: Config,
+  val controllerComponents: ControllerComponents,
+  val flowControllerComponents: FlowControllerComponents
+) extends FlowController {
 
   private[this] val HealthyJson = Json.toJson(Healthcheck(status = "healthy"))
 
@@ -27,7 +27,8 @@ class Healthchecks @javax.inject.Inject()(
 
     checks.filter { case (_, check) => !check }.keys.toList match {
       case Nil => Ok(HealthyJson)
-      case unhealthy => UnprocessableEntity(Json.toJson(Validation.errors(unhealthy.map { name => s"$name failed check" })))
+      case unhealthy =>
+        UnprocessableEntity(Json.toJson(Validation.errors(unhealthy.map { name => s"$name failed check" })))
     }
   }
 

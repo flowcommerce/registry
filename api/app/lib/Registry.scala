@@ -7,9 +7,7 @@ import io.flow.postgresql.Authorization
 import play.api.inject.Module
 import play.api.{Configuration, Environment, Mode}
 
-/**
-  * Since we are the registry, we can look up app info from our local
-  * database (instead of an HTTP call to ourselves).
+/** Since we are the registry, we can look up app info from our local database (instead of an HTTP call to ourselves).
   */
 @javax.inject.Singleton
 class DevelopmentRegistry @javax.inject.Inject() (
@@ -17,16 +15,14 @@ class DevelopmentRegistry @javax.inject.Inject() (
 ) extends LocalRegistry {
 
   override def host(applicationId: String): String =
-     host(applicationId, applicationsDao)
+    host(applicationId, applicationsDao)
 
   override def host(applicationId: String, port: Long): String =
     RegistryConstants.developmentHost(port)
 
 }
 
-/**
-  * Since we are the registry, we can look up app info from our local
-  * database (instead of an HTTP call to ourselves).
+/** Since we are the registry, we can look up app info from our local database (instead of an HTTP call to ourselves).
   */
 @javax.inject.Singleton
 class WorkstationRegistry @javax.inject.Inject() (
@@ -65,20 +61,24 @@ class RegistryModule extends Module {
     env.mode match {
       case Mode.Prod | Mode.Dev => {
         FlowEnvironment.Current match {
-          case FlowEnvironment.Production => Seq(
-            bind[Registry].to[ProductionRegistry]
-          )
-          case FlowEnvironment.Development => Seq(
-            bind[Registry].to[DevelopmentRegistry]
-          )
-          case FlowEnvironment.Workstation => Seq(
-            bind[Registry].to[WorkstationRegistry]
-          )
+          case FlowEnvironment.Production =>
+            Seq(
+              bind[Registry].to[ProductionRegistry]
+            )
+          case FlowEnvironment.Development =>
+            Seq(
+              bind[Registry].to[DevelopmentRegistry]
+            )
+          case FlowEnvironment.Workstation =>
+            Seq(
+              bind[Registry].to[WorkstationRegistry]
+            )
         }
       }
-      case Mode.Test => Seq(
-        bind[Registry].to[MockRegistry]
-      )
+      case Mode.Test =>
+        Seq(
+          bind[Registry].to[MockRegistry]
+        )
     }
   }
 

@@ -66,20 +66,22 @@ class PortsDao @Inject() (
     }
   }
 
-  private[db] def create(
-    implicit c: java.sql.Connection,
+  private[db] def create(implicit
+    c: java.sql.Connection,
     createdBy: UserReference,
     form: PortForm
   ): String = {
     val id = idGenerator.randomId()
-    SQL(InsertQuery).on(
-      "id" -> id,
-      "application_id" -> form.applicationId,
-      "service_id" -> form.serviceId,
-      "internal" -> form.internal,
-      "external" -> form.external,
-      "updated_by_user_id" -> createdBy.id
-    ).execute()
+    SQL(InsertQuery)
+      .on(
+        "id" -> id,
+        "application_id" -> form.applicationId,
+        "service_id" -> form.serviceId,
+        "internal" -> form.internal,
+        "external" -> form.external,
+        "updated_by_user_id" -> createdBy.id
+      )
+      .execute()
     id
   }
 
@@ -114,8 +116,8 @@ class PortsDao @Inject() (
     }
   }
 
-  private[db] def findAllWithConnection(
-    implicit c: java.sql.Connection,
+  private[db] def findAllWithConnection(implicit
+    c: java.sql.Connection,
     auth: Authorization,
     ids: Option[Seq[String]] = None,
     applications: Option[Seq[String]] = None,
@@ -125,35 +127,36 @@ class PortsDao @Inject() (
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("ports.application_id, ports.external")
   ): Seq[InternalPort] = {
-    dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
-      optionalIn("ports.id", ids).
-      optionalIn("ports.application_id", applications).
-      optionalIn("ports.service_id", services).
-      optionalIn("ports.external", externals).
-      limit(limit).
-      offset(offset).
-      orderBy(orderBy.sql).
-      as(
+    dbHelpers
+      .authorizedQuery(BaseQuery, queryAuth(auth))
+      .optionalIn("ports.id", ids)
+      .optionalIn("ports.application_id", applications)
+      .optionalIn("ports.service_id", services)
+      .optionalIn("ports.external", externals)
+      .limit(limit)
+      .offset(offset)
+      .orderBy(orderBy.sql)
+      .as(
         parser.*
       )
   }
 
   private[this] val parser: RowParser[InternalPort] = {
     SqlParser.str("id") ~
-    SqlParser.str("application_id") ~
-    SqlParser.str("service_id") ~
-    SqlParser.long("external") ~
-    SqlParser.long("internal") map {
-      case id ~ applicationId ~ serviceId ~ external ~ internal => {
-        InternalPort(
-          id = id,
-          applicationId = applicationId,
-          serviceId = serviceId,
-          external = external,
-          internal = internal
-        )
+      SqlParser.str("application_id") ~
+      SqlParser.str("service_id") ~
+      SqlParser.long("external") ~
+      SqlParser.long("internal") map {
+        case id ~ applicationId ~ serviceId ~ external ~ internal => {
+          InternalPort(
+            id = id,
+            applicationId = applicationId,
+            serviceId = serviceId,
+            external = external,
+            internal = internal
+          )
+        }
       }
-    }
   }
 
 }

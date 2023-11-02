@@ -27,26 +27,36 @@ class DependenciesDaoSpec extends RegistrySpec {
       val dependency1 = createDependency()
       val dependency2 = createDependency()
 
-      dependenciesDao.findAll(Authorization.All, ids = Some(Seq(dependency1.id, dependency2.id))).map(_.id).sorted must be(
+      dependenciesDao
+        .findAll(Authorization.All, ids = Some(Seq(dependency1.id, dependency2.id)))
+        .map(_.id)
+        .sorted must be(
         Seq(dependency1.id, dependency2.id).sorted
       )
 
       dependenciesDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
       dependenciesDao.findAll(Authorization.All, ids = Some(Seq(createTestId()))) must be(Nil)
-      dependenciesDao.findAll(Authorization.All, ids = Some(Seq(dependency1.id, createTestId()))).map(_.id) must be(Seq(dependency1.id))
+      dependenciesDao.findAll(Authorization.All, ids = Some(Seq(dependency1.id, createTestId()))).map(_.id) must be(
+        Seq(dependency1.id)
+      )
     }
 
     "filter by applications" in {
       val dependency1 = createDependency()
       val dependency2 = createDependency()
 
-      dependenciesDao.findAll(Authorization.All, applications = Some(Seq(dependency1.applicationId, dependency2.applicationId))).map(_.id).sorted must be(
+      dependenciesDao
+        .findAll(Authorization.All, applications = Some(Seq(dependency1.applicationId, dependency2.applicationId)))
+        .map(_.id)
+        .sorted must be(
         Seq(dependency1.id, dependency2.id).sorted
       )
 
       dependenciesDao.findAll(Authorization.All, applications = Option(Nil)) must be(Nil)
       dependenciesDao.findAll(Authorization.All, applications = Option(Seq(createTestId()))) must be(Nil)
-      dependenciesDao.findAll(Authorization.All, applications = Option(Seq(dependency1.applicationId, createTestId()))).map(_.id) must be(Seq(dependency1.id))
+      dependenciesDao
+        .findAll(Authorization.All, applications = Option(Seq(dependency1.applicationId, createTestId())))
+        .map(_.id) must be(Seq(dependency1.id))
     }
 
   }

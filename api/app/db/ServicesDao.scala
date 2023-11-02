@@ -76,11 +76,13 @@ class ServicesDao @Inject() (
         db.withConnection { implicit c =>
           val id = form.id.trim
 
-          SQL(InsertQuery).on(
-            "id" -> id,
-            "default_port" -> form.defaultPort,
-            "updated_by_user_id" -> createdBy.id
-          ).execute()
+          SQL(InsertQuery)
+            .on(
+              "id" -> id,
+              "default_port" -> form.defaultPort,
+              "updated_by_user_id" -> createdBy.id
+            )
+            .execute()
         }
 
         Right(
@@ -97,11 +99,13 @@ class ServicesDao @Inject() (
     validate(form, existing = Some(existing)) match {
       case Nil => {
         db.withConnection { implicit c =>
-          SQL(UpdateQuery).on(
-            "id" -> existing.id,
-            "default_port" -> form.defaultPort,
-            "updated_by_user_id" -> createdBy.id
-          ).execute()
+          SQL(UpdateQuery)
+            .on(
+              "id" -> existing.id,
+              "default_port" -> form.defaultPort,
+              "updated_by_user_id" -> createdBy.id
+            )
+            .execute()
         }
 
         Right(
@@ -131,13 +135,14 @@ class ServicesDao @Inject() (
     orderBy: OrderBy = OrderBy("-created_at", Some("services"))
   ): Seq[Service] = {
     db.withConnection { implicit c =>
-      dbHelpers.authorizedQuery(BaseQuery, queryAuth(auth)).
-        optionalIn("services.id", ids).
-        optionalIn("services.default_port", defaultPortNumbers).
-        limit(limit).
-        offset(offset).
-        orderBy(orderBy.sql).
-        as(
+      dbHelpers
+        .authorizedQuery(BaseQuery, queryAuth(auth))
+        .optionalIn("services.id", ids)
+        .optionalIn("services.default_port", defaultPortNumbers)
+        .limit(limit)
+        .offset(offset)
+        .orderBy(orderBy.sql)
+        .as(
           io.flow.registry.v0.anorm.parsers.Service.parser().*
         )
     }
