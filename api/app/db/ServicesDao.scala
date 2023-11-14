@@ -12,7 +12,7 @@ import play.api.db._
 
 @Singleton
 class ServicesDao @Inject() (
-  db: Database
+  db: Database,
 ) extends lib.PublicAuthorizedQuery {
 
   private val dbHelpers = DbHelpers(db, "services")
@@ -40,7 +40,7 @@ class ServicesDao @Inject() (
 
   private[db] def validate(
     form: ServiceForm,
-    existing: Option[Service] = None
+    existing: Option[Service] = None,
   ): Seq[String] = {
     val idErrors = if (form.id.trim.isEmpty) {
       Seq("Id cannot be empty")
@@ -80,7 +80,7 @@ class ServicesDao @Inject() (
             .on(
               "id" -> id,
               "default_port" -> form.defaultPort,
-              "updated_by_user_id" -> createdBy.id
+              "updated_by_user_id" -> createdBy.id,
             )
             .execute()
         }
@@ -88,7 +88,7 @@ class ServicesDao @Inject() (
         Right(
           findById(Authorization.All, form.id.trim).getOrElse {
             sys.error("Failed to create service")
-          }
+          },
         )
       }
       case errors => Left(errors)
@@ -103,7 +103,7 @@ class ServicesDao @Inject() (
             .on(
               "id" -> existing.id,
               "default_port" -> form.defaultPort,
-              "updated_by_user_id" -> createdBy.id
+              "updated_by_user_id" -> createdBy.id,
             )
             .execute()
         }
@@ -111,7 +111,7 @@ class ServicesDao @Inject() (
         Right(
           findById(Authorization.All, existing.id).getOrElse {
             sys.error("Failed to update service")
-          }
+          },
         )
       }
       case errors => Left(errors)
@@ -132,7 +132,7 @@ class ServicesDao @Inject() (
     defaultPortNumbers: Option[Seq[Long]] = None,
     limit: Long = 25,
     offset: Long = 0,
-    orderBy: OrderBy = OrderBy("-created_at", Some("services"))
+    orderBy: OrderBy = OrderBy("-created_at", Some("services")),
   ): Seq[Service] = {
     db.withConnection { implicit c =>
       dbHelpers
@@ -143,7 +143,7 @@ class ServicesDao @Inject() (
         .offset(offset)
         .orderBy(orderBy.sql)
         .as(
-          io.flow.registry.v0.anorm.parsers.Service.parser().*
+          io.flow.registry.v0.anorm.parsers.Service.parser().*,
         )
     }
   }

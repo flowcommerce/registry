@@ -11,18 +11,18 @@ import play.api.db._
 
 case class DependencyForm(
   applicationId: String,
-  dependencyId: String
+  dependencyId: String,
 )
 
 case class InternalDependency(
   id: String,
   applicationId: String,
-  dependencyId: String
+  dependencyId: String,
 )
 
 @Singleton
 class DependenciesDao @Inject() (
-  db: Database
+  db: Database,
 ) extends lib.PublicAuthorizedQuery {
 
   private val dbHelpers = DbHelpers(db, "dependencies")
@@ -55,7 +55,7 @@ class DependenciesDao @Inject() (
   private[db] def create(implicit
     c: java.sql.Connection,
     createdBy: UserReference,
-    form: DependencyForm
+    form: DependencyForm,
   ): String = {
     val id = idGenerator.randomId()
     SQL(InsertQuery)
@@ -63,7 +63,7 @@ class DependenciesDao @Inject() (
         "id" -> id,
         "application_id" -> form.applicationId,
         "dependency_id" -> form.dependencyId,
-        "updated_by_user_id" -> createdBy.id
+        "updated_by_user_id" -> createdBy.id,
       )
       .execute()
     id
@@ -73,13 +73,13 @@ class DependenciesDao @Inject() (
     c: java.sql.Connection,
     user: UserReference,
     applicationId: String,
-    dependencyId: String
+    dependencyId: String,
   ): Unit = {
     findAll(
       Authorization.All,
       applications = Some(Seq(applicationId)),
       dependencies = Some(Seq(dependencyId)),
-      limit = 1
+      limit = 1,
     ).foreach { dep =>
       delete(c, user, dep)
     }
@@ -100,7 +100,7 @@ class DependenciesDao @Inject() (
     dependencies: Option[Seq[String]] = None,
     limit: Long = 25,
     offset: Long = 0,
-    orderBy: OrderBy = OrderBy("dependencies.application_id, dependencies.dependency_id")
+    orderBy: OrderBy = OrderBy("dependencies.application_id, dependencies.dependency_id"),
   ): Seq[InternalDependency] = {
     db.withConnection { implicit c =>
       findAllWithConnection(c, auth, ids, applications, dependencies, limit, offset, orderBy)
@@ -115,7 +115,7 @@ class DependenciesDao @Inject() (
     dependencies: Option[Seq[String]] = None,
     limit: Long = 25,
     offset: Long = 0,
-    orderBy: OrderBy = OrderBy("dependencies.application_id, dependencies.dependency_id")
+    orderBy: OrderBy = OrderBy("dependencies.application_id, dependencies.dependency_id"),
   ): Seq[InternalDependency] = {
     dbHelpers
       .authorizedQuery(BaseQuery, queryAuth(auth))
@@ -126,7 +126,7 @@ class DependenciesDao @Inject() (
       .offset(offset)
       .orderBy(orderBy.sql)
       .as(
-        parser.*
+        parser.*,
       )
   }
 
@@ -138,7 +138,7 @@ class DependenciesDao @Inject() (
           InternalDependency(
             id = id,
             applicationId = applicationId,
-            dependencyId = dependencyId
+            dependencyId = dependencyId,
           )
         }
       }

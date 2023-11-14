@@ -15,9 +15,9 @@ class HealthchecksSpec extends FlowPlaySpec {
 
   "GET /_internal_/healthcheck" in new WithServer(port = port) {
     await(
-      client.Healthchecks.getHealthcheck()
+      client.Healthchecks.getHealthcheck(),
     ) must be(
-      Healthcheck("healthy")
+      Healthcheck("healthy"),
     )
   }
 

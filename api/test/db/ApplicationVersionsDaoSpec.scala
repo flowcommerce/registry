@@ -27,7 +27,7 @@ class ApplicationVersionsDaoSpec extends RegistrySpec {
     val newService = createService()
     val app = createApplication()
     val updated = rightOrErrors(
-      applicationsDao.update(testUser, app, ApplicationPutForm(service = Some(newService.id)))
+      applicationsDao.update(testUser, app, ApplicationPutForm(service = Some(newService.id))),
     )
 
     val versions = applicationVersionsDao.findAll(Authorization.All, applications = Some(Seq(app.id)))

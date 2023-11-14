@@ -21,7 +21,7 @@ import io.flow.postgresql.Authorization
 @Singleton
 class DefaultPortAllocator @Inject() (
   applicationsDao: ApplicationsDao,
-  portsDao: PortsDao
+  portsDao: PortsDao,
 ) {
 
   private[this] val Denylist = Seq(8080L)
@@ -33,7 +33,7 @@ class DefaultPortAllocator @Inject() (
   private[this] val defaults = Map[String, Int](
     "nodejs" -> 0,
     "play" -> 1,
-    "postgresql" -> 9
+    "postgresql" -> 9,
   )
 
   private[this] def prefix(name: String) = {

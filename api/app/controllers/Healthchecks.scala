@@ -15,14 +15,14 @@ class Healthchecks @javax.inject.Inject() (
   healthchecksDao: HealthchecksDao,
   val config: Config,
   val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
+  val flowControllerComponents: FlowControllerComponents,
 ) extends FlowController {
 
   private[this] val HealthyJson = Json.toJson(Healthcheck(status = "healthy"))
 
   def getHealthcheck() = Action { _ =>
     val checks = Map(
-      "db" -> healthchecksDao.isHealthy()
+      "db" -> healthchecksDao.isHealthy(),
     )
 
     checks.filter { case (_, check) => !check }.keys.toList match {

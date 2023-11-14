@@ -28,7 +28,7 @@ class PortsDaoSpec extends RegistrySpec {
   "findById" in {
     val port = createPort()
     portsDao.findById(Authorization.All, port.id).map(_.id) must be(
-      Some(port.id)
+      Some(port.id),
     )
 
     portsDao.findById(Authorization.All, createTestId()) must be(None)
@@ -41,7 +41,7 @@ class PortsDaoSpec extends RegistrySpec {
       val port2 = createPort()
 
       portsDao.findAll(Authorization.All, ids = Some(Seq(port1.id, port2.id))).map(_.id).sorted must be(
-        Seq(port1.id, port2.id).sorted
+        Seq(port1.id, port2.id).sorted,
       )
 
       portsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
@@ -57,7 +57,7 @@ class PortsDaoSpec extends RegistrySpec {
         .findAll(Authorization.All, externals = Some(Seq(port1.external, port2.external)))
         .map(_.id)
         .sorted must be(
-        Seq(port1.id, port2.id).sorted
+        Seq(port1.id, port2.id).sorted,
       )
 
       portsDao.findAll(Authorization.All, externals = Some(Nil)) must be(Nil)

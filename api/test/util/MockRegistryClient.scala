@@ -9,21 +9,21 @@ trait MockRegistryClient
   extends FlowMockClient[
     io.flow.registry.v0.Client,
     io.flow.registry.v0.errors.GenericErrorResponse,
-    io.flow.registry.v0.errors.UnitResponse
+    io.flow.registry.v0.errors.UnitResponse,
   ] {
   self: FlowPlaySpec =>
 
   override def createAnonymousClient(baseUrl: String): Client =
     new io.flow.registry.v0.Client(
       ws = wsClient,
-      baseUrl = baseUrl
+      baseUrl = baseUrl,
     )
 
   override def createIdentifiedClient(
     baseUrl: String,
     user: UserReference,
     org: Option[String],
-    session: Option[FlowSession]
+    session: Option[FlowSession],
   ): Client = {
     val auth = org match {
       case None => AuthHeaders.user(user, session = session)
@@ -33,7 +33,7 @@ trait MockRegistryClient
     new io.flow.registry.v0.Client(
       ws = wsClient,
       baseUrl = baseUrl,
-      defaultHeaders = authHeaders.headers(auth)
+      defaultHeaders = authHeaders.headers(auth),
     )
   }
 }

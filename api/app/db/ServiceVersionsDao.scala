@@ -11,7 +11,7 @@ import play.api.db._
 
 @Singleton
 class ServiceVersionsDao @Inject() (
-  db: Database
+  db: Database,
 ) extends lib.PublicAuthorizedQuery {
 
   private[this] val dbHelpers = DbHelpers(db, "services")
@@ -26,7 +26,7 @@ class ServiceVersionsDao @Inject() (
     services: Option[Seq[String]] = None,
     limit: Long = 25,
     offset: Long = 0,
-    orderBy: OrderBy = OrderBy("journal_timestamp", Some("services"))
+    orderBy: OrderBy = OrderBy("journal_timestamp", Some("services")),
   ): Seq[ServiceVersion] = {
     db.withConnection { implicit c =>
       dbHelpers
@@ -37,7 +37,7 @@ class ServiceVersionsDao @Inject() (
         .offset(offset)
         .orderBy(orderBy.sql)
         .as(
-          parser().*
+          parser().*,
         )
     }
   }
@@ -52,7 +52,7 @@ class ServiceVersionsDao @Inject() (
             id = id.toString,
             timestamp = ts,
             `type` = ChangeType(op),
-            service = service
+            service = service,
           )
         }
       }

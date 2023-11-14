@@ -19,7 +19,7 @@ class Applications @javax.inject.Inject() (
   applicationVersionsDao: ApplicationVersionsDao,
   val config: Config,
   val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
+  val flowControllerComponents: FlowControllerComponents,
 )(implicit ec: ExecutionContext)
   extends FlowController {
 
@@ -31,7 +31,7 @@ class Applications @javax.inject.Inject() (
     q: Option[String],
     limit: Long = 25,
     offset: Long = 0,
-    sort: String
+    sort: String,
   ) = Anonymous.async { request =>
     Future {
       OrderBy.parse(sort) match {
@@ -50,9 +50,9 @@ class Applications @javax.inject.Inject() (
                 q = q,
                 limit = limit,
                 offset = offset,
-                orderBy = orderBy
-              )
-            )
+                orderBy = orderBy,
+              ),
+            ),
           )
         }
       }
@@ -64,7 +64,7 @@ class Applications @javax.inject.Inject() (
     application: Option[Seq[String]],
     limit: Long = 25,
     offset: Long = 0,
-    sort: String
+    sort: String,
   ) = Anonymous.async { request =>
     Future {
       OrderBy.parse(sort) match {
@@ -80,9 +80,9 @@ class Applications @javax.inject.Inject() (
                 applications = optionals(application),
                 limit = limit,
                 offset = offset,
-                orderBy = orderBy
-              )
-            )
+                orderBy = orderBy,
+              ),
+            ),
           )
         }
       }
@@ -96,7 +96,7 @@ class Applications @javax.inject.Inject() (
           applicationsDao.findAll(
             Authorization.fromUser(request.user.map(_.id)),
             limit = 100,
-            offset = offset
+            offset = offset,
           )
         }
         .map { a =>
@@ -106,7 +106,7 @@ class Applications @javax.inject.Inject() (
               case "play" | "nodejs" =>
                 YamlObject(
                   YamlString("  host") -> YamlString("ws"),
-                  YamlString("  port") -> YamlNumber(p.external)
+                  YamlString("  port") -> YamlNumber(p.external),
                 )
 
               case "postgresql" =>
@@ -114,14 +114,14 @@ class Applications @javax.inject.Inject() (
                   YamlString("  dbname") -> YamlString(s"${a.id}"),
                   YamlString("  host") -> YamlString("ws"),
                   YamlString("  port") -> YamlNumber(p.external),
-                  YamlString("  user") -> YamlString("api")
+                  YamlString("  user") -> YamlString("api"),
                 )
             }
 
             YamlObject(
               YamlString("healthcheck") -> healthcheck,
               YamlString("  external") -> YamlNumber(p.external),
-              YamlString("  internal") -> YamlNumber(p.internal)
+              YamlString("  internal") -> YamlNumber(p.internal),
             )
           }
 
@@ -134,12 +134,12 @@ class Applications @javax.inject.Inject() (
           YamlObject(
             YamlString("id") -> YamlString(a.id),
             YamlString("ports") -> portYaml,
-            YamlString("dependencies") -> YamlString(s"[$dependencies]")
+            YamlString("dependencies") -> YamlString(s"[$dependencies]"),
           )
         }
 
       Ok(
-        YamlArray(yaml.toVector).prettyPrint.replaceAll("- healthcheck", "  - healthcheck").replaceAll("'", "")
+        YamlArray(yaml.toVector).prettyPrint.replaceAll("- healthcheck", "  - healthcheck").replaceAll("'", ""),
       )
     }
   }
@@ -174,7 +174,7 @@ class Applications @javax.inject.Inject() (
                 service = service,
                 external = putForm.external,
                 internal = putForm.internal,
-                dependency = putForm.dependency
+                dependency = putForm.dependency,
               )
               applicationsDao.create(request.user, form) match {
                 case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
@@ -227,7 +227,7 @@ class Applications @javax.inject.Inject() (
   }
 
   def withApplication(user: Option[UserReference], id: String)(
-    f: Application => Result
+    f: Application => Result,
   ) = {
     Future {
       applicationsDao.findById(Authorization.fromUser(user.map(_.id)), id) match {
