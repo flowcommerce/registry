@@ -18,7 +18,7 @@ class ApplicationsDao @Inject() (
   servicesDao: ServicesDao,
   dependenciesDao: DependenciesDao,
   portsDao: PortsDao,
-  db: Database
+  db: Database,
 ) extends lib.PublicAuthorizedQuery {
 
   private[this] val dbHelpers = DbHelpers(db, "applications")
@@ -52,7 +52,7 @@ class ApplicationsDao @Inject() (
   private[db] def validate(
     id: String,
     form: ApplicationPutForm,
-    existing: Option[Application] = None
+    existing: Option[Application] = None,
   ): Seq[String] = {
     val idErrors = if (id.trim.isEmpty) {
       Seq("Id cannot be empty")
@@ -124,7 +124,7 @@ class ApplicationsDao @Inject() (
                 dependenciesDao.findAll(
                   Authorization.All,
                   dependencies = Some(Seq(app.id)),
-                  offset = offset
+                  offset = offset,
                 )
               }
               .toList
@@ -185,7 +185,7 @@ class ApplicationsDao @Inject() (
       service = Some(form.service),
       external = form.external,
       internal = form.internal,
-      dependency = form.dependency
+      dependency = form.dependency,
     )
 
     validate(form.id, putForm) match {
@@ -198,7 +198,7 @@ class ApplicationsDao @Inject() (
             applicationId = id,
             internal = form.internal,
             external = form.external,
-            serviceId = form.service
+            serviceId = form.service,
           )
 
           form.dependency match {
@@ -213,7 +213,7 @@ class ApplicationsDao @Inject() (
               "id" -> id,
               "ports" -> portsAsJson(c, id),
               "dependencies" -> dependenciesAsJson(c, id),
-              "updated_by_user_id" -> createdBy.id
+              "updated_by_user_id" -> createdBy.id,
             )
             .execute()
         }
@@ -221,7 +221,7 @@ class ApplicationsDao @Inject() (
         Right(
           findById(Authorization.All, form.id.trim).getOrElse {
             sys.error("Failed to create application")
-          }
+          },
         )
       }
       case errors => Left(errors)
@@ -231,7 +231,7 @@ class ApplicationsDao @Inject() (
   def upsertDependency(
     createdBy: UserReference,
     app: Application,
-    dependency: String
+    dependency: String,
   ): Either[Seq[String], Application] = {
     findById(Authorization.User(createdBy.id), dependency) match {
       case None => {
@@ -240,7 +240,7 @@ class ApplicationsDao @Inject() (
 
       case Some(dep) => {
         val putForm = ApplicationPutForm(
-          dependency = Some(app.dependencies ++ Seq(dep.id))
+          dependency = Some(app.dependencies ++ Seq(dep.id)),
         )
         update(createdBy, app, putForm) match {
           case Left(errors) => sys.error(s"Invalid error when updating dependencies: $errors")
@@ -253,7 +253,7 @@ class ApplicationsDao @Inject() (
   def removeDependency(
     createdBy: UserReference,
     app: Application,
-    dependency: String
+    dependency: String,
   ): Either[Seq[String], Application] = {
     findById(Authorization.User(createdBy.id), dependency) match {
       case None => {
@@ -262,7 +262,7 @@ class ApplicationsDao @Inject() (
 
       case Some(_) => {
         val putForm = ApplicationPutForm(
-          dependency = Some(app.dependencies.filter(_ != dependency))
+          dependency = Some(app.dependencies.filter(_ != dependency)),
         )
 
         update(createdBy, app, putForm) match {
@@ -301,7 +301,7 @@ class ApplicationsDao @Inject() (
                 applicationId = app.id,
                 external = form.external,
                 internal = form.internal,
-                serviceId = service
+                serviceId = service,
               )
             }
           }
@@ -316,7 +316,7 @@ class ApplicationsDao @Inject() (
               "id" -> app.id,
               "ports" -> portsAsJson(c, app.id),
               "dependencies" -> dependenciesAsJson(c, app.id),
-              "updated_by_user_id" -> createdBy.id
+              "updated_by_user_id" -> createdBy.id,
             )
             .execute()
 
@@ -324,7 +324,7 @@ class ApplicationsDao @Inject() (
         Right(
           findById(Authorization.All, app.id).getOrElse {
             sys.error("Failed to update application")
-          }
+          },
         )
       }
       case errors => Left(errors)
@@ -342,11 +342,11 @@ class ApplicationsDao @Inject() (
               c,
               Authorization.All,
               applications = Some(Seq(applicationId)),
-              offset = offset
+              offset = offset,
             )
           }
           .toSeq
-          .map(_.port)
+          .map(_.port),
       )
       .toString
   }
@@ -363,11 +363,11 @@ class ApplicationsDao @Inject() (
               c,
               Authorization.All,
               applications = Some(Seq(applicationId)),
-              offset = offset
+              offset = offset,
             )
           }
           .toSeq
-          .map(_.dependencyId)
+          .map(_.dependencyId),
       )
       .toString
   }
@@ -378,7 +378,7 @@ class ApplicationsDao @Inject() (
     applicationId: String,
     external: Option[Long],
     internal: Option[Long],
-    serviceId: String
+    serviceId: String,
   ): Unit = {
     servicesDao.findById(Authorization.All, serviceId).foreach { service =>
       portsDao.create(
@@ -388,8 +388,8 @@ class ApplicationsDao @Inject() (
           applicationId = applicationId,
           serviceId = service.id,
           internal = internal.getOrElse(service.defaultPort),
-          external = external.getOrElse(new DefaultPortAllocator(this, portsDao).number(applicationId, service.id))
-        )
+          external = external.getOrElse(new DefaultPortAllocator(this, portsDao).number(applicationId, service.id)),
+        ),
       )
     }
   }
@@ -398,15 +398,15 @@ class ApplicationsDao @Inject() (
     c: java.sql.Connection,
     createdBy: UserReference,
     applicationId: String,
-    dependencyId: String
+    dependencyId: String,
   ): Unit = {
     dependenciesDao.create(
       c,
       createdBy,
       DependencyForm(
         applicationId = applicationId,
-        dependencyId = dependencyId
-      )
+        dependencyId = dependencyId,
+      ),
     )
     ()
   }
@@ -419,7 +419,7 @@ class ApplicationsDao @Inject() (
             c,
             Authorization.User(deletedBy.id),
             applications = Some(Seq(application.id)),
-            offset = offset
+            offset = offset,
           )
         }
         .toSeq
@@ -433,7 +433,7 @@ class ApplicationsDao @Inject() (
             c,
             Authorization.User(deletedBy.id),
             applications = Some(Seq(application.id)),
-            offset = offset
+            offset = offset,
           )
         }
         .toSeq
@@ -462,7 +462,7 @@ class ApplicationsDao @Inject() (
     q: Option[String] = None,
     limit: Long = 25,
     offset: Long = 0,
-    orderBy: OrderBy = OrderBy("-created_at", Some("applications"))
+    orderBy: OrderBy = OrderBy("-created_at", Some("applications")),
   ): Seq[Application] = {
     val sortSql = if (orderBy.sql.contains("port")) {
       Some(SortByPort)
@@ -480,33 +480,33 @@ class ApplicationsDao @Inject() (
           services.map { ids =>
             // TODO: bind variables
             s"applications.id in (select application_id from ports where service_id in (%s))".format(
-              ids.mkString("'", "', '", "'")
+              ids.mkString("'", "', '", "'"),
             )
-          }
+          },
         )
         .and(
           portNumbers.map { nums =>
             // TODO: bind variables
             s"applications.id in (select application_id from ports where external in (%s))".format(nums.mkString(", "))
-          }
+          },
         )
         .and(
           prefix.map { _ =>
             s"(applications.id = {prefix} or applications.id like {prefix} || '-%')"
-          }
+          },
         )
         .bind("prefix", prefix)
         .and(
           q.map { _ =>
             s"applications.id like '%' || lower(trim({q})) || '%'"
-          }
+          },
         )
         .bind("q", q)
         .limit(limit)
         .offset(offset)
         .orderBy(sortSql)
         .as(
-          io.flow.registry.v0.anorm.parsers.Application.parser().*
+          io.flow.registry.v0.anorm.parsers.Application.parser().*,
         )
     }
   }

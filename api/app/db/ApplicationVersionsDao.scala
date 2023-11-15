@@ -25,7 +25,7 @@ class ApplicationVersionsDao @Inject() (db: Database) extends lib.PublicAuthoriz
     applications: Option[Seq[String]] = None,
     limit: Long = 25,
     offset: Long = 0,
-    orderBy: OrderBy = OrderBy("journal_timestamp", Some("applications"))
+    orderBy: OrderBy = OrderBy("journal_timestamp", Some("applications")),
   ): Seq[ApplicationVersion] = {
     db.withConnection { implicit c =>
       dbHelpers
@@ -36,7 +36,7 @@ class ApplicationVersionsDao @Inject() (db: Database) extends lib.PublicAuthoriz
         .offset(offset)
         .orderBy(orderBy.sql)
         .as(
-          parser().*
+          parser().*,
         )
     }
   }
@@ -51,7 +51,7 @@ class ApplicationVersionsDao @Inject() (db: Database) extends lib.PublicAuthoriz
             id = id.toString,
             timestamp = ts,
             `type` = ChangeType(op),
-            application = application
+            application = application,
           )
         }
       }

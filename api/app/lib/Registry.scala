@@ -11,7 +11,7 @@ import play.api.{Configuration, Environment, Mode}
   */
 @javax.inject.Singleton
 class DevelopmentRegistry @javax.inject.Inject() (
-  applicationsDao: ApplicationsDao
+  applicationsDao: ApplicationsDao,
 ) extends LocalRegistry {
 
   override def host(applicationId: String): String =
@@ -26,7 +26,7 @@ class DevelopmentRegistry @javax.inject.Inject() (
   */
 @javax.inject.Singleton
 class WorkstationRegistry @javax.inject.Inject() (
-  applicationsDao: ApplicationsDao
+  applicationsDao: ApplicationsDao,
 ) extends LocalRegistry {
 
   override def host(applicationId: String): String =
@@ -63,21 +63,21 @@ class RegistryModule extends Module {
         FlowEnvironment.Current match {
           case FlowEnvironment.Production =>
             Seq(
-              bind[Registry].to[ProductionRegistry]
+              bind[Registry].to[ProductionRegistry],
             )
           case FlowEnvironment.Development =>
             Seq(
-              bind[Registry].to[DevelopmentRegistry]
+              bind[Registry].to[DevelopmentRegistry],
             )
           case FlowEnvironment.Workstation =>
             Seq(
-              bind[Registry].to[WorkstationRegistry]
+              bind[Registry].to[WorkstationRegistry],
             )
         }
       }
       case Mode.Test =>
         Seq(
-          bind[Registry].to[MockRegistry]
+          bind[Registry].to[MockRegistry],
         )
     }
   }

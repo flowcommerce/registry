@@ -23,9 +23,9 @@ class ApplicationsDaoSpec extends RegistrySpec {
       createApplication(
         createApplicationForm().copy(
           id = base + "-ui",
-          service = "nodejs"
-        )
-      )
+          service = "nodejs",
+        ),
+      ),
     )
 
     validatePort(
@@ -33,9 +33,9 @@ class ApplicationsDaoSpec extends RegistrySpec {
       createApplication(
         createApplicationForm().copy(
           id = base + "-api",
-          service = "play"
-        )
-      )
+          service = "play",
+        ),
+      ),
     )
 
     validatePort(
@@ -43,9 +43,9 @@ class ApplicationsDaoSpec extends RegistrySpec {
       createApplication(
         createApplicationForm().copy(
           id = base + "-db",
-          service = "postgresql"
-        )
-      )
+          service = "postgresql",
+        ),
+      ),
     )
 
   }
@@ -147,8 +147,8 @@ class ApplicationsDaoSpec extends RegistrySpec {
       applicationsDao.update(
         testUser,
         app,
-        ApplicationPutForm(service = Some("play"))
-      )
+        ApplicationPutForm(service = Some("play")),
+      ),
     )
     updated.ports.map(_.external) must be(Seq(portNumber, portNumber + 1))
 
@@ -157,8 +157,8 @@ class ApplicationsDaoSpec extends RegistrySpec {
       applicationsDao.update(
         testUser,
         updated,
-        ApplicationPutForm(service = Some("play"))
-      )
+        ApplicationPutForm(service = Some("play")),
+      ),
     )
     updatedAgain.ports.map(_.external) must be(Seq(portNumber, portNumber + 1))
   }
@@ -175,7 +175,7 @@ class ApplicationsDaoSpec extends RegistrySpec {
     val form = createApplicationPutForm().copy(dependency = Some(Seq(other.id)))
 
     applicationsDao.update(testUser, base, form).leftValue must be(
-      Seq(s"Application[${base.id}] Cannot declare a circular dependency on[${other.id}]")
+      Seq(s"Application[${base.id}] Cannot declare a circular dependency on[${other.id}]"),
     )
 
   }

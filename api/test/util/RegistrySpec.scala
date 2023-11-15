@@ -26,28 +26,28 @@ trait RegistrySpec extends FlowPlaySpec {
   def createServiceForm(): ServiceForm = {
     ServiceForm(
       id = createUrlKey("svc"),
-      defaultPort = 8080
+      defaultPort = 8080,
     )
   }
 
   def createServicePutForm(): ServicePutForm = {
     ServicePutForm(
-      defaultPort = 8080
+      defaultPort = 8080,
     )
   }
 
   def createApplication(
-    form: ApplicationForm = createApplicationForm()
+    form: ApplicationForm = createApplicationForm(),
   )(implicit user: UserReference = testUser): io.flow.registry.v0.models.Application = {
     rightOrErrors(applicationsDao.create(user, form))
   }
 
   def createApplicationForm(
-    service: Service = testService
+    service: Service = testService,
   ): ApplicationForm = {
     ApplicationForm(
       id = createUrlKey("app"),
-      service = service.id
+      service = service.id,
     )
   }
 
@@ -56,15 +56,15 @@ trait RegistrySpec extends FlowPlaySpec {
   }
 
   def createPort(
-    form: PortForm = createPortForm()
+    form: PortForm = createPortForm(),
   )(implicit
-    user: UserReference = testUser
+    user: UserReference = testUser,
   ): InternalPort = {
     portsDao.create(user, form)
   }
 
   def createPortForm(
-    application: io.flow.registry.v0.models.Application = createApplication()
+    application: io.flow.registry.v0.models.Application = createApplication(),
   ): PortForm = {
     lazy val nextPort: Long = portsDao.maxExternalPortNumber().getOrElse(6000)
 
@@ -72,25 +72,25 @@ trait RegistrySpec extends FlowPlaySpec {
       applicationId = application.id,
       serviceId = testService.id,
       internal = testService.defaultPort,
-      external = nextPort + 1
+      external = nextPort + 1,
     )
   }
 
   def createDependency(
-    form: DependencyForm = createDependencyForm()
+    form: DependencyForm = createDependencyForm(),
   )(implicit
-    user: UserReference = testUser
+    user: UserReference = testUser,
   ): InternalDependency = {
     dependenciesDao.create(user, form)
   }
 
   def createDependencyForm(
     application: io.flow.registry.v0.models.Application = createApplication(),
-    dependency: io.flow.registry.v0.models.Application = createApplication()
+    dependency: io.flow.registry.v0.models.Application = createApplication(),
   ): DependencyForm = {
     DependencyForm(
       applicationId = application.id,
-      dependencyId = dependency.id
+      dependencyId = dependency.id,
     )
   }
 }

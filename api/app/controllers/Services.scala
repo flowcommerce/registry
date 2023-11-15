@@ -19,7 +19,7 @@ class Services @javax.inject.Inject() (
   applicationsDao: ApplicationsDao,
   val config: Config,
   val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
+  val flowControllerComponents: FlowControllerComponents,
 )(implicit ec: ExecutionContext)
   extends FlowController {
 
@@ -27,7 +27,7 @@ class Services @javax.inject.Inject() (
     id: Option[Seq[String]],
     limit: Long = 25,
     offset: Long = 0,
-    sort: String
+    sort: String,
   ) = Anonymous.async { request =>
     Future {
       OrderBy.parse(sort) match {
@@ -42,9 +42,9 @@ class Services @javax.inject.Inject() (
                 ids = optionals(id),
                 limit = limit,
                 offset = offset,
-                orderBy = orderBy
-              )
-            )
+                orderBy = orderBy,
+              ),
+            ),
           )
         }
       }
@@ -56,7 +56,7 @@ class Services @javax.inject.Inject() (
     service: Option[Seq[String]],
     limit: Long = 25,
     offset: Long = 0,
-    sort: String
+    sort: String,
   ) = Anonymous.async { request =>
     Future {
       OrderBy.parse(sort) match {
@@ -72,9 +72,9 @@ class Services @javax.inject.Inject() (
                 services = optionals(service),
                 limit = limit,
                 offset = offset,
-                orderBy = orderBy
-              )
-            )
+                orderBy = orderBy,
+              ),
+            ),
           )
         }
       }
@@ -131,7 +131,7 @@ class Services @javax.inject.Inject() (
   }
 
   def withService(user: Option[UserReference], id: String)(
-    f: Service => Result
+    f: Service => Result,
   ) = {
     Future {
       servicesDao.findById(Authorization.fromUser(user.map(_.id)), id) match {

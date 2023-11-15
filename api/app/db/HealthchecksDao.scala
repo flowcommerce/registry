@@ -9,7 +9,7 @@ import scala.util.{Failure, Success, Try}
 @javax.inject.Singleton
 class HealthchecksDao @javax.inject.Inject() (
   db: Database,
-  logger: RollbarLogger
+  logger: RollbarLogger,
 ) {
 
   private[this] val Query = "select 1 as num"

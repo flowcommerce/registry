@@ -13,7 +13,7 @@ case class PortForm(
   applicationId: String,
   serviceId: String,
   internal: Long,
-  external: Long
+  external: Long,
 )
 
 case class InternalPort(
@@ -21,20 +21,20 @@ case class InternalPort(
   applicationId: String,
   serviceId: String,
   internal: Long,
-  external: Long
+  external: Long,
 ) {
 
   val port = Port(
     service = ServiceReference(serviceId),
     internal = internal,
-    external = external
+    external = external,
   )
 
 }
 
 @Singleton
 class PortsDao @Inject() (
-  db: Database
+  db: Database,
 ) extends lib.PublicAuthorizedQuery {
 
   private val dbHelpers = DbHelpers(db, "ports")
@@ -69,7 +69,7 @@ class PortsDao @Inject() (
   private[db] def create(implicit
     c: java.sql.Connection,
     createdBy: UserReference,
-    form: PortForm
+    form: PortForm,
   ): String = {
     val id = idGenerator.randomId()
     SQL(InsertQuery)
@@ -79,7 +79,7 @@ class PortsDao @Inject() (
         "service_id" -> form.serviceId,
         "internal" -> form.internal,
         "external" -> form.external,
-        "updated_by_user_id" -> createdBy.id
+        "updated_by_user_id" -> createdBy.id,
       )
       .execute()
     id
@@ -109,7 +109,7 @@ class PortsDao @Inject() (
     externals: Option[Seq[Long]] = None,
     limit: Long = 25,
     offset: Long = 0,
-    orderBy: OrderBy = OrderBy("ports.application_id, ports.external")
+    orderBy: OrderBy = OrderBy("ports.application_id, ports.external"),
   ): Seq[InternalPort] = {
     db.withConnection { implicit c =>
       findAllWithConnection(c, auth, ids, applications, services, externals, limit, offset, orderBy)
@@ -125,7 +125,7 @@ class PortsDao @Inject() (
     externals: Option[Seq[Long]] = None,
     limit: Long = 25,
     offset: Long = 0,
-    orderBy: OrderBy = OrderBy("ports.application_id, ports.external")
+    orderBy: OrderBy = OrderBy("ports.application_id, ports.external"),
   ): Seq[InternalPort] = {
     dbHelpers
       .authorizedQuery(BaseQuery, queryAuth(auth))
@@ -137,7 +137,7 @@ class PortsDao @Inject() (
       .offset(offset)
       .orderBy(orderBy.sql)
       .as(
-        parser.*
+        parser.*,
       )
   }
 
@@ -153,7 +153,7 @@ class PortsDao @Inject() (
             applicationId = applicationId,
             serviceId = serviceId,
             external = external,
-            internal = internal
+            internal = internal,
           )
         }
       }

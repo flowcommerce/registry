@@ -15,7 +15,7 @@ class DependenciesDaoSpec extends RegistrySpec {
   "findById" in {
     val dependency = createDependency()
     dependenciesDao.findById(Authorization.All, dependency.id).map(_.id) must be(
-      Some(dependency.id)
+      Some(dependency.id),
     )
 
     dependenciesDao.findById(Authorization.All, createTestId()) must be(None)
@@ -31,13 +31,13 @@ class DependenciesDaoSpec extends RegistrySpec {
         .findAll(Authorization.All, ids = Some(Seq(dependency1.id, dependency2.id)))
         .map(_.id)
         .sorted must be(
-        Seq(dependency1.id, dependency2.id).sorted
+        Seq(dependency1.id, dependency2.id).sorted,
       )
 
       dependenciesDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
       dependenciesDao.findAll(Authorization.All, ids = Some(Seq(createTestId()))) must be(Nil)
       dependenciesDao.findAll(Authorization.All, ids = Some(Seq(dependency1.id, createTestId()))).map(_.id) must be(
-        Seq(dependency1.id)
+        Seq(dependency1.id),
       )
     }
 
@@ -49,7 +49,7 @@ class DependenciesDaoSpec extends RegistrySpec {
         .findAll(Authorization.All, applications = Some(Seq(dependency1.applicationId, dependency2.applicationId)))
         .map(_.id)
         .sorted must be(
-        Seq(dependency1.id, dependency2.id).sorted
+        Seq(dependency1.id, dependency2.id).sorted,
       )
 
       dependenciesDao.findAll(Authorization.All, applications = Option(Nil)) must be(Nil)

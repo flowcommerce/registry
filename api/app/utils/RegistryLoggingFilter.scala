@@ -21,7 +21,7 @@ class RegistryLoggingFilterImpl @javax.inject.Inject() (implicit
   ec: ExecutionContext,
   m: Materializer,
   logger: RollbarLogger,
-  config: Config
+  config: Config,
 ) extends Filter {
 
   private val LoggedRequestMethodConfig = "play.http.logging.methods"
@@ -30,7 +30,7 @@ class RegistryLoggingFilterImpl @javax.inject.Inject() (implicit
     "User-Agent",
     "X-Forwarded-For",
     "CF-Connecting-IP",
-    "X-Apidoc-Version"
+    "X-Apidoc-Version",
   ).map(_.toLowerCase)
 
   private val loggedRequestMethods =
@@ -56,7 +56,7 @@ class RegistryLoggingFilterImpl @javax.inject.Inject() (implicit
           requestId,
           headerMap.getOrElse("User-Agent", Nil).mkString(","),
           headerMap.getOrElse("X-Forwarded-For", Nil).mkString(","),
-          headerMap.getOrElse("CF-Connecting-IP", Nil).mkString(",")
+          headerMap.getOrElse("CF-Connecting-IP", Nil).mkString(","),
         ).mkString(" ")
 
         logger
@@ -73,7 +73,7 @@ class RegistryLoggingFilterImpl @javax.inject.Inject() (implicit
             headerMap
               .map { case (key, value) => key.toLowerCase -> value }
               .view
-              .filterKeys(LoggedHeaders.contains)
+              .filterKeys(LoggedHeaders.contains),
           )
           .withKeyValue("request_id", requestId)
           .info(line)
