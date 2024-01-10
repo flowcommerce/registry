@@ -9,7 +9,7 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.20")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
 
-addSbtPlugin("com.lightbend.sbt" % "sbt-javaagent" % "0.1.5")
+addSbtPlugin("com.github.sbt" % "sbt-javaagent" % "0.1.8")
 
 addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.4.1")
 
