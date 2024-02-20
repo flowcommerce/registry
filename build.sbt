@@ -25,7 +25,7 @@ lazy val api = project
     scalafmtOnCompile := true,
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.30.0",
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.28.0",
     libraryDependencies ++= Seq(
       ws,
       "com.google.inject" % "guice" % "5.1.0",
