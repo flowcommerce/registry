@@ -2,8 +2,8 @@
 # Service version: 0.3.41
 # apibuilder app.apibuilder.io/flow/registry/latest/play_2_x_routes
 
-GET        /applications                                  controllers.Applications.get(id: _root_.scala.Option[List[String]], port: _root_.scala.Option[List[Long]], service: _root_.scala.Option[List[String]], prefix: _root_.scala.Option[String], q: _root_.scala.Option[String], limit: Long ?= 25L, offset: Long ?= 0L, sort: String ?= "-created_at")
-GET        /applications/versions                         controllers.Applications.getVersions(id: _root_.scala.Option[List[String]], application: _root_.scala.Option[List[String]], limit: Long ?= 25L, offset: Long ?= 0L, sort: String ?= "journal_timestamp")
+GET        /applications                                  controllers.Applications.get(id: _root_.scala.Option[List[String]] ?= None, port: _root_.scala.Option[List[Long]] ?= None, service: _root_.scala.Option[List[String]] ?= None, prefix: _root_.scala.Option[String], q: _root_.scala.Option[String], limit: Long ?= 25L, offset: Long ?= 0L, sort: String ?= "-created_at")
+GET        /applications/versions                         controllers.Applications.getVersions(id: _root_.scala.Option[List[String]] ?= None, application: _root_.scala.Option[List[String]] ?= None, limit: Long ?= 25L, offset: Long ?= 0L, sort: String ?= "journal_timestamp")
 GET        /applications/yaml                             controllers.Applications.getYaml()
 GET        /applications/:id                              controllers.Applications.getById(id: String)
 POST       /applications                                  controllers.Applications.post()
@@ -11,8 +11,8 @@ PUT        /applications/:id                              controllers.Applicatio
 DELETE     /applications/:id                              controllers.Applications.deleteById(id: String)
 PUT        /applications/:id/dependencies/:dependency     controllers.Applications.putDependenciesByIdAndDependency(id: String, dependency: String)
 DELETE     /applications/:id/dependencies/:dependency     controllers.Applications.deleteDependenciesByIdAndDependency(id: String, dependency: String)
-GET        /services                                      controllers.Services.get(id: _root_.scala.Option[List[String]], limit: Long ?= 25L, offset: Long ?= 0L, sort: String ?= "-created_at")
-GET        /services/versions                             controllers.Services.getVersions(id: _root_.scala.Option[List[String]], service: _root_.scala.Option[List[String]], limit: Long ?= 25L, offset: Long ?= 0L, sort: String ?= "journal_timestamp")
+GET        /services                                      controllers.Services.get(id: _root_.scala.Option[List[String]] ?= None, limit: Long ?= 25L, offset: Long ?= 0L, sort: String ?= "-created_at")
+GET        /services/versions                             controllers.Services.getVersions(id: _root_.scala.Option[List[String]] ?= None, service: _root_.scala.Option[List[String]] ?= None, limit: Long ?= 25L, offset: Long ?= 0L, sort: String ?= "journal_timestamp")
 GET        /services/:id                                  controllers.Services.getById(id: String)
 POST       /services                                      controllers.Services.post()
 PUT        /services/:id                                  controllers.Services.putById(id: String)
