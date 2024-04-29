@@ -68,8 +68,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   coverageDataDir := file("target/scala-2.13"),
   coverageHighlighting := true,
   coverageFailOnMinimum := true,
-  coverageMinimumStmtTotal := 0,
-  coverageMinimumBranchTotal := 0,
+  coverageMinimumStmtTotal := 60,
+  coverageMinimumBranchTotal := 60,
   credentials += Credentials(
     "Artifactory Realm",
     "flow.jfrog.io",
