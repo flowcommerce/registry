@@ -3,6 +3,11 @@ name := "registry"
 ThisBuild / scalaVersion := "2.13.10"
 ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 
+// Resolve scala-xml version dependency mismatch, see https://github.com/sbt/sbt/issues/7007
+ThisBuild / libraryDependencySchemes ++= Seq(
+  "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
+)
+
 lazy val allScalacOptions = Seq(
   "-deprecation",
   "-feature",
@@ -59,6 +64,12 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/",
   resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
   resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release/",
+  coverageExcludedFiles := ".*\\/api/app/generated\\/.*",
+  coverageDataDir := file("target/scala-2.13"),
+  coverageHighlighting := true,
+  coverageFailOnMinimum := true,
+  coverageMinimumStmtTotal := 0,
+  coverageMinimumBranchTotal := 0,
   credentials += Credentials(
     "Artifactory Realm",
     "flow.jfrog.io",
