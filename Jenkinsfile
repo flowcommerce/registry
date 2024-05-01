@@ -73,11 +73,12 @@ pipeline {
                     do
                       sleep 10
                     done
-                    sbt clean flowLint test scalafmtSbtCheck scalafmtCheck
                   '''
+                  sh 'sbt clean flowLint coverage test scalafmtSbtCheck scalafmtCheck'
+                  sh 'sbt coverageAggregate'
                 }
                 finally {
-                  junit allowEmptyResults: true, testResults: '**/target/test-reports/*.xml'
+                  postSbtReport()
                 }
               }
             }
