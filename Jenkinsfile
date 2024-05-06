@@ -47,15 +47,12 @@ pipeline {
         allOf {
           not { branch 'main' }
           changeRequest()
-          expression {
-            return changesCheck.hasChangesInDir('deploy')
-          }
         }
       }
       steps {
         script {
           container('helm') {
-            new helmDiff().diff('registry')
+            helmCommonDiff(['registry'])
           }
         }
       }
