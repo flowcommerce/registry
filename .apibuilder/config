@@ -9,11 +9,6 @@ code:
       version: latest
       generators:
         play_2_x_json: api/app/generated
-    healthcheck:
-      version: latest
-      generators:
-        play_2_8_client: api/app/generated
-        play_2_x_routes: api/conf/healthcheck.routes
     registry:
       version: latest
       generators:
