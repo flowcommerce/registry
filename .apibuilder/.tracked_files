@@ -9,11 +9,6 @@ flow:
   error:
     play_2_x_json:
     - api/app/generated/FlowErrorV0Models.scala
-  healthcheck:
-    play_2_8_client:
-    - api/app/generated/FlowHealthcheckV0Client.scala
-    play_2_x_routes:
-    - api/conf/healthcheck.routes
   registry:
     anorm_2_8_parsers:
     - api/app/generated/FlowRegistryV0Conversions.scala
