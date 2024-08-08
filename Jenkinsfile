@@ -61,7 +61,7 @@ pipeline {
     stage("Build, Deploy, SBT test") {
       stages {
         stage('Build and deploy') {
-          // when { branch 'main' }
+          when { branch 'main' }
           stages {
             stage('Build and push docker image release') {
               stages {
@@ -77,8 +77,7 @@ pipeline {
                               serviceName: 'registry',
                               platform: 'amd64',
                               dockerfilePath: '/Dockerfile',
-                              // semver: semversion
-                              semver: 'test'
+                              semver: semversion
                             )
                           }
                         }
@@ -100,8 +99,7 @@ pipeline {
                               serviceName: 'registry',
                               platform: 'arm64',
                               dockerfilePath: '/Dockerfile',
-                              // semver: semversion
-                              semver: 'test'
+                              semver: semversion
                             )
                           }
                         }
@@ -115,8 +113,7 @@ pipeline {
               steps {
                 container('kaniko') {
                   script {
-                    // semver = VERSION.printable()
-                    semver = 'test'
+                    semver = VERSION.printable()
                     String templateName = "registry-ARCH:${semver}"
                     String targetName = "registry:${semver}"
                     String orgName = "flowcommerce"
