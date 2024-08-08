@@ -116,7 +116,7 @@ pipeline {
                 container('kaniko') {
                   script {
                     // semver = VERSION.printable()
-                    semver = VERSION.printable()
+                    semver = 'test'
                     String templateName = "registry-ARCH:${semver}"
                     String targetName = "registry:${semver}"
                     String orgName = "flowcommerce"
