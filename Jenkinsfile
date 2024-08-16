@@ -123,21 +123,13 @@ pipeline {
                 }
               }
             }
-            stage('Deploy service') {
+            stage('Deploy registry') {
               when { branch 'main' }
-              stages {
-                stage("parallel service Deploy") {
-                   parallel {
-                      stage('Deploy registry') {
-                        steps {
-                          script {
-                            container('helm') {
-                              new helmCommonDeploy().deploy('registry', 'production', VERSION.printable())
-                            }
-                          }
-                        }
-                      }
-                   }
+              steps {
+                script {
+                  container('helm') {
+                    new helmCommonDeploy().deploy('registry', 'production', VERSION.printable())
+                  }
                 }
               }
             }
