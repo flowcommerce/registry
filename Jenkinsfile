@@ -9,7 +9,7 @@ pipeline {
 
   agent {
     kubernetes {
-      inheritFrom 'karpenter-kaniko-slim'
+      inheritFrom 'kaniko-slim'
 
       containerTemplates([
         containerTemplate(name: 'postgres', image: "flowcommerce/registry-postgresql:latest", alwaysPullImage: true, resourceRequestMemory: '1Gi'),
@@ -87,7 +87,7 @@ pipeline {
                       agent {
                         kubernetes {
                           label 'registry-arm64'
-                          inheritFrom 'karpenter-kaniko-slim-arm64'
+                          inheritFrom 'kaniko-slim-arm64'
                         }
                       }
                       steps {
