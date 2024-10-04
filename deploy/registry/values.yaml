@@ -15,9 +15,9 @@ image:
 
 resources:
   limits:
-    memory: "900Mi"
+    memory: "1000Mi"
   requests:
-    memory: "900Mi"
+    memory: "1000Mi"
     cpu: .05
 
 jvmOpts:
@@ -29,14 +29,12 @@ deployments:
     maxReplicas: 2
     maxUnavailable: 1
 
-# Migrate registry service to arm64 platform
 nodeSelector:
-  role: workers-arm64
-
-tolerations: 
+  karpenter/role: workers
+tolerations:
   - key: "role"
     operator: "Equal"
-    value: "workers-arm64"
+    value: "workers"
     effect: "NoSchedule"
 
 rollout: 
