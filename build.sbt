@@ -1,6 +1,6 @@
 name := "registry"
 
-ThisBuild / scalaVersion := "2.13.14"
+ThisBuild / scalaVersion := "2.13.15"
 ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 
 // Resolve scala-xml version dependency mismatch, see https://github.com/sbt/sbt/issues/7007
@@ -30,21 +30,21 @@ lazy val api = project
     scalafmtOnCompile := true,
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.39.0",
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.40.1",
     libraryDependencies ++= Seq(
       ws,
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.34" % "provided",
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play28" % "0.5.69",
-      "io.flow" %% "lib-metrics-play28" % "1.0.96",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.5.71",
+      "io.flow" %% "lib-metrics-play28" % "1.0.97",
       "com.typesafe.play" %% "play-json-joda" % "2.9.4",
       "org.postgresql" % "postgresql" % "42.7.4",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
-      "io.flow" %% "lib-test-utils-play28" % "0.2.39" % Test,
-      "io.flow" %% "lib-usage-play28" % "0.2.56",
-      "io.flow" %% "lib-log" % "0.2.25",
+      "io.flow" %% "lib-test-utils-play28" % "0.2.40" % Test,
+      "io.flow" %% "lib-usage-play28" % "0.2.57",
+      "io.flow" %% "lib-log" % "0.2.26",
     ),
     Test / javaOptions ++= Seq(
       "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
