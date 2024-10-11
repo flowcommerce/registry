@@ -36,6 +36,8 @@ tolerations:
     operator: "Equal"
     value: "workers"
     effect: "NoSchedule"
+topologySpreadConstraints:
+  schedule: "DoNotSchedule"
 
 rollout: 
   enabled: true
