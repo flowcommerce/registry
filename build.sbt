@@ -30,14 +30,14 @@ lazy val api = project
     scalafmtOnCompile := true,
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.43.0",
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.44.1",
     libraryDependencies ++= Seq(
       ws,
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.36" % "provided",
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play28" % "0.5.81",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.5.84",
       "io.flow" %% "lib-metrics-play28" % "1.1.3",
       "com.typesafe.play" %% "play-json-joda" % "2.9.4",
       "org.postgresql" % "postgresql" % "42.7.4",
@@ -56,7 +56,7 @@ lazy val api = project
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name ~= ("registry-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-healthcheck-play28" % "0.0.32",
+    "io.flow" %% "lib-healthcheck-play28" % "0.0.33",
     specs2 % Test,
   ),
   Compile / doc / sources := Seq.empty,
