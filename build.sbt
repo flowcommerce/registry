@@ -37,7 +37,7 @@ lazy val api = project
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.36" % "provided",
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play28" % "0.5.85",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.5.86",
       "io.flow" %% "lib-metrics-play28" % "1.1.4",
       "com.typesafe.play" %% "play-json-joda" % "2.9.4",
       "org.postgresql" % "postgresql" % "42.7.4",
