@@ -30,7 +30,7 @@ lazy val api = project
     scalafmtOnCompile := true,
     routesImport += "io.flow.registry.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
-    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.44.1",
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.45.2",
     libraryDependencies ++= Seq(
       ws,
       "com.google.inject" % "guice" % "5.1.0",
@@ -40,11 +40,11 @@ lazy val api = project
       "io.flow" %% "lib-postgresql-play-play28" % "0.5.86",
       "io.flow" %% "lib-metrics-play28" % "1.1.4",
       "com.typesafe.play" %% "play-json-joda" % "2.9.4",
-      "org.postgresql" % "postgresql" % "42.7.4",
+      "org.postgresql" % "postgresql" % "42.7.5",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
       "io.flow" %% "lib-test-utils-play28" % "0.2.43" % Test,
-      "io.flow" %% "lib-usage-play28" % "0.2.64",
-      "io.flow" %% "lib-log" % "0.2.29",
+      "io.flow" %% "lib-usage-play28" % "0.2.65",
+      "io.flow" %% "lib-log" % "0.2.30",
     ),
     Test / javaOptions ++= Seq(
       "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
