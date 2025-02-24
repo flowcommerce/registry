@@ -40,7 +40,7 @@ lazy val api = project
       "io.flow" %% "lib-postgresql-play-play29" % "0.5.88",
       "io.flow" %% "lib-metrics-play29" % "1.1.6",
       "com.typesafe.play" %% "play-json-joda" % "2.10.6",
-      "org.postgresql" % "postgresql" % "42.7.5",
+      "org.postgresql" % "postgresql" % "42.7.4",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
       "io.flow" %% "lib-test-utils-play29" % "0.2.45" % Test,
       "io.flow" %% "lib-usage-play29" % "0.2.67",
