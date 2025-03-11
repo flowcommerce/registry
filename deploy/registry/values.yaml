@@ -5,6 +5,9 @@ service:
   startupHealthcheckEndpoint: /_internal_/startup
   livenessHealthcheckEndpoint: /_internal_/live
   readinessHealthcheckEndpoint: /_internal_/ready
+  readinessFailureThreshold: 4
+  readinessPeriodSeconds: 3
+  readinessTimeoutSeconds: 3
    
 team: "foundation"
 
