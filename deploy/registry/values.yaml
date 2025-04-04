@@ -29,8 +29,7 @@ deployments:
     minReplicas: 1
     maxReplicas: 1
     maxUnavailable: 1
-    serviceAccountName: "flow-prod-eks-production-registry-sa"
-    serviceAccountIamRole: "arn:aws:iam::479720515435:role/flow-prod-eks-production-role"
+    AWSRole: "arn:aws:iam::479720515435:role/flow-prod-eks-production-role"
 
 nodeSelector:
   karpenter/role: workers
