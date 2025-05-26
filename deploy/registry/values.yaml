@@ -53,6 +53,10 @@ datadogMonitors:
 - type: trace.akka_http.request.errors-sum
   alert:
     notificationTarget: '@slack-team-foundation-notifications'
+    alert:
+      threshold: '0.9'
+    warning:
+      threshold: '0.5'
 - type: trace.akka_http.request-p95
   alert:
     notificationTarget: '@slack-team-foundation-notifications'
