@@ -70,3 +70,13 @@ datadogMonitors:
   alert:
     notificationTarget: '@slack-team-foundation-notifications'
 - type: missing-metrics
+- type: argo-rollout-monitor
+  alert:
+    threshold: 1
+  newGroupDelay: 60
+  evaluationDelay: 60
+  notifyNoData: false
+  renotifyInterval: 180
+  renotifyStatuses: 
+    - "alert"
+  requireFullWindow: false
