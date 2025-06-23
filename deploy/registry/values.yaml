@@ -73,7 +73,6 @@ datadogMonitors:
 - type: argo-rollout-monitor
   alert:
     threshold: 1
-    notificationTarget: '@slack-team-foundation-notifications'
   newGroupDelay: 60
   evaluationDelay: 60
   notifyNoData: false
