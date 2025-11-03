@@ -42,7 +42,7 @@ lazy val api = project
       "org.postgresql" % "postgresql" % "42.7.4",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
       "io.flow" %% "lib-test-utils-play29" % "0.2.82" % Test,
-      "io.flow" %% "lib-usage-play29" % "0.3.8",
+      "io.flow" %% "lib-usage-play29" % "0.3.10",
       "io.flow" %% "lib-log-play29" % "0.2.61",
     ),
     Test / javaOptions ++= Seq(
