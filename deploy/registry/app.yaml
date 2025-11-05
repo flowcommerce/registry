@@ -48,8 +48,7 @@ spec:
       helm:
         parameters:
           - name: deployments.live.version
-            # value: "Jenkins_will_update_the_version"
-            value: "0.7.70"
+            value: "Jenkins_will_update_the_version"
         valueFiles:
           - $values/deploy/registry/values.yaml
     - repoURL: 'git@github.com:flowcommerce/registry.git'
@@ -67,6 +66,6 @@ spec:
       - ApplyOutOfSyncOnly=true    # Only sync out-of-sync resources
       - ServerSideApply=true       # Use server-side apply
       - PruneLast=true            # Prune after successful sync
-    # automated:
-    #   prune: true
-    #   selfHeal: true
+    automated:
+      prune: true
+      selfHeal: true
