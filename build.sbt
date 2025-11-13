@@ -1,6 +1,6 @@
 name := "registry"
 
-ThisBuild / scalaVersion := "2.13.16"
+ThisBuild / scalaVersion := "2.13.17"
 ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 
 // Resolve scala-xml version dependency mismatch, see https://github.com/sbt/sbt/issues/7007
