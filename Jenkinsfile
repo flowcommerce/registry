@@ -45,7 +45,8 @@ podTemplate(
             pgImage: "flowcommerce/registry-postgresql:latest",
             componentargs: "${jsondata}",
             sbtOnMain: "${sbtOnMain}",
-            sbtCommand: "${sbtCommand}"
+            sbtCommand: "${sbtCommand}",
+            buildkit: true
             )
         }
 
