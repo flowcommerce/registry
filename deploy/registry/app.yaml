@@ -44,6 +44,9 @@ spec:
       - .spec.subsets[].labels["rollouts-pod-template-hash"]
     ###################################
   sources:
+    - repoURL: 'git@github.com:flowcommerce/registry.git'
+      targetRevision: main  
+      ref: values
     - repoURL: 'git@github.com:flowcommerce/generic-charts.git'
       path: charts/flow-generic
       targetRevision: v2.0.0
@@ -53,9 +56,6 @@ spec:
             value: "Jenkins_will_update_the_version"
         valueFiles:
           - $values/deploy/registry/values.yaml
-    - repoURL: 'git@github.com:flowcommerce/registry.git'
-      targetRevision: main  
-      ref: values
 
   project: production
 
