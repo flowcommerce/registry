@@ -38,11 +38,11 @@ lazy val api = project
       "org.projectlombok" % "lombok" % "1.18.42" % "provided",
       jdbc,
       "io.flow" %% "lib-postgresql-play-play29" % "0.6.47",
-      "io.flow" %% "lib-metrics-play29" % "1.1.62",
+      "io.flow" %% "lib-metrics-play29" % "1.1.63",
       "org.postgresql" % "postgresql" % "42.7.4",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
       "io.flow" %% "lib-test-utils-play29" % "0.2.92" % Test,
-      "io.flow" %% "lib-usage-play29" % "0.3.23",
+      "io.flow" %% "lib-usage-play29" % "0.3.24",
       "io.flow" %% "lib-log-play29" % "0.2.69",
     ),
     Test / javaOptions ++= Seq(
