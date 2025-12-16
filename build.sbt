@@ -43,7 +43,7 @@ lazy val api = project
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
       "io.flow" %% "lib-test-utils-play29" % "0.2.93" % Test,
       "io.flow" %% "lib-usage-play29" % "0.3.25",
-      "io.flow" %% "lib-log-play29" % "0.2.70",
+      "io.flow" %% "lib-log-play29" % "0.2.71",
     ),
     Test / javaOptions ++= Seq(
       "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
