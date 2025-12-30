@@ -38,7 +38,7 @@ lazy val api = project
       "org.projectlombok" % "lombok" % "1.18.42" % "provided",
       jdbc,
       "io.flow" %% "lib-postgresql-play-play29" % "0.6.53",
-      "io.flow" %% "lib-metrics-play29" % "1.1.67",
+      "io.flow" %% "lib-metrics-play29" % "1.1.68",
       "org.postgresql" % "postgresql" % "42.7.4",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
       "io.flow" %% "lib-test-utils-play29" % "0.2.96" % Test,
