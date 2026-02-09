@@ -23,6 +23,7 @@ resources:
 
 jvmOpts:
    memory: 500m
+   garbageCollector: ShenandoahGC
 
 deployments:
   live:
