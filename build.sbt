@@ -39,7 +39,7 @@ lazy val api = project
       jdbc,
       "io.flow" %% "lib-postgresql-play-play29" % "0.6.65",
       "io.flow" %% "lib-metrics-play29" % "1.1.77",
-      "org.postgresql" % "postgresql" % "42.7.4",
+      "org.postgresql" % "postgresql" % "42.7.10",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
       "io.flow" %% "lib-test-utils-play29" % "0.3.6" % Test,
       "io.flow" %% "lib-usage-play29" % "0.3.39",
