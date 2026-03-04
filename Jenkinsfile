@@ -46,7 +46,6 @@ podTemplate(
             componentargs: "${jsondata}",
             sbtOnMain: "${sbtOnMain}",
             sbtCommand: "${sbtCommand}",
-            buildkit: true
             )
         }
 
