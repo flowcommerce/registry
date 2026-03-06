@@ -37,13 +37,13 @@ lazy val api = project
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.42" % "provided",
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play29" % "0.6.65",
-      "io.flow" %% "lib-metrics-play29" % "1.1.77",
+      "io.flow" %% "lib-postgresql-play-play29" % "0.6.75",
+      "io.flow" %% "lib-metrics-play29" % "1.1.81",
       "org.postgresql" % "postgresql" % "42.7.10",
       "net.jcazevedo" %% "moultingyaml" % "0.4.2",
-      "io.flow" %% "lib-test-utils-play29" % "0.3.6" % Test,
-      "io.flow" %% "lib-usage-play29" % "0.3.39",
-      "io.flow" %% "lib-log-play29" % "0.2.81",
+      "io.flow" %% "lib-test-utils-play29" % "0.3.10" % Test,
+      "io.flow" %% "lib-usage-play29" % "0.3.44",
+      "io.flow" %% "lib-log-play29" % "0.2.85",
     ),
     Test / javaOptions ++= Seq(
       "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
@@ -55,7 +55,7 @@ lazy val api = project
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name ~= ("registry-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-healthcheck-play29" % "0.0.95",
+    "io.flow" %% "lib-healthcheck-play29" % "0.0.99",
     specs2 % Test,
   ),
   Compile / doc / sources := Seq.empty,
