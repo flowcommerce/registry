@@ -33,6 +33,7 @@ lazy val api = project
     javaAgents += "com.datadoghq" % "dd-java-agent" % "1.44.1",
     libraryDependencies ++= Seq(
       ws,
+      "io.flow" %% "lib-aws-config-secrets" % "0.0.18" % Runtime,
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.42" % "provided",

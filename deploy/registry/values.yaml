@@ -31,6 +31,13 @@ deployments:
     maxReplicas: 1
     maxUnavailable: 0
     AWSRole: "arn:aws:iam::479720515435:role/flow-prod-eks-production-role"
+    env:
+      - name: "CONF_DB_DEFAULT_URL"
+        value: "jdbc:postgresql://registrydb20200324.cwdsspa5jwrg.us-east-1.rds.amazonaws.com/registrydb?tcpKeepAlive=true"
+      - name: "CONF_DB_HIKARICP_MAXIMUM_POOL_SIZE"
+        value: "6"
+      - name: "CONF_DB_HIKARICP_MINIMUM_IDLE"
+        value: "6"
     rateLimit:
       perPod:
       - name: local-ratelimit
@@ -40,6 +47,11 @@ deployments:
           maxTokens: "200"
           maxTokensPerFill: "200"
           tokensFillInterval: "1s"
+
+applicationSecrets:
+  paths:
+    - "ssm://shared/jwt.salt"
+    - "ssm://services/registry/"
 
 nodeSelector:
   karpenter/role: workers
